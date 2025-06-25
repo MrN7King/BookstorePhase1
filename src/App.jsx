@@ -1,8 +1,9 @@
+import Navigation from "./sections/Navigation"
 
 const App = () => {
   return (
     <div className='container mx-auto max-w-7xl'>
-      {/*Navbar*/}
+      <Navigation />
       {/*Hero*/}
       {/*Best Sellers Cards*/}
       {/*About Us*/}
