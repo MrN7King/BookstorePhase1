@@ -2,6 +2,7 @@ import BestSellerSlider from "./sections/BestSellerSlider";
 import HeroSectionOne from "./sections/HeroSectionOne";
 import Navigation from "./sections/Navigation";
 import PremAccLink from "./sections/PremAccLink";
+import PremiumSlider from "./sections/PremiumSlider";
 const App = () => {
   return (
     <>
@@ -13,7 +14,8 @@ const App = () => {
       {/*About Us*/}
       <div className="pt-20">
       <PremAccLink/> </div>
-      {/*Premium Account Cards*/}
+      
+      <PremiumSlider/>
       {/*Footer*/}
     </>
   )
