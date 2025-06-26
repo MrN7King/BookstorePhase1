@@ -1,23 +1,16 @@
-<<<<<<< HEAD
-import Navigation from "./sections/Navigation";
+import BestSellerSlider from "./sections/BestSellerSlider";
 import HeroSectionOne from "./sections/HeroSectionOne";
+import Navigation from "./sections/Navigation";
 
 const App = () => {
   return (
-    <div className='container mx-auto max-w-7xl'>
-      <Navigation/>
-      <HeroSectionOne />
-=======
-import Navigation from "./sections/Navigation"
-const App = () => {
-  return (
     <>
-    <div className='container mx-auto max-w-7xl pt-16'>
-      <Navigation />
-      </div>
-      {/*Best} />
->>>>>>> 1b071d15073cc90e45d31036932b77fba2ac607b
-      {/*Best Sellers Cards*/}
+    <div className='container mx-auto pt-16 overflow-hidden'>
+      <Navigation /></div>
+      
+     <HeroSectionOne />
+     <BestSellerSlider />
+     
       {/*About Us*/}
       {/*Premium Account Link*/}
       {/*Premium Account Cards*/}

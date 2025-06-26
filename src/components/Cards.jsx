@@ -1,0 +1,100 @@
+"use client"; 
+
+//star svg
+const STAR_SVG_PATH = "M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.538 1.118l-2.8-2.034a1 1 0 00-1.176 0l-2.8 2.034c-.783.57-1.838-.197-1.538-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.462a1 1 0 00.95-.69l1.07-3.292z";
+
+const Card = ({ book, index, current, onCardClick }) => {
+  // Actively chosen card
+  const isActive = index === current;
+
+  // Star Rating Renderer
+  const renderStars = (rating) => {
+    const stars = [];
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 !== 0;
+
+    for (let i = 0; i < 5; i++) {
+      if (i < fullStars) {
+        stars.push(
+          <svg key={`star-full-${i}`} className="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+            <path d={STAR_SVG_PATH} />
+          </svg>
+        );
+      } else if (i === fullStars && hasHalfStar) {
+        stars.push(
+          <div key={`star-half-${i}`} className="relative">
+            <svg className="w-4 h-4 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+              <path d={STAR_SVG_PATH} />
+            </svg>
+            <svg
+              className="w-4 h-4 text-yellow-400 absolute top-0 left-0"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+              style={{ clipPath: 'inset(0 50% 0 0)' }}
+            >
+              <path d={STAR_SVG_PATH} />
+            </svg>
+          </div>
+        );
+      } else {
+        stars.push(
+          <svg key={`star-empty-${i}`} className="w-4 h-4 text-gray-300" fill="currentColor" viewBox="0 0 20 20">
+            <path d={STAR_SVG_PATH} />
+          </svg>
+        );
+      }
+    }
+    return <div className="flex">{stars}</div>;
+  };
+
+  return (
+    // Main Card Design
+    <div
+      className={`
+        flex-none w-[200px] sm:w-[220px] md:w-[240px] lg:w-[260px] xl:w-[280px]
+        bg-sky-400/15 rounded-xl my-4
+        flex flex-col p-4
+        transition-all duration-300 ease-in-out cursor-pointer
+        ${isActive ? 'shadow-lg' : 'opacity-50'} // Current card has shadow, others are dimmed
+        ${isActive ? 'hover:shadow-xl hover:scale-[1.01]' : 'hover:scale-100'} // Only current card has hover effect
+      `}
+      onClick={() => onCardClick(index)} // Allow clicking a card to make it current
+    >
+
+      {/* Book Image */}
+      <img
+        src={book.image || "/assets/placeholder.jpg"}
+        alt={book.title}
+        className="w-full h-auto object-cover rounded-md mb-4"
+        onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/150x200/cccccc/333333?text=Error" }}
+      />
+
+      {/* Book Title */}
+      <h3 className="text-base font-semibold text-gray-800 mb-1 text-left">{book.title}</h3>
+
+      {/* Author and Rating */}
+      <div className="flex items-center justify-between w-full mb-2">
+        <p className="text-sm text-gray-600">{book.author}</p>
+        <div className="flex-shrink-0">
+          {renderStars(book.rating)}
+        </div>
+      </div>
+
+      {/* Price */}
+      <p className="text-lg font-bold text-gray-900 mb-3 text-left">{book.price}</p>
+
+      {/* Description */}
+      <p className="text-xs text-gray-700 mb-4 flex-grow text-left">{book.description}</p>
+
+      {/* Add to Cart Button */}
+      <button className="w-full bg-gray-900 text-white py-2 px-4 rounded-lg
+                         hover:bg-gray-700 active:scale-[0.98] transition-all duration-200
+                         flex items-center justify-center space-x-2 shadow-md hover:shadow-lg">
+        <img src="/icons/Vector.svg" className="w-5 h-5" style={{ filter: 'brightness(0) invert(1)' }}></img>
+        <span>Add To Cart</span>
+      </button>
+    </div>
+  );
+};
+
+export default Card;
