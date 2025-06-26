@@ -1,10 +1,11 @@
-import Navigation from "./sections/Navigation"
+import Navigation from "./sections/Navigation";
+import HeroSectionOne from "./sections/HeroSectionOne";
 
 const App = () => {
   return (
     <div className='container mx-auto max-w-7xl'>
-      <Navigation />
-      {/*Hero*/}
+      <Navigation/>
+      <HeroSectionOne />
       {/*Best Sellers Cards*/}
       {/*About Us*/}
       {/*Premium Account Link*/}
