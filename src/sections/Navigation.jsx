@@ -47,7 +47,7 @@ const Navigation = () => {
   return (
     // Removed border-b and border-gray-300 as per your previous request
     // Removed backdrop-blur-lg from this top div, as it's not present in example screenshots
-    <div className="font-inter fixed inset-x-0 z-20 w-full bg-white/70">
+    <div className="font-inter top-0 fixed inset-x-0 z-20 w-full bg-white/70">
       <div className="mx-auto max-w-7xl px-4">
         <div className="flex items-center justify-between py-4">
           {/* Site name */}
@@ -86,7 +86,7 @@ const Navigation = () => {
 
      
      <div
-  className={`fixed top-0 right-0 h-full w-full md:w-80 bg-white shadow-lg transform transition-transform duration-300 z-50 ${
+  className={`fixed top-0 right-0 h-full w-full md:w-100 bg-white shadow-lg transform transition-transform duration-300 z-50 ${
     isPanelOpen ? "translate-x-0" : "translate-x-full"
   } overflow-hidden`}
 >
@@ -95,7 +95,7 @@ const Navigation = () => {
         }`}>
          <br/>
           <div className="flex items-center justify-between p-4">
-            <span className=" text-2xl font-bold text-black-800">MENU</span>
+            <span className=" text-1xl font-bold text-black-800">MENU</span>
             <button onClick={closePanel} className="hover:opacity-70">
               <img src="/icons/close.svg" alt="Close" className="w-8 h-8" />
             </button>
@@ -105,19 +105,18 @@ const Navigation = () => {
             <li className="py-2">
               <button
                 onClick={goToBooksMenu} // Navigates to the 'Books' sub-menu
-                className="flex items-center justify-between w-full text-2xl font-semibold uppercase hover:text-sky-500"
-              >
+                className="flex items-center justify-between w-full text-2xl font-bold uppercase hover:text-sky-500">
                 BOOKS <span className="ml-2 text-3xl">›</span> 
               </button>
             </li>
             
             <li className="py-2">
-              <a href="#events" className="flex items-center justify-between text-2xl  w-full font-semibold uppercase hover:text-sky-500" onClick={handleMenuItemClick}>
-                PREMUIM ACCOUNTS<span className="ml-2 text-3xl">›</span>
+              <a href="#events" className="flex items-center justify-between text-2xl  w-full font-bold uppercase hover:text-sky-500" onClick={handleMenuItemClick}>
+                SUBSCRIPTIONS<span className="ml-2 text-3xl">›</span>
               </a>
             </li>
             {/* Separator or just spacing */}
-            <li className="mt-4 border-t border-gray-200 pt-4"></li>
+            <li className="mt-4 border-t border-gray-200 pt-12"></li>
 
            <div className="flex items-center justify-between p-3">
             <span className=" text-1xl  text-black-800">Profile</span>
@@ -151,7 +150,7 @@ const Navigation = () => {
             <img src="/icons/close.svg" alt="Close" className="w-8 h-8 mt-3"  /> {/* Replace with actual path */}
           </button>
         </div>
-          <ul className="flex flex-col text-lg p-4">
+          <ul className="flex flex-col text-lg p-4 ml-6">
             <li className="py-2">
               <a href="#viewallbooks" className="hover:text-sky-500 cursor-pointer" onClick={handleMenuItemClick}>View All BOOKS</a>
             </li>
@@ -161,7 +160,7 @@ const Navigation = () => {
                 onClick={() => toggleCategoryExpansion('featured')}
                 className="flex items-center justify-between w-full font-bold uppercase hover:text-sky-500"
               >
-                FEATURED <span className="ml-2 text-xl">{expandedCategory === 'featured' ? '-' : '+'}</span>
+                FEATURED <span className="ml-2 text-2xl">{expandedCategory === 'featured' ? '-' : '+'}</span>
               </button>
               {expandedCategory === 'featured' && (
                 <ul className="ml-4 mt-2 space-y-1 text-md">
@@ -176,7 +175,7 @@ const Navigation = () => {
                 onClick={() => toggleCategoryExpansion('fiction')}
                 className="flex items-center justify-between w-full font-bold uppercase hover:text-sky-500"
               >
-                FICTION <span className="ml-2 text-xl">{expandedCategory === 'fiction' ? '-' : '+'}</span>
+                FICTION <span className="ml-2 text-2xl">{expandedCategory === 'fiction' ? '-' : '+'}</span>
               </button>
               {expandedCategory === 'fiction' && (
                 <ul className="ml-4 mt-2 space-y-1 text-md">
@@ -192,7 +191,7 @@ const Navigation = () => {
                 onClick={() => toggleCategoryExpansion('non-fiction')}
                 className="flex items-center justify-between w-full font-bold uppercase hover:text-sky-500"
               >
-                NON-FICTION <span className="ml-2 text-xl">{expandedCategory === 'non-fiction' ? '-' : '+'}</span>
+                NON-FICTION <span className="ml-2 text-2xl">{expandedCategory === 'non-fiction' ? '-' : '+'}</span>
               </button>
               {expandedCategory === 'non-fiction' && (
                 <ul className="ml-4 mt-2 space-y-1 text-md">
@@ -207,7 +206,7 @@ const Navigation = () => {
                 onClick={() => toggleCategoryExpansion('kids')}
                 className="flex items-center justify-between w-full font-bold uppercase hover:text-sky-500"
               >
-                KIDS <span className="ml-2 text-xl">{expandedCategory === 'kids' ? '-' : '+'}</span>
+                KIDS <span className="ml-2 text-2xl">{expandedCategory === 'kids' ? '-' : '+'}</span>
               </button>
               {expandedCategory === 'kids' && (
                 <ul className="ml-4 mt-2 space-y-1 text-md">
@@ -221,7 +220,7 @@ const Navigation = () => {
                 onClick={() => toggleCategoryExpansion('young-adult')}
                 className="flex items-center justify-between w-full font-bold uppercase hover:text-sky-500"
               >
-                YOUNG ADULT <span className="ml-2 text-xl">{expandedCategory === 'young-adult' ? '-' : '+'}</span>
+                YOUNG ADULT <span className="ml-2 text-2xl">{expandedCategory === 'young-adult' ? '-' : '+'}</span>
               </button>
               {expandedCategory === 'young-adult' && (
                 <ul className="ml-4 mt-2 space-y-1 text-1xl">
