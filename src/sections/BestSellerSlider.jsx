@@ -34,7 +34,7 @@ const Slider = () => {
 
   return (
     <section >
-      <h2 className="text-3xl md:text-4xl font-bold text-center mb-8 text-gray-800">Best Seller Books</h2>
+      <h2 className="pt-16 text-3xl md:text-4xl font-bold text-center mb-8 text-gray-800">Best Seller Books</h2>
 
       <div className="relative flex items-center justify-center">
         {/* Left Arrow Button */}

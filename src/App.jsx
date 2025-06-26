@@ -1,7 +1,7 @@
 import BestSellerSlider from "./sections/BestSellerSlider";
 import HeroSectionOne from "./sections/HeroSectionOne";
 import Navigation from "./sections/Navigation";
-
+import PremAccLink from "./sections/PremAccLink";
 const App = () => {
   return (
     <>
@@ -10,9 +10,9 @@ const App = () => {
       
      <HeroSectionOne />
      <BestSellerSlider />
-     
       {/*About Us*/}
-      {/*Premium Account Link*/}
+      <div className="pt-20">
+      <PremAccLink/> </div>
       {/*Premium Account Cards*/}
       {/*Footer*/}
     </>
