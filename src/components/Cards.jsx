@@ -1,4 +1,4 @@
-"use client"; 
+"use client";
 
 //star svg
 const STAR_SVG_PATH = "M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.538 1.118l-2.8-2.034a1 1 0 00-1.176 0l-2.8 2.034c-.783.57-1.838-.197-1.538-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.462a1 1 0 00.95-.69l1.07-3.292z";
@@ -51,19 +51,18 @@ const Card = ({ book, index, current, onCardClick }) => {
     // Main Card Design
     <div
       className={`
-        flex-none w-[200px] sm:w-[220px] md:w-[240px] lg:w-[260px] xl:w-[280px]
+        flex-none w-[200px] sm:w-[220px] md:w-[240px] lg:w-[230px] xl:w-[250px] {/* <--- MODIFIED: Smaller widths for lg and xl breakpoints */}
         bg-sky-400/15 rounded-xl my-4
         flex flex-col p-4
         transition-all duration-300 ease-in-out cursor-pointer
-        ${isActive ? 'shadow-lg' : 'opacity-50'} // Current card has shadow, others are dimmed
-        ${isActive ? 'hover:shadow-xl hover:scale-[1.01]' : 'hover:scale-100'} // Only current card has hover effect
+        ${isActive ? 'shadow-lg' : 'opacity-50'} {/* Current card has shadow, others are dimmed */}
+        ${isActive ? 'hover:shadow-xl hover:scale-[1.01]' : 'hover:scale-100'} {/* Only current card has hover effect */}
       `}
-      onClick={() => onCardClick(index)} // Allow clicking a card to make it current
-    >
+      onClick={() => onCardClick(index)}>
 
       {/* Book Image */}
       <img
-        src={book.image || "/assets/placeholder.jpg"}
+        src={book.image || "/assets/book1.jpg"}
         alt={book.title}
         className="w-full h-auto object-cover rounded-md mb-4"
         onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/150x200/cccccc/333333?text=Error" }}
@@ -73,8 +72,10 @@ const Card = ({ book, index, current, onCardClick }) => {
       <h3 className="text-base font-semibold text-gray-800 mb-1 text-left">{book.title}</h3>
 
       {/* Author and Rating */}
-      <div className="flex items-center justify-between w-full mb-2">
-        <p className="text-sm text-gray-600">{book.author}</p>
+      {/* Changed justify-between to justify-start to align content to the left */}
+      <div className="flex items-center justify-start w-full mb-2"> {/* <--- MODIFIED HERE */}
+        {/* Added mr-2 for spacing between author and stars if author exists */}
+        {book.author && <p className="text-sm text-gray-600 mr-2">{book.author}</p>} {/* <--- MODIFIED HERE */}
         <div className="flex-shrink-0">
           {renderStars(book.rating)}
         </div>
@@ -94,6 +95,7 @@ const Card = ({ book, index, current, onCardClick }) => {
         <span>Add To Cart</span>
       </button>
     </div>
+    
   );
 };
 
