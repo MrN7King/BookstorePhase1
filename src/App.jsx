@@ -11,7 +11,7 @@ const App = () => {
     <>
     <div className='container mx-auto pt-16 overflow-hidden'>
      <Navigation /></div>
-     <HeroSectionOne />
+     <HeroSectionOne/>
      <BestSellerSlider />
      <div className='w-full'> <Info_Homepage /> </div>
      <div className="pt-20">  <PremAccLink/> </div>
