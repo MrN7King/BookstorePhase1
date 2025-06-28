@@ -112,13 +112,14 @@ const Navigation = () => {
             </li>
             <li className="mt-4 border-t border-gray-200 pt-4 px-4"></li>
 
-            <div className="flex items-center justify-between py-3 px-4">
-              <span className="text-base text-gray-800">Profile</span>
-              <img src="/icons/profile.svg" alt="Profile" className="w-8 h-8" />
+            <div className="flex items-center justify-between py-3 px-4 cursor-pointer ">
+              
+              <span className="text-base text-gray-800 hover:text-sky-500">Profile</span>
+              <img src="/icons/profile.svg" alt="Profile" className="w-8 h-8 " />
             </div>
 
-            <div className="flex items-center justify-between py-3 px-4">
-              <span className="text-base text-gray-800">Contact Us</span>
+            <div className="flex items-center justify-between py-3 px-4 cursor-pointer">
+              <span className="text-base text-gray-800 hover:text-sky-500">Contact Us</span>
               <img src="/icons/phone.svg" alt="Contact" className="w-8 h-8" />
             </div>
           </ul>

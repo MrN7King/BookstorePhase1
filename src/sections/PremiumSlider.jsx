@@ -9,7 +9,7 @@ const Slider = () => {
   const templateBook = {
     image: "/assets/account1.png",
     title: "QuillBot Premium Account",
-    rating: 4.5,
+    rating: 2.5,
     price: "RS 1075.00",
     description: "Want to level up your online communication? Experience the power of QuillBot",
   };
@@ -75,7 +75,7 @@ const Slider = () => {
       <div className="flex justify-center mt-8">
         <button className="bg-gray-900 text-white py-3 px-8 rounded-lg
                            hover:bg-gray-700 transition-colors duration-200
-                           shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                           shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 cursor-pointer">
           View More
         </button>
       </div>
