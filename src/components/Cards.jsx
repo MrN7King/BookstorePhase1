@@ -55,7 +55,7 @@ const Card = ({ book, index, current, onCardClick }) => {
         bg-sky-400/15 rounded-xl my-4
         flex flex-col p-4
         transition-all duration-300 ease-in-out cursor-pointer
-        ${isActive ? 'shadow-lg' : 'opacity-50'} {/* Current card has shadow, others are dimmed */}
+        d has shadow, others are dimmed */}
         ${isActive ? 'hover:shadow-xl hover:scale-[1.01]' : 'hover:scale-100'} {/* Only current card has hover effect */}
       `}
       onClick={() => onCardClick(index)}>
@@ -90,7 +90,7 @@ const Card = ({ book, index, current, onCardClick }) => {
       {/* Add to Cart Button */}
       <button className="w-full bg-gray-900 text-white py-2 px-4 rounded-lg
                          hover:bg-gray-700 active:scale-[0.98] transition-all duration-200
-                         flex items-center justify-center space-x-2 shadow-md hover:shadow-lg">
+                         flex items-center justify-center space-x-2 shadow-md hover:shadow-lg cursor-pointer">
         <img src="/icons/Vector.svg" className="w-5 h-5" style={{ filter: 'brightness(0) invert(1)' }}></img>
         <span>Add To Cart</span>
       </button>
