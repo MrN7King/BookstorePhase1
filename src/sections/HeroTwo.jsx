@@ -6,9 +6,8 @@ const PremAccLink = () => {
   };
 
   return (
-    <section className="bg-sky-400/15 py-8 md:py-12 my-8 mx-auto px-4 sm:px-6 lg:px-8 rounded-lg shadow-lg
+    <section className="bg-sky-400/15 pt-8 py-10 md:pt-12 mt-8 mx-auto px-4 sm:px-6 lg:px-8
                         flex flex-col items-center sm:flex-row sm:justify-between sm:items-center overflow-x-hidden">
-
     
       <div className="w-full flex-shrink-0 flex flex-col items-center text-center pr-0 pl-0
                       sm:w-2/3 sm:items-start sm:text-left sm:pr-4">
