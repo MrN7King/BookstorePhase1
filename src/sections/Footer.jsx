@@ -99,7 +99,7 @@ export function FooterWithSitemap() {
 
       <div className="mt-12 border-t border-gray-700 pt-6 flex flex-col justify-center items-center"> {/* Changed here */}
         <Typography variant="small" className="text-center text-white"> {/* Removed mb-4 and md:mb-0 */}
-          &copy; {currentYear} Books. All rights reserved. | Made By Sonu ❤️
+          &copy; {currentYear} Books. All rights reserved.
         </Typography>
         {/* Social icons removed as per the reference image */}
       </div>
