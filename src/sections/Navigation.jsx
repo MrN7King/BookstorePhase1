@@ -1,8 +1,17 @@
 
 "use client";
 import { useState } from "react";
+import { useNavigate } from 'react-router-dom';
 
 const Navigation = () => {
+
+  const navigate = useNavigate();
+  
+    const handleGoAllBooks = () => {
+      navigate('/AllBooks'); // Redirects to the root of your application, which should render Home.jsx
+    };
+  
+
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [currentMenuLevel, setCurrentMenuLevel] = useState('main');
   const [expandedCategory, setExpandedCategory] = useState(null); 
@@ -142,7 +151,7 @@ const Navigation = () => {
           {/* Books Menu Items List */}
           <ul className="flex flex-col text-lg pt-4 pb-4">
             <li className="py-2 px-4">
-              <a href="#viewallbooks" className="hover:text-sky-500 cursor-pointer" onClick={handleMenuItemClick}>All BOOKS</a>
+              <label className="hover:text-sky-500 cursor-pointer" onClick={handleGoAllBooks}>All BOOKS</label>
             </li>
             <li className="py-2 px-4">
               <button
