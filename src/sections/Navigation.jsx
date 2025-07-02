@@ -2,21 +2,22 @@
 "use client";
 import { useState } from "react";
 import { useNavigate } from 'react-router-dom';
+import LoginPage from './LoginPage'; // Assuming LoginPage.jsx is in the same directory or adjust path
 
 const Navigation = () => {
 
   const navigate = useNavigate();
-  
-    const handleGoAllBooks = () => {
-      navigate('/AllBooks'); // Redirects to the root of your application, which should render Home.jsx
-    };
-  
+
+  const handleGoAllBooks = () => {
+    navigate('/AllBooks'); // Redirects to the root of your application, which should render Home.jsx
+    closePanel(); // Close the side panel when navigating
+  };
 
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [currentMenuLevel, setCurrentMenuLevel] = useState('main');
-  const [expandedCategory, setExpandedCategory] = useState(null); 
+  const [expandedCategory, setExpandedCategory] = useState(null);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false); // New state for login modal
 
- 
   const openPanel = () => {
     setIsPanelOpen(true);
     setCurrentMenuLevel('main');
@@ -40,7 +41,8 @@ const Navigation = () => {
   // Navigate back to the 'Main' menu level
   const goBackToMainMenu = () => {
     setCurrentMenuLevel('main');
-    setExpandedCategory(null); 
+
+    setExpandedCategory(null);
   };
 
   // Toggle inline expansion for categories like Fiction, Non-Fiction
@@ -51,6 +53,16 @@ const Navigation = () => {
   // Helper to close the panel when a final menu item is clicked
   const handleMenuItemClick = () => {
     closePanel();
+  };
+
+  // Function to open the login modal
+  const openLoginModal = () => {
+    setIsLoginModalOpen(true);
+  };
+
+  // Function to close the login modal
+  const closeLoginModal = () => {
+    setIsLoginModalOpen(false);
   };
 
   return (
@@ -68,6 +80,7 @@ const Navigation = () => {
               src="/icons/profile.svg"
               alt="Profile"
               className="w-6 h-6 cursor-pointer hover:opacity-75"
+              onClick={openLoginModal} // Open login modal on profile click
             />
             <img
               src="/icons/Vector.svg"
@@ -94,18 +107,18 @@ const Navigation = () => {
           isPanelOpen ? "translate-x-0" : "translate-x-full"
         } overflow-y-auto`}
       >
-        
+
         <div className={`absolute inset-0 transition-transform duration-300 ${
           currentMenuLevel === 'main' ? 'translate-x-0' : '-translate-x-full'
         }`}>
-          
+
           <div className="flex items-center justify-between p-4 sticky top-0 bg-white z-20 mt-2 ">
             <span className="text-2xl font-bold text-gray-800">MENU</span>
             <button onClick={closePanel} className="hover:opacity-70 p-2">
               <img src="/icons/close.svg" alt="Close" className="w-8 h-8" />
             </button>
           </div>
-         
+
           <ul className="flex flex-col text-lg pt-4 pb-4">
             <li className="py-2 px-4">
               <button
@@ -121,8 +134,7 @@ const Navigation = () => {
             </li>
             <li className="mt-4 border-t border-gray-200 pt-4 px-4"></li>
 
-            <div className="flex items-center justify-between py-3 px-4 cursor-pointer ">
-              
+            <div className="flex items-center justify-between py-3 px-4 cursor-pointer " onClick={openLoginModal}> {/* Also open login modal from here */}
               <span className="text-base text-gray-800 hover:text-sky-500">Profile</span>
               <img src="/icons/profile.svg" alt="Profile" className="w-8 h-8 " />
             </div>
@@ -231,6 +243,9 @@ const Navigation = () => {
           </ul>
         </div>
       </div>
+
+      {/* LoginPage Modal */}
+      <LoginPage isOpen={isLoginModalOpen} onClose={closeLoginModal} />
     </div>
   );
 };
