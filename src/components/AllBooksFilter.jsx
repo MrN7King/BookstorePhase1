@@ -1,15 +1,9 @@
+// src/components/AllBooksFilter.jsx
 import React, { useState } from 'react';
 
-// Main App component
-export default function App() {
-  return (
-    <div className="min-h-screen bg-gray-100 p-4 font-sans antialiased">
-      <AllBooksFilter />
-    </div>
-  );
-}
-
-const AllBooksFilter = () => {
+// AllBooksFilter component
+// It now accepts onClose and onApplyFilters props for mobile modal functionality
+const AllBooksFilter = ({ onClose, onApplyFilters }) => {
   // State for search query
   const [searchQuery, setSearchQuery] = useState('');
   // State for price range
@@ -65,11 +59,53 @@ const AllBooksFilter = () => {
     setter((prev) => !prev);
   };
 
+  // Function for applying filters
+  const handleApply = () => {
+    // Collect all filter states
+    const filters = {
+      searchQuery,
+      priceRange,
+      selectedLanguages,
+      selectedFormats,
+      // Add selected categories if they were being tracked
+    };
+    console.log("Applying filters:", filters);
+    if (onApplyFilters) {
+      onApplyFilters(filters);
+    }
+    // Only close the modal if onClose is provided (i.e., it's in modal mode)
+    if (onClose) {
+      onClose();
+    }
+  };
+
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 w-full max-w-md mx-auto">
+    // The main container for the filter. On larger screens, it's a sidebar.
+    // On mobile, when opened as a modal, it fills the screen and allows scrolling.
+    <div className="bg-white rounded-lg shadow-md p-6 w-full h-full overflow-y-auto relative flex flex-col font-inter">
+      {/* Close button for mobile view - only visible on small screens when in modal mode */}
+      {/* This button is specifically for closing the full-screen modal on mobile */}
+      {onClose && (
+        <button
+          onClick={onClose}
+          className="lg:hidden absolute top-4 right-4 p-2 text-gray-700 bg-gray-100 rounded-full shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 z-10"
+          aria-label="Close filters"
+        >
+          <svg
+            className="w-6 h-6"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">All Books</h1>
+        <h1 className="text-2xl font-bold text-gray-800">Filter</h1>
         {/* Dropdown arrow for "All Books" - functional if categories were dynamic */}
         <svg
           className="w-5 h-5 text-gray-600"
@@ -81,9 +117,6 @@ const AllBooksFilter = () => {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
         </svg>
       </div>
-
-      {/* Filters Section */}
-      <h2 className="text-sm font-semibold uppercase text-gray-500 mb-4">Filters</h2>
 
       {/* Search Input */}
       <div className="mb-6">
@@ -261,6 +294,19 @@ const AllBooksFilter = () => {
           </div>
         )}
       </div>
+
+      {/* Apply Filters Button - now visible on all screens */}
+      {/* It's positioned sticky at the bottom within the filter content area */}
+      <div className="mt-7 pt-4 sticky bottom-0 bg-white shadow-lg lg:shadow-none flex justify-center">
+        <button
+          onClick={handleApply}
+          className="w-full bg-blue-600 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200"
+        >
+          Apply Filters
+        </button>
+      </div>
     </div>
   );
 };
+
+export default AllBooksFilter; // Export the component directly
