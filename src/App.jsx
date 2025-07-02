@@ -1,5 +1,6 @@
 
 import { Route, Routes } from 'react-router-dom';
+import AboutUs from './pages/AboutUs';
 import AllBooks from './pages/AllBooks';
 import ContactUs from './pages/ContactUs';
 import Home from "./pages/Home";
@@ -15,6 +16,7 @@ const App = () => {
       <Route path='/AllBooks' element={<AllBooks/>} />
       <Route path='/ProductInfo' element={<ProductPage/>}/>
       <Route path='/contactus' element={<ContactUs/>}/>
+      <Route path='/aboutus' element={<AboutUs/>} />
     </Routes>
   )
 }

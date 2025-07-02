@@ -95,7 +95,7 @@ const ContactFormComponent = () => { // Renamed to avoid confusion with the page
     <div className="min-h-screen bg-white overflow-auto">
       {/* Top half with background image and overlay */}
       <div
-        className="relative h-64 md:h-80 lg:h-96 w-full bg-cover bg-center bg-no-repeat flex items-center justify-center p-4" // Corrected lg:h-100 to lg:h-96
+        className="relative h-64 md:h-80 lg:h-120 w-full bg-cover bg-center bg-no-repeat flex items-center justify-center p-4" // Corrected lg:h-100 to lg:h-96
         style={{ backgroundImage: "url('/assets/contact1.jpg')" }} // Ensure this path is correct
       >
         {/* Dark overlay */}
