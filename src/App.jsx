@@ -7,6 +7,7 @@ import Home from "./pages/Home";
 import MainBooks from './pages/MainBooks';
 import PageNotFound from './pages/PageNotFound';
 import ProductPage from './pages/ProductPage';
+import ProfileSettings from './pages/ProfileSettings';
 const App = () => {
   return (
     <Routes>
@@ -17,6 +18,7 @@ const App = () => {
       <Route path='/ProductInfo' element={<ProductPage/>}/>
       <Route path='/contactus' element={<ContactUs/>}/>
       <Route path='/aboutus' element={<AboutUs/>} />
+      <Route path='/profilesettings' element={<ProfileSettings /> }/>
     </Routes>
   )
 }
