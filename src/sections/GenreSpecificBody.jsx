@@ -1,4 +1,4 @@
-// src/sections/AllBooksBody.jsx
+// src/sections/GenreSpecificBody.jsx
 "use client"; // If using Next.js app router
 
 import React, { useState } from 'react';
@@ -6,7 +6,7 @@ import React, { useState } from 'react';
 import AllBooksFilter from '@/components/AllBooksFilter'; // Path: src/app/page.jsx -> ../sections/filter.jsx
 import BooksDisplay from '../components/CardsDisplay'; // Path: src/app/page.jsx -> ../components/CardsDisplay.jsx
 
-export default function HomePage() {
+export default function GenreSpecificBody() {
   const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false);
 
   // Function to open the filter modal
@@ -29,17 +29,6 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-White font-sans antialiased flex flex-col">
-      {/* Tailwind CSS CDN for global styles */}
-      <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
-      {/* Font for consistency */}
-      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-      <style>
-        {`
-          body {
-            font-family: 'Inter', sans-serif;
-          }
-        `}
-      </style>
 
       {/* Mobile "Filter By" Button - positioned as a fixed element on the top right */}
       {/* This button is only visible on small screens */}
@@ -61,7 +50,7 @@ export default function HomePage() {
         {/* This filter is always visible on large screens (lg and up) */}
         <aside className="hidden lg:block lg:w-1/4 lg:max-w-xs p-4 overflow-y-auto">
           {/* On desktop, the AllBooksFilter is a sidebar, so it doesn't need onClose or onApplyFilters to close itself */}
-          <AllBooksFilter onApplyFilters={handleApplyFilters} />
+          <AllBooksFilter onApplyFilters={handleApplyFilters} showCategories={false} /> {/* <-- Add this prop */}
         </aside>
 
         {/* Main Content - Books Display */}
@@ -74,7 +63,7 @@ export default function HomePage() {
       {/* This modal covers the entire screen when active on small devices */}
       {isFilterMenuOpen && (
         <div className="fixed inset-0 bg-white z-[60] overflow-y-auto flex flex-col">
-          <AllBooksFilter onClose={closeFilterMenu} onApplyFilters={handleApplyFilters} />
+          <AllBooksFilter onClose={closeFilterMenu} onApplyFilters={handleApplyFilters} showCategories={false} /> {/* <-- Add this prop */}
         </div>
       )}
     </div>

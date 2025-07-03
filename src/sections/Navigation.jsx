@@ -8,6 +8,11 @@ const Navigation = () => {
 
   const navigate = useNavigate();
 
+    const handleGoCart = () => {
+      navigate('/Cart'); // Redirects to the root of your application, which should render Home.jsx
+    };
+  
+
   const handleGoAllBooks = () => {
     navigate('/AllBooks'); // Redirects to the root of your application, which should render Home.jsx
     closePanel(); // Close the side panel when navigating
@@ -85,6 +90,7 @@ const Navigation = () => {
             <img
               src="/icons/Vector.svg"
               alt="Cart"
+              onClick={handleGoCart}
               className="w-6 h-6 cursor-pointer hover:opacity-75"
             />
             <button

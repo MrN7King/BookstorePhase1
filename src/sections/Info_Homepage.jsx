@@ -4,7 +4,7 @@ const Info_Homepage = () => {
   const mainImage = '/assets/Info_Homepage.jpg';
 
   return (
-    <section className="flex flex-col md:flex-row justify-center items-start py-10 px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 bg-white font-sans w-full max-w-6xl mx-auto">
+    <section className="flex flex-col md:flex-row justify-center items-start py-10 px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16  bg-[var(--Info-Background)] font-sans w-full max-w-6xl mx-auto">
       {/* Image Column - Centered on mobile */}
       <div className="flex justify-center mx-auto mb-8 md:mb-0 w-full max-w-[280px] sm:max-w-xs md:w-2/5 md:mr-6 lg:mr-8 flex-shrink-0">
         <img

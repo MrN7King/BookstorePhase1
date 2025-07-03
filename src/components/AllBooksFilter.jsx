@@ -2,8 +2,8 @@
 import React, { useState } from 'react';
 
 // AllBooksFilter component
-// It now accepts onClose and onApplyFilters props for mobile modal functionality
-const AllBooksFilter = ({ onClose, onApplyFilters }) => {
+// It now accepts onClose, onApplyFilters, and showCategories props
+const AllBooksFilter = ({ onClose, onApplyFilters, showCategories = true }) => { // Default to true
   // State for search query
   const [searchQuery, setSearchQuery] = useState('');
   // State for price range
@@ -260,40 +260,42 @@ const AllBooksFilter = ({ onClose, onApplyFilters }) => {
         )}
       </div>
 
-      {/* Categories Filter (collapsed by default) */}
-      <div className="mb-0">
-        <button
-          className="flex items-center justify-between w-full text-lg font-semibold text-gray-800 focus:outline-none"
-          onClick={() => toggleSection(setIsCategoriesOpen)}
-        >
-          Categories
-          <svg
-            className={`w-5 h-5 text-gray-600 transform transition-transform duration-200 ${
-              isCategoriesOpen ? 'rotate-180' : 'rotate-0'
-            }`}
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
+      {/* Categories Filter (conditionally rendered based on showCategories prop) */}
+      {showCategories && ( // <--- Add this conditional rendering
+        <div className="mb-0">
+          <button
+            className="flex items-center justify-between w-full text-lg font-semibold text-gray-800 focus:outline-none"
+            onClick={() => toggleSection(setIsCategoriesOpen)}
           >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
-          </svg>
-        </button>
-        {isCategoriesOpen && (
-          <div className="mt-4 space-y-3">
-            {categories.map((category) => (
-              <label key={category} className="flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  className="form-checkbox h-5 w-5 text-blue-600 rounded-md focus:ring-blue-500"
-                  // Add state and handler for categories if needed
-                />
-                <span className="ml-3 text-base text-gray-700">{category}</span>
-              </label>
-            ))}
-          </div>
-        )}
-      </div>
+            Categories
+            <svg
+              className={`w-5 h-5 text-gray-600 transform transition-transform duration-200 ${
+                isCategoriesOpen ? 'rotate-180' : 'rotate-0'
+              }`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+          </button>
+          {isCategoriesOpen && (
+            <div className="mt-4 space-y-3">
+              {categories.map((category) => (
+                <label key={category} className="flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    className="form-checkbox h-5 w-5 text-blue-600 rounded-md focus:ring-blue-500"
+                    // Add state and handler for categories if needed
+                  />
+                  <span className="ml-3 text-base text-gray-700">{category}</span>
+                </label>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Apply Filters Button - now visible on all screens */}
       {/* It's positioned sticky at the bottom within the filter content area */}
@@ -309,4 +311,4 @@ const AllBooksFilter = ({ onClose, onApplyFilters }) => {
   );
 };
 
-export default AllBooksFilter; // Export the component directly
+export default AllBooksFilter;
