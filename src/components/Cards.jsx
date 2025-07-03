@@ -57,9 +57,9 @@ const Card = ({ book, index, isActive, onCardClick }) => { // isActive prop is f
     // Main Card Design - Using your original classes
     <div
       className={`
-        flex-none w-[200px] sm:w-[180px] md:w-[200px] lg:w-[220px] xl:w-[220px] /* Original responsive widths */
+        flex-none w-full max-w-[200px] sm:w-[180px] md:w-[200px] lg:w-[220px] xl:w-[220px] /* Original responsive widths */
         bg-sky-400/15 rounded-xl
-        flex flex-col p-4
+        flex flex-col p-3
         transition-all duration-500 ease-out transform cursor-pointer /* Increased duration for smoother entry */
         shadow-md /* Base styling for all cards, no active/inactive branches */
         hover:scale-[1.01] hover:shadow-lg

@@ -63,7 +63,7 @@ export default function HeroSectionOne() {
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5, delay: 1.5, ease: "easeOut" }}
+            transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
             className="w-full lg:w-[55%] flex justify-center px-2 sm:px-0"
           >
             <img
