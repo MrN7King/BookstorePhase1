@@ -12,7 +12,6 @@ import CartPage from './pages/CartPage'; // Importing the ShoppingPage component
 import CheckoutDetailsPage from './pages/CheckoutDetailsPage';
 import PaymentPage from './pages/PaymentPage'; // Importing the PaymentPage component
 
-import ProductPage from './pages/ProductPage';
 const App = () => {
   return (
     <Routes>
