@@ -1,4 +1,5 @@
-import { Route, Routes } from 'react-router-dom';
+//file: frontend/src/App.jsx
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import AboutUs from './pages/AboutUs';
 import AllBooks from './pages/AllBooks';
 import CartPage from './pages/CartPage'; // Importing the ShoppingPage component
@@ -11,6 +12,9 @@ import PageNotFound from './pages/PageNotFound';
 import PaymentPage from './pages/PaymentPage'; // Importing the PaymentPage component
 import ProductPage from './pages/ProductPage';
 import ProfileSettings from './pages/ProfileSettings';
+
+import AdminMainPage from './pages/admin/adminPages/AdminMainPage.tsx'; // Importing the AdminDashboard component
+
 const App = () => {
   return (
     <Routes>
@@ -28,6 +32,8 @@ const App = () => {
       <Route path='/contactus' element={<ContactUs/>}/>
       <Route path='/aboutus' element={<AboutUs/>} />
       <Route path='/profilesettings' element={<ProfileSettings /> }/>
+      {/* Admin pages */}
+      <Route path='/admin/*' element={<AdminMainPage />} />
     </Routes>
   )
 }

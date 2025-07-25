@@ -3,18 +3,6 @@ layer(base);
 
 @import "tailwindcss";
 
-:root {
-  --cta-color: #22C55E;
-  --Hero-Background : #F8FAFC;
-  --Primary-Text : #0F172A;
-  --Accent-text : #38BDF8;
-  --Accent-hover : #62c6f1;
-  --text-color: #111827;
-   --Info-Background : #ECEFF1;
-}
-
-
-
 @custom-variant dark (&:is(.dark *));
 
 @theme {
