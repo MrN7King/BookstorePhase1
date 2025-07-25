@@ -1,10 +1,33 @@
-"use client"; // Important for Next.js App Router as we use useState
+"use client";
 
-import { useEffect, useState } from 'react'; // Import lazy and Suspense
-import { FooterWithSitemap } from '../sections/Footer';
-import Navigation from '../sections/Navigation';
+import axios from 'axios';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { FooterWithSitemap } from '../sections/Footer'; // Adjust path as needed
+import Navigation from '../sections/Navigation'; // Adjust path as needed
 
-const InputField = ({ label, type, id, value, onChange, placeholder, className = '', isRequired = false, readOnly = false }) => (
+// Ensure axios sends cookies with requests
+axios.defaults.withCredentials = true;
+const USER_API_BASE_URL = "http://localhost:5000/api/user"; // Corrected to /api/user for profile data
+const AUTH_API_BASE_URL = "http://localhost:5000/api/auth"; // Corrected to /api/auth for logout
+
+// Utility function to generate avatar color (copied from Navigation.jsx for self-containment)
+const generateAvatarColor = (email) => {
+  if (!email) return '#cccccc';
+  let hash = 0;
+  for (let i = 0; i < email.length; i++) {
+    hash = email.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  let color = '#';
+  for (let i = 0; i < 3; i++) {
+    const value = (hash >> (i * 8)) & 0xFF;
+    color += ('00' + value.toString(16)).substr(-2);
+  }
+  return color;
+};
+
+// Reusable InputField component - UPDATED to accept errorMessage
+const InputField = ({ label, type, id, value, onChange, placeholder, className = '', isRequired = false, readOnly = false, errorMessage = '' }) => (
   <div className={`mb-4 ${className}`}>
     <label htmlFor={id} className="block text-gray-700 text-sm font-semibold mb-2">
       {label} {isRequired && <span className="text-red-500">*</span>}
@@ -12,17 +35,18 @@ const InputField = ({ label, type, id, value, onChange, placeholder, className =
     <input
       type={type}
       id={id}
-      className={`shadow-sm appearance-none border border-gray-200 rounded-lg w-full py-2.5 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm placeholder:text-gray-400 ${readOnly ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+      className={`shadow-sm appearance-none border ${errorMessage ? 'border-red-500' : 'border-gray-200'} rounded-lg w-full py-2.5 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm placeholder:text-gray-400 ${readOnly ? 'bg-gray-100 cursor-not-allowed' : ''}`}
       placeholder={placeholder}
       value={value}
       onChange={onChange}
       required={isRequired}
       readOnly={readOnly}
     />
+    {errorMessage && <p className="text-red-500 text-xs italic mt-1">{errorMessage}</p>}
   </div>
 );
 
-// --- Profile Sidebar Component ---
+// --- Profile Sidebar Component (No changes here) ---
 const ProfileSidebar = ({ activeSection, setActiveSection, isMobileNavOpen, onMobileNavLinkClick }) => {
   const navItems = [
     { id: 'personal-info', label: 'Personal Info', icon: (
@@ -95,15 +119,25 @@ const ProfileSidebar = ({ activeSection, setActiveSection, isMobileNavOpen, onMo
 
 // --- Individual Section Components ---
 
-const ProfilePictureSection = ({ profileImage, handleProfileImageChange }) => (
+const ProfilePictureSection = ({ profileImage, handleProfileImageChange, userEmail }) => (
   <div className="mb-8 border-b pb-6">
     <h2 className="text-xl md:text-2xl font-semibold text-gray-800 mb-4">Profile Picture</h2>
     <div className="flex flex-col items-center gap-4">
-      <img
-        src={"./assets/user1.png"}
-        alt="Profile"
-        className="w-24 h-24 md:w-32 md:h-32 rounded-full object-cover border-4 border-blue-200 shadow-md"
-      />
+      {profileImage ? ( // If a profileImage URL is set (from upload or fetched from backend)
+        <img
+          src={profileImage}
+          alt="Profile"
+          className="w-24 h-24 md:w-32 md:h-32 rounded-full object-cover border-4 border-blue-200 shadow-md"
+        />
+      ) : ( // Otherwise, display the generated color avatar
+        <div
+          className="w-24 h-24 md:w-32 md:h-32 rounded-full flex items-center justify-center text-white font-bold text-4xl border-4 border-blue-200 shadow-md"
+          style={{ backgroundColor: generateAvatarColor(userEmail) }}
+          title={userEmail}
+        >
+          {userEmail ? userEmail.charAt(0).toUpperCase() : ''}
+        </div>
+      )}
       <label htmlFor="profileImage" className="cursor-pointer bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200 text-sm md:text-base">
         Upload New Image
         <input
@@ -115,11 +149,18 @@ const ProfilePictureSection = ({ profileImage, handleProfileImageChange }) => (
         />
       </label>
       <p className="text-xs md:text-sm text-gray-500 mt-1">Max file size: 5MB. JPG, PNG, GIF allowed.</p>
+      {/* NOTE: For persistent profile pictures, you would need a backend endpoint
+                 to handle file uploads (e.g., using Multer) and store the image
+                 (e.g., on AWS S3, Google Cloud Storage, or a local server path).
+                 The URL to this stored image would then be saved in your User model
+                 and fetched when the profile loads. This frontend only handles
+                 temporary display of an uploaded image. */}
     </div>
   </div>
 );
 
-const PersonalInfoSection = ({ personalInfo, handlePersonalInfoChange }) => (
+// PersonalInfoSection - UPDATED to accept and pass errors
+const PersonalInfoSection = ({ personalInfo, handlePersonalInfoChange, personalInfoErrors }) => (
   <div className=" pb-6">
     <h2 className="text-xl md:text-2xl font-semibold text-gray-800 mb-4">Personal Information</h2>
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -131,6 +172,7 @@ const PersonalInfoSection = ({ personalInfo, handlePersonalInfoChange }) => (
         onChange={handlePersonalInfoChange}
         placeholder="John"
         isRequired={true}
+        errorMessage={personalInfoErrors.firstName}
       />
       <InputField
         label="Last Name"
@@ -140,6 +182,7 @@ const PersonalInfoSection = ({ personalInfo, handlePersonalInfoChange }) => (
         onChange={handlePersonalInfoChange}
         placeholder="Doe"
         isRequired={false}
+        errorMessage={personalInfoErrors.lastName}
       />
       <InputField
         label="Email Address"
@@ -149,7 +192,8 @@ const PersonalInfoSection = ({ personalInfo, handlePersonalInfoChange }) => (
         onChange={handlePersonalInfoChange}
         placeholder="john.doe@example.com"
         isRequired={true}
-        readOnly={true}
+        readOnly={true} // Email is read-only as it's the primary identifier
+        errorMessage={personalInfoErrors.email}
       />
       <InputField
         label="Phone Number"
@@ -159,6 +203,7 @@ const PersonalInfoSection = ({ personalInfo, handlePersonalInfoChange }) => (
         onChange={handlePersonalInfoChange}
         placeholder="+94 77 777 7777"
         isRequired={false}
+        errorMessage={personalInfoErrors.phone}
       />
     </div>
     <div className="mb-4">
@@ -167,7 +212,8 @@ const PersonalInfoSection = ({ personalInfo, handlePersonalInfoChange }) => (
   </div>
 );
 
-const PasswordSecuritySection = ({ passwordInfo, handlePasswordInfoChange }) => (
+// PasswordSecuritySection - UPDATED to accept and pass errors
+const PasswordSecuritySection = ({ passwordInfo, handlePasswordInfoChange, passwordErrors }) => (
   <div className=" pb-6">
     <h2 className="text-xl md:text-2xl font-semibold text-gray-800 mb-4">Security & Password</h2>
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -179,6 +225,7 @@ const PasswordSecuritySection = ({ passwordInfo, handlePasswordInfoChange }) => 
         onChange={handlePasswordInfoChange}
         placeholder="********"
         isRequired={false}
+        errorMessage={passwordErrors.currentPassword}
       />
       <div className="col-span-1"></div> {/* Spacer for layout */}
       <InputField
@@ -189,6 +236,7 @@ const PasswordSecuritySection = ({ passwordInfo, handlePasswordInfoChange }) => 
         onChange={handlePasswordInfoChange}
         placeholder="********"
         isRequired={false}
+        errorMessage={passwordErrors.newPassword}
       />
       <InputField
         label="Confirm New Password"
@@ -198,6 +246,7 @@ const PasswordSecuritySection = ({ passwordInfo, handlePasswordInfoChange }) => 
         onChange={handlePasswordInfoChange}
         placeholder="********"
         isRequired={false}
+        errorMessage={passwordErrors.confirmNewPassword}
       />
     </div>
     <p className="text-xs md:text-sm text-gray-500 mt-2">Leave password fields blank if you don't want to change it.</p>
@@ -248,8 +297,7 @@ const PaymentMethodsSection = ({ paymentMethods, handleEditPaymentMethod, handle
     </div>
 );
 
-// --- New: My Books Section with Lazy Loading ---
-// Added onViewDetailsClick prop
+// --- My Books Section with Lazy Loading ---
 const MyBooksSection = ({ books, onViewDetailsClick }) => {
   const [isLoading, setIsLoading] = useState(true);
 
@@ -303,8 +351,7 @@ const MyBooksSection = ({ books, onViewDetailsClick }) => {
   );
 };
 
-// --- New: My Premium Accounts Section with Lazy Loading ---
-// Added onManageClick prop
+// --- My Premium Accounts Section with Lazy Loading ---
 const MyPremiumAccountsSection = ({ premiumAccounts, onManageClick }) => {
   const [isLoading, setIsLoading] = useState(true);
 
@@ -428,19 +475,41 @@ const NotificationSettingsSection = ({ notificationSettings, handleNotificationC
 );
 
 // --- Account Management Section (now includes Notification Settings) ---
-const AccountManagementSection = ({ handleDeactivateAccount, notificationSettings, handleNotificationChange }) => (
+const AccountManagementSection = ({ handleDeactivateAccount, notificationSettings, handleNotificationChange, showDeactivationConfirm, confirmDeactivation, cancelDeactivation }) => (
     <div className="mb-8 pb-6">
         <h2 className="text-xl md:text-2xl font-semibold text-gray-800 mb-4">Delete Account</h2>
         <div className="p-4 border border-gray-200 rounded-lg bg-red-50 text-red-800">
             <p className="font-medium mb-2 text-sm md:text-base">Deactivate Account</p>
             <p className="text-xs md:text-sm">Permanently close your account and delete your data. This action cannot be undone.</p>
-            <button
-              type="button"
-              onClick={handleDeactivateAccount}
-              className="mt-4 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 text-sm font-medium"
-            >
-                Deactivate Account
-            </button>
+            {!showDeactivationConfirm ? (
+                <button
+                    type="button"
+                    onClick={handleDeactivateAccount}
+                    className="mt-4 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 text-sm font-medium"
+                >
+                    Deactivate Account
+                </button>
+            ) : (
+                <div className="mt-4 p-3 bg-red-100 rounded-md">
+                    <p className="text-sm font-medium mb-2">Are you absolutely sure? This cannot be undone.</p>
+                    <div className="flex gap-3">
+                        <button
+                            type="button"
+                            onClick={confirmDeactivation}
+                            className="bg-red-700 text-white px-4 py-2 rounded-lg hover:bg-red-800 text-sm font-medium"
+                        >
+                            Yes, Deactivate
+                        </button>
+                        <button
+                            type="button"
+                            onClick={cancelDeactivation}
+                            className="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-400 text-sm font-medium"
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
 
         {/* Notification Settings integrated here */}
@@ -455,15 +524,16 @@ const AccountManagementSection = ({ handleDeactivateAccount, notificationSetting
 // --- Profile Content Area Component ---
 const ProfileContentArea = ({
   activeSection,
-  personalInfo, handlePersonalInfoChange,
-  passwordInfo, handlePasswordInfoChange,
-  profileImage, handleProfileImageChange,
+  personalInfo, handlePersonalInfoChange, personalInfoErrors, // Pass personalInfoErrors
+  passwordInfo, handlePasswordInfoChange, passwordErrors, // Pass passwordErrors
+  profileImage, handleProfileImageChange, userEmail, // Pass userEmail for avatar
   notificationSettings, handleNotificationChange,
   paymentMethods, handleEditPaymentMethod, handleRemovePaymentMethod, handleAddPaymentMethod,
   digitalProducts, // This prop now contains books and premiumAccounts separately
   handleDeactivateAccount,
   handleViewBookDetails, // New prop
-  handleViewPremiumDetails // New prop
+  handleViewPremiumDetails, // New prop
+  showDeactivationConfirm, confirmDeactivation, cancelDeactivation // Pass confirmation props
 }) => {
   return (
     <div className="flex-grow p-4 md:p-8 bg-white rounded-lg shadow-md overflow-y-auto">
@@ -473,10 +543,12 @@ const ProfileContentArea = ({
           <ProfilePictureSection
             profileImage={profileImage}
             handleProfileImageChange={handleProfileImageChange}
+            userEmail={userEmail} // Pass userEmail to ProfilePictureSection
           />
           <PersonalInfoSection
             personalInfo={personalInfo}
             handlePersonalInfoChange={handlePersonalInfoChange}
+            personalInfoErrors={personalInfoErrors} // Pass personalInfoErrors
           />
         </>
       )}
@@ -484,6 +556,7 @@ const ProfileContentArea = ({
         <PasswordSecuritySection
           passwordInfo={passwordInfo}
           handlePasswordInfoChange={handlePasswordInfoChange}
+          passwordErrors={passwordErrors} // Pass passwordErrors
         />
       )}
       {activeSection === 'payment-methods' && (
@@ -512,6 +585,9 @@ const ProfileContentArea = ({
             handleDeactivateAccount={handleDeactivateAccount}
             notificationSettings={notificationSettings}
             handleNotificationChange={handleNotificationChange}
+            showDeactivationConfirm={showDeactivationConfirm} // Pass confirmation state
+            confirmDeactivation={confirmDeactivation}         // Pass confirm handler
+            cancelDeactivation={cancelDeactivation}           // Pass cancel handler
         />
       )}
     </div>
@@ -567,7 +643,7 @@ const PremiumAccountDetailsOverlay = ({ account, onClose }) => {
         </button>
         <h2 className="text-2xl font-bold text-gray-900 mb-4">{account.service}</h2>
         <p className="text-gray-700 mb-2"><strong>Status:</strong> {account.status}</p>
-        <p className="text-gray-700 mb-2"><strong>Renewal Date:</strong> {account.renewalDate}</p>
+        <p className="text-700 mb-2"><strong>Renewal Date:</strong> {account.renewalDate}</p>
         <p className="text-gray-700 mb-4">
           <strong>Benefits:</strong> Access to exclusive content, ad-free experience, priority support, and early access to new features.
         </p>
@@ -588,6 +664,7 @@ const PremiumAccountDetailsOverlay = ({ account, onClose }) => {
 
 // --- The main ProfileSettingsPage component ---
 const ProfileSettingsPage = () => {
+  const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState('personal-info'); // Default active section
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false); // State for mobile navigation visibility
 
@@ -601,11 +678,10 @@ const ProfileSettingsPage = () => {
 
   // All state management for form data and settings
   const [personalInfo, setPersonalInfo] = useState({
-    firstName: 'John',
-    lastName: 'Doe',
-    email: 'john.doe@example.com',
-    phone: '+94 77 777 7777',
-    
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
   });
 
   const [passwordInfo, setPasswordInfo] = useState({
@@ -614,8 +690,23 @@ const ProfileSettingsPage = () => {
     confirmNewPassword: ''
   });
 
-  const [profileImage, setProfileImage] = useState('/assets/default-avatar.png');
-  const [profileImageFile, setProfileImageFile] = useState(null);
+  // NEW: State for field-specific errors
+  const [personalInfoErrors, setPersonalInfoErrors] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+  });
+
+  const [passwordErrors, setPasswordErrors] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmNewPassword: ''
+  });
+
+  // profileImage will hold the Data URL for display, profileImageFile holds the actual File object
+  const [profileImage, setProfileImage] = useState(null); // Initialize to null so avatar logic kicks in
+  const [profileImageFile, setProfileImageFile] = useState(null); // For actual file upload
 
   const [notificationSettings, setNotificationSettings] = useState({
     orderUpdates: true,
@@ -643,9 +734,72 @@ const ProfileSettingsPage = () => {
     ]
   });
 
-  const [statusMessage, setStatusMessage] = useState('');
-  const [isSuccess, setIsSuccess] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  // Status messages for the main "Save Changes" button
+  const [mainStatusMessage, setMainStatusMessage] = useState('');
+  const [mainIsSuccess, setMainIsSuccess] = useState(false);
+  const [mainIsSubmitting, setMainIsSubmitting] = useState(false);
+
+  // State for deactivation confirmation
+  const [showDeactivationConfirm, setShowDeactivationConfirm] = useState(false);
+
+
+  // --- Data Fetching (useEffect) ---
+  useEffect(() => {
+    const fetchUserData = async () => {
+      setMainIsSubmitting(true); // Indicate loading state for the page
+      setMainStatusMessage('');
+      try {
+        const response = await axios.get(`${AUTH_API_BASE_URL}/data`, {
+          withCredentials: true,
+        });
+        if (response.data.success && response.data.user) {
+          const user = response.data.user;
+          setPersonalInfo({
+            firstName: user.firstName || '',
+            lastName: user.lastName || '',
+            email: user.email || '',
+            phone: user.phone || '', // Include phone from backend
+          });
+          // Set initial notification settings if they exist on the user object
+          // For now, assuming default values or fetching from a separate endpoint
+          if (user.notificationSettings) { // If your user model stores notification settings
+            setNotificationSettings(user.notificationSettings);
+          }
+          // If user has a profile picture URL stored in backend, set it here
+          // Example: if (user.profilePictureUrl) setProfileImage(user.profilePictureUrl);
+
+          // You would also fetch payment methods, books, premium accounts from backend here
+          // For now, keeping dummy data for these sections
+        } else {
+          setMainStatusMessage(response.data.message || 'Failed to fetch user data. Please log in again.');
+          setMainIsSuccess(false);
+          // Redirect to login if data fetch fails (e.g., unauthorized)
+          navigate('/login');
+        }
+      } catch (error) {
+        console.error("Error fetching user data for profile:", error.response?.data || error.message);
+        setMainStatusMessage(error.response?.data?.message || 'Failed to fetch user data. Please log in again.');
+        setMainIsSuccess(false);
+        // Redirect to login if unauthorized
+        if (error.response?.status === 401) {
+          navigate('/login');
+        }
+      } finally {
+        setMainIsSubmitting(false); // End loading state
+      }
+    };
+
+    fetchUserData();
+  }, [navigate]); // navigate is a dependency for useCallback stability
+
+  // NEW: Clear status messages and field errors when activeSection changes
+  useEffect(() => {
+    setMainStatusMessage('');
+    setMainIsSuccess(false);
+    setPersonalInfoErrors({ firstName: '', lastName: '', email: '', phone: '' });
+    setPasswordErrors({ currentPassword: '', newPassword: '', confirmNewPassword: '' });
+  }, [activeSection]);
+
 
   // Handler to toggle mobile navigation
   const toggleMobileNav = () => {
@@ -674,16 +828,19 @@ const ProfileSettingsPage = () => {
     setSelectedPremiumAccount(null);
   };
 
-
-  // Handlers for input
+  // Handlers for input changes
   const handlePersonalInfoChange = (e) => {
     const { id, value } = e.target;
     setPersonalInfo(prev => ({ ...prev, [id]: value }));
+    // Clear specific error message when user starts typing
+    setPersonalInfoErrors(prev => ({ ...prev, [id]: '' }));
   };
 
   const handlePasswordInfoChange = (e) => {
     const { id, value } = e.target;
     setPasswordInfo(prev => ({ ...prev, [id]: value }));
+    // Clear specific error message when user starts typing
+    setPasswordErrors(prev => ({ ...prev, [id]: '' }));
   };
 
   const handleNotificationChange = (e) => {
@@ -694,95 +851,277 @@ const ProfileSettingsPage = () => {
   const handleProfileImageChange = (e) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      // Basic validation for file size and type
       if (file.size > 5 * 1024 * 1024) { // 5MB limit
-        // Replaced alert with console.error as per instructions
-        console.error('File size exceeds 5MB limit.');
-        setStatusMessage('File size exceeds 5MB limit.');
-        setIsSuccess(false);
+        setMainStatusMessage('File size exceeds 5MB limit.');
+        setMainIsSuccess(false);
         return;
       }
       if (!['image/jpeg', 'image/png', 'image/gif'].includes(file.type)) {
-        // Replaced alert with console.error as per instructions
-        console.error('Only JPG, PNG, GIF formats are allowed.');
-        setStatusMessage('Only JPG, PNG, GIF formats are allowed.');
-        setIsSuccess(false);
+        setMainStatusMessage('Only JPG, PNG, GIF formats are allowed.');
+        setMainIsSuccess(false);
         return;
       }
 
       setProfileImageFile(file);
       const reader = new FileReader();
       reader.onload = (e) => {
-        setProfileImage(e.target.result);
+        setProfileImage(e.target.result); // Set the Data URL for immediate display
       };
       reader.readAsDataURL(file);
+      // NOTE: For persistent profile pictures, you would send 'file' to a backend upload endpoint here.
+      // Example: uploadProfileImage(file);
     }
   };
 
   const handleEditPaymentMethod = (id) => {
-    // Replaced alert with console.log as per instructions
     console.log(`Edit payment method: ${id}`);
     // In a real app, this would open a modal or navigate to an edit page
+    setMainStatusMessage('Edit payment method functionality not yet implemented.');
+    setMainIsSuccess(false);
   };
 
+  // Custom confirmation for removing payment method
   const handleRemovePaymentMethod = (id) => {
-    // Replaced window.confirm with a custom modal UI or a different approach for production
-    // For this example, we'll keep it as is, but note the instruction to avoid window.confirm
+    // Replace with custom modal if needed, for now using simple confirmation
     if (window.confirm('Are you sure you want to remove this payment method?')) {
-      setPaymentMethods(prev => prev.filter(method => method.id !== id));
-      setStatusMessage('Payment method removed successfully.');
-      setIsSuccess(true);
+        setPaymentMethods(prev => prev.filter(method => method.id !== id));
+        setMainStatusMessage('Payment method removed successfully.');
+        setMainIsSuccess(true);
     }
   };
 
   const handleAddPaymentMethod = () => {
-    // Replaced alert with console.log as per instructions
     console.log('Add new payment method functionality.');
-    // In a real app, this would open a form to add a new method
+    setMainStatusMessage('Add new payment method functionality not yet implemented.');
+    setMainIsSuccess(false);
   };
 
+  // Custom confirmation for deactivating account
   const handleDeactivateAccount = () => {
-    // Replaced window.confirm with a custom modal UI or a different approach for production
-    // For this example, we'll keep it as is, but note the instruction to avoid window.confirm
-    if (window.confirm('Are you sure you want to deactivate your account? This action cannot be undone.')) {
-      setIsSubmitting(true);
-      // Simulate API call
-      setTimeout(() => {
-        console.log('Account Deactivation Request Sent');
-        setStatusMessage('Your account deactivation request has been submitted. You will receive an email shortly.');
-        setIsSuccess(true);
-        setIsSubmitting(false);
-        // Redirect or log out user after deactivation
-      }, 1500);
-    }
+    setShowDeactivationConfirm(true); // Show confirmation UI
   };
 
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    setStatusMessage('');
-    setIsSuccess(false);
+  const confirmDeactivation = async () => {
+    setShowDeactivationConfirm(false); // Hide confirmation
+    setMainIsSubmitting(true);
+    setMainStatusMessage('');
+    setMainIsSuccess(false);
 
     try {
-      // Simulate API call for saving settings
-      await new Promise(resolve => setTimeout(resolve, 1500));
+        // Backend API call to delete the account
+        const response = await axios.delete(`${USER_API_BASE_URL}/delete-account`, {
+            withCredentials: true,
+        });
 
-      console.log('Personal Info:', personalInfo);
-      console.log('Password Info:', passwordInfo);
-      console.log('Notification Settings:', notificationSettings);
-      console.log('Profile Image File:', profileImageFile);
-
-      setStatusMessage('Your settings have been updated successfully!');
-      setIsSuccess(true);
+        if (response.data.success) {
+            setMainStatusMessage('Your account has been successfully deleted. Redirecting to home page...');
+            setMainIsSuccess(true);
+            // Log user out by clearing cookie (backend handles this on successful deletion)
+            setTimeout(() => {
+                navigate('/'); // Redirect to home page
+            }, 2000);
+        } else {
+            setMainStatusMessage(response.data.message || 'Failed to delete account. Please try again.');
+            setMainIsSuccess(false);
+        }
     } catch (error) {
-      console.error('Failed to update settings:', error);
-      setStatusMessage('Failed to update settings. Please try again.');
-      setIsSuccess(false);
+        console.error('Account deletion error:', error.response?.data || error.message);
+        setMainStatusMessage(error.response?.data?.message || 'An error occurred while deleting account.');
+        setMainIsSuccess(false);
     } finally {
-      setIsSubmitting(false);
+        setMainIsSubmitting(false);
     }
   };
+
+  const cancelDeactivation = () => {
+    setShowDeactivationConfirm(false); // Hide confirmation
+    setMainStatusMessage('Account deactivation cancelled.');
+    setMainIsSuccess(false);
+  };
+
+  // --- Main Save Changes Handler (for Personal Info and Notification Settings) ---
+  const handleSaveChanges = async (e) => {
+    e.preventDefault();
+    setMainIsSubmitting(true);
+    setMainStatusMessage('');
+    setMainIsSuccess(false);
+    setPersonalInfoErrors({ firstName: '', lastName: '', email: '', phone: '' }); // Clear previous errors
+
+    try {
+      // Send personal info updates
+      const profileResponse = await axios.put(`${USER_API_BASE_URL}/update-profile`, {
+        firstName: personalInfo.firstName,
+        lastName: personalInfo.lastName,
+        email: personalInfo.email,
+        phone: personalInfo.phone // Include phone if it's part of your user model
+      }, { withCredentials: true });
+
+      if (!profileResponse.data.success) {
+        // If backend sends specific errors, you'd parse them here.
+        // For now, if the message is generic, it will show as mainStatusMessage.
+        // If it's email conflict, we can set email error.
+        if (profileResponse.data.message && profileResponse.data.message.includes('email is already registered')) {
+          setPersonalInfoErrors(prev => ({ ...prev, email: profileResponse.data.message }));
+        } else {
+          setMainStatusMessage(profileResponse.data.message || 'Failed to update personal info.');
+        }
+        setMainIsSuccess(false);
+        return; // Stop execution if personal info update failed
+      }
+
+      // If you had a separate endpoint for notification settings, you'd call it here
+      // Example: await axios.put(`${USER_API_BASE_URL}/update-notifications`, notificationSettings, { withCredentials: true });
+
+      setMainStatusMessage('Your profile settings have been updated successfully!');
+      setMainIsSuccess(true);
+      // Update local personalInfo state with any data returned from backend (e.g., if email was normalized)
+      setPersonalInfo(prev => ({
+        ...prev,
+        firstName: profileResponse.data.user.firstName,
+        lastName: profileResponse.data.user.lastName,
+        email: profileResponse.data.user.email,
+        // Update phone if returned by backend
+        phone: profileResponse.data.user.phone || prev.phone
+      }));
+
+      // Handle profile image upload if a new file is selected
+      if (profileImageFile) {
+        const formData = new FormData();
+        formData.append('profileImage', profileImageFile);
+        // NOTE: This requires a backend route and file upload middleware (e.g., Multer)
+        // Example: await axios.post(`${USER_API_BASE_URL}/upload-profile-image`, formData, {
+        //   headers: { 'Content-Type': 'multipart/form-data' },
+        //   withCredentials: true,
+        // });
+        setMainStatusMessage(prev => prev + ' (Image upload simulated - backend storage needed)');
+      }
+
+    } catch (error) {
+      console.error('Failed to update settings:', error.response?.data || error.message);
+      setMainStatusMessage(error.response?.data?.message || 'Failed to update settings. Please try again.');
+      setMainIsSuccess(false);
+    } finally {
+      setMainIsSubmitting(false);
+    }
+  };
+
+  // --- Change Password Handler ---
+  const handleChangePasswordSubmit = async (e) => {
+    e.preventDefault();
+    setMainIsSubmitting(true); // Use main submitting state for consistency
+    setMainStatusMessage(''); // Clear main status message
+    setMainIsSuccess(false);
+    setPasswordErrors({ currentPassword: '', newPassword: '', confirmNewPassword: '' }); // Clear previous errors
+
+    // Client-side validation for required fields
+    if (!passwordInfo.currentPassword || !passwordInfo.newPassword || !passwordInfo.confirmNewPassword) {
+        // Set specific errors for missing fields
+        setPasswordErrors(prev => ({
+            currentPassword: !passwordInfo.currentPassword ? 'Current password is required.' : '',
+            newPassword: !passwordInfo.newPassword ? 'New password is required.' : '',
+            confirmNewPassword: !passwordInfo.confirmNewPassword ? 'Confirm new password is required.' : '',
+        }));
+        setMainIsSuccess(false); // Indicate failure
+        setMainIsSubmitting(false);
+        return;
+    }
+
+    // Client-side validation for password match
+    if (passwordInfo.newPassword !== passwordInfo.confirmNewPassword) {
+      setPasswordErrors(prev => ({ ...prev, newPassword: 'Passwords do not match.', confirmNewPassword: 'Passwords do not match.' }));
+      setMainIsSuccess(false);
+      setMainIsSubmitting(false);
+      return;
+    }
+
+    // Client-side validation for password length
+    if (passwordInfo.newPassword.length < 8) {
+      setPasswordErrors(prev => ({ ...prev, newPassword: 'New password must be at least 8 characters long.' }));
+      setMainIsSuccess(false);
+      setMainIsSubmitting(false);
+      return;
+    }
+
+    // Client-side validation for new password being same as current
+    if (passwordInfo.newPassword === passwordInfo.currentPassword) {
+      setPasswordErrors(prev => ({ ...prev, newPassword: 'New password cannot be the same as the current password.' }));
+      setMainIsSuccess(false);
+      setMainIsSubmitting(false);
+      return;
+    }
+
+    try {
+      const response = await axios.put(`${USER_API_BASE_URL}/change-password`, {
+        currentPassword: passwordInfo.currentPassword,
+        newPassword: passwordInfo.newPassword,
+        confirmNewPassword: passwordInfo.confirmNewPassword,
+      }, {
+        withCredentials: true,
+      });
+
+      if (response.data.success) {
+        setMainStatusMessage('Password changed successfully! You will be logged out shortly.');
+        setMainIsSuccess(true);
+        // Clear password fields
+        setPasswordInfo({ currentPassword: '', newPassword: '', confirmNewPassword: '' });
+        // Redirect to login after a short delay to allow cookie to clear
+        setTimeout(() => {
+          navigate('/login');
+        }, 2000);
+      } else {
+        // Backend error messages for password change are quite specific, map them
+        const backendMessage = response.data.message || 'Failed to change password.';
+        if (backendMessage.includes('Incorrect current password')) {
+          setPasswordErrors(prev => ({ ...prev, currentPassword: backendMessage }));
+        } else if (backendMessage.includes('New password must be at least 8 characters long')) {
+          setPasswordErrors(prev => ({ ...prev, newPassword: backendMessage }));
+        } else if (backendMessage.includes('New password and confirmation do not match')) {
+          setPasswordErrors(prev => ({ ...prev, newPassword: backendMessage, confirmNewPassword: backendMessage }));
+        } else if (backendMessage.includes('New password cannot be the same as the current password')) {
+          setPasswordErrors(prev => ({ ...prev, newPassword: backendMessage }));
+        } else {
+          // Fallback for any other unexpected backend errors
+          setMainStatusMessage(backendMessage);
+        }
+        setMainIsSuccess(false);
+      }
+    } catch (error) {
+      console.error("Error changing password:", error.response?.data || error.message);
+      const errorMessage = error.response?.data?.message || 'An error occurred while changing password.';
+      // Attempt to map common error messages to specific fields
+      if (errorMessage.includes('Incorrect current password')) {
+        setPasswordErrors(prev => ({ ...prev, currentPassword: errorMessage }));
+      } else if (errorMessage.includes('New password must be at least 8 characters long')) {
+        setPasswordErrors(prev => ({ ...prev, newPassword: errorMessage }));
+      } else if (errorMessage.includes('New password and confirmation do not match')) {
+        setPasswordErrors(prev => ({ ...prev, newPassword: errorMessage, confirmNewPassword: errorMessage }));
+      } else if (errorMessage.includes('New password cannot be the same as the current password')) {
+        setPasswordErrors(prev => ({ ...prev, newPassword: errorMessage }));
+      } else {
+        setMainStatusMessage(errorMessage); // Display as general message if not specific
+      }
+      setMainIsSuccess(false);
+    } finally {
+      setMainIsSubmitting(false);
+    }
+  };
+
+
+  // Render loading state for initial data fetch
+  if (mainIsSubmitting && mainStatusMessage === '') { // Only show loading if no error message yet
+    return (
+      <>
+        <Navigation />
+        <div className="min-h-screen flex items-center justify-center bg-gray-100">
+          <p className="text-gray-700">Loading profile data...</p>
+        </div>
+        <FooterWithSitemap />
+      </>
+    );
+  }
+
+  // The full-screen error rendering block has been removed.
+  // Errors from initial fetch will now be displayed by the mainStatusMessage logic below.
 
   return (
     <>
@@ -804,7 +1143,7 @@ const ProfileSettingsPage = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16m-7 6h7"></path>
               </svg>
             </button>
-              </div>
+          </div>
 
           <div className="flex flex-col md:flex-row gap-6">
             <ProfileSidebar
@@ -813,15 +1152,19 @@ const ProfileSettingsPage = () => {
               isMobileNavOpen={isMobileNavOpen}
               onMobileNavLinkClick={toggleMobileNav} // Pass the toggle function
             />
-            <form onSubmit={handleSubmit} className="flex-grow">
+            {/* The form now wraps only the content area that needs to be submitted */}
+            <div className="flex-grow"> {/* This div replaces the form for layout purposes */}
               <ProfileContentArea
                 activeSection={activeSection}
                 personalInfo={personalInfo}
                 handlePersonalInfoChange={handlePersonalInfoChange}
+                personalInfoErrors={personalInfoErrors} // Pass personalInfoErrors
                 passwordInfo={passwordInfo}
                 handlePasswordInfoChange={handlePasswordInfoChange}
+                passwordErrors={passwordErrors} // Pass passwordErrors
                 profileImage={profileImage}
                 handleProfileImageChange={handleProfileImageChange}
+                userEmail={personalInfo.email} // Pass user's email for avatar generation
                 notificationSettings={notificationSettings}
                 handleNotificationChange={handleNotificationChange}
                 paymentMethods={paymentMethods}
@@ -830,26 +1173,39 @@ const ProfileSettingsPage = () => {
                 handleAddPaymentMethod={handleAddPaymentMethod}
                 digitalProducts={digitalProducts}
                 handleDeactivateAccount={handleDeactivateAccount}
-                handleViewBookDetails={handleViewBookDetails} // Pass new handler
-                handleViewPremiumDetails={handleViewPremiumDetails} // Pass new handler
+                handleViewBookDetails={handleViewBookDetails}
+                handleViewPremiumDetails={handleViewPremiumDetails}
+                showDeactivationConfirm={showDeactivationConfirm}
+                confirmDeactivation={confirmDeactivation}
+                cancelDeactivation={cancelDeactivation}
               />
 
-              {statusMessage && (
-                <div className={`mt-6 p-3 rounded-lg text-center text-sm font-medium ${isSuccess ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                  {statusMessage}
+              {/* Display mainStatusMessage here, as a smaller alert */}
+              {mainStatusMessage && (
+                (mainIsSuccess || // Always show success messages
+                 (activeSection === 'security' && Object.values(passwordErrors).every(err => !err)) || // Show error if security section and no specific password errors
+                 (activeSection === 'personal-info' && Object.values(personalInfoErrors).every(err => !err)) || // Show error if personal info section and no specific personal info errors
+                 (activeSection !== 'security' && activeSection !== 'personal-info') // Show error for other sections (e.g., initial fetch, account management)
+                ) &&
+                <div className={`mt-6 p-3 rounded-lg text-center text-sm font-medium ${mainIsSuccess ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                  {mainStatusMessage}
                 </div>
               )}
-
-              <div className="mt-8 pt-6 border-t border-gray-200 flex justify-end">
-                <button
-                  type="submit"
-                  className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-6 rounded-lg shadow-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed text-base"
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? 'Saving...' : 'Save Changes'}
-                </button>
-              </div>
-            </form>
+              
+              {/* Only show "Save Changes" button for sections that modify profile data */}
+              {(activeSection === 'personal-info' || activeSection === 'security' || activeSection === 'account-management') && (
+                <div className="mt-8 pt-6 border-t border-gray-200 flex justify-end">
+                  <button
+                    type="button" // Changed to type="button" as the form is now split
+                    onClick={activeSection === 'security' ? handleChangePasswordSubmit : handleSaveChanges}
+                    className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-6 rounded-lg shadow-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed text-base"
+                    disabled={mainIsSubmitting}
+                  >
+                    {mainIsSubmitting ? 'Saving...' : 'Save Changes'}
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

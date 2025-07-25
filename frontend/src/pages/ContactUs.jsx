@@ -1,8 +1,12 @@
 "use client"; // This directive is important for Next.js client components
 
+import axios from 'axios'; // Import axios for API calls
 import { useState } from 'react'; // Import useState
 import { FooterWithSitemap } from '../sections/Footer'; // Assuming correct path
 import Navigation from '../sections/Navigation'; // Assuming correct path
+
+// Base URL for your backend API
+const API_BASE_URL = "http://localhost:5000/api"; // Changed to general API base
 
 // Reusable InputField component
 const InputField = ({ label, type, id, value, onChange, placeholder, className = '', isRequired = false }) => (
@@ -45,9 +49,10 @@ const ContactFormComponent = () => { // Renamed to avoid confusion with the page
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
-    email: '',
+    email: '', // This is the user's email
     phone: '',
-    message: ''
+    message: '',
+    // recipientEmail is REMOVED from frontend state as it's hardcoded on backend
   });
   const [statusMessage, setStatusMessage] = useState('');
   const [isSuccess, setIsSuccess] = useState(false);
@@ -64,10 +69,10 @@ const ContactFormComponent = () => { // Renamed to avoid confusion with the page
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    setStatusMessage('Sending your message...');
+    setStatusMessage(''); // Clear previous status message
     setIsSuccess(false);
 
-    // Basic client-side validation
+    // Basic client-side validation (recipientEmail is no longer validated here)
     if (!formData.firstName || !formData.lastName || !formData.email || !formData.message) {
       setStatusMessage('Please fill in all required fields.');
       setIsSuccess(false);
@@ -75,15 +80,22 @@ const ContactFormComponent = () => { // Renamed to avoid confusion with the page
       return;
     }
 
-    // Simulate an API call
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate network delay
-      setStatusMessage('Thank you for your message! We will get back to you soon.');
-      setIsSuccess(true);
-      setFormData({ firstName: '', lastName: '', email: '', phone: '', message: '' }); // Clear form
+      // Make the API call to your backend, sending the formData
+      const response = await axios.post(`${API_BASE_URL}/contact`, formData);
+
+      if (response.data.success) {
+        setStatusMessage(response.data.message);
+        setIsSuccess(true);
+        // Clear form fields after successful submission
+        setFormData({ firstName: '', lastName: '', email: '', phone: '', message: '' });
+      } else {
+        setStatusMessage(response.data.message || 'Failed to send message.');
+        setIsSuccess(false);
+      }
     } catch (error) {
       console.error('Contact form submission error:', error);
-      setStatusMessage('There was an error sending your message. Please try again later.');
+      setStatusMessage(error.response?.data?.message || 'There was an error sending your message. Please try again later.');
       setIsSuccess(false);
     } finally {
       setIsSubmitting(false);
@@ -95,8 +107,8 @@ const ContactFormComponent = () => { // Renamed to avoid confusion with the page
     <div className="min-h-screen bg-white overflow-auto">
       {/* Top half with background image and overlay */}
       <div
-        className="relative h-64 md:h-80 lg:h-120 w-full bg-cover bg-center bg-no-repeat flex items-center justify-center p-4" // Corrected lg:h-100 to lg:h-96
-        style={{ backgroundImage: "url('/assets/contact1.jpg')" }} // Ensure this path is correct
+        className="relative h-64 md:h-80 lg:h-96 w-full bg-cover bg-center bg-no-repeat flex items-center justify-center p-4"
+        style={{ backgroundImage: "url('/assets/contact1.jpg')" }}
       >
         {/* Dark overlay */}
         <div className="absolute inset-0 bg-black opacity-50"></div>
@@ -145,7 +157,7 @@ const ContactFormComponent = () => { // Renamed to avoid confusion with the page
               <InputField
                 label="Your email"
                 type="email"
-                id="email"
+                id="email" // This is the user's email
                 value={formData.email}
                 onChange={handleChange}
                 placeholder="John@gmail.com"
@@ -161,6 +173,7 @@ const ContactFormComponent = () => { // Renamed to avoid confusion with the page
                 isRequired={false}
               />
             </div>
+            {/* REMOVED: Recipient Email InputField */}
             <TextAreaField
               label="Your message"
               id="message"
