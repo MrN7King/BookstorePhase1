@@ -1,21 +1,22 @@
-// backend/models/Product.js
+// models/Product.js
 import mongoose from 'mongoose';
 
-const productSchema = new mongoose.Schema({
-  type: { type: String, enum: ['ebook', 'premium_account'], required: true },
-  name: String,
-  description: String,
-  price: Number,
-  isAvailable: Boolean,
-  tags: [String],
-  language: String,
-  thumbnailUrl: String,
-  deliveryFormat: { type: String, default: 'email' },
-  cloudfrontFileKey: String,
-  metadata: {
-    pageCount: Number,
-    platform: String
-  }
-}, { timestamps: true });
+const baseOptions = {
+  discriminatorKey: 'type',
+  collection: 'products',
+  timestamps: true,
+};
 
-export default mongoose.model('Product', productSchema);
+const ProductSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  slug: { type: String, required: true, unique: true },
+  description: { type: String, required: true },
+  price: { type: Number, required: true, min: 0 },
+  isAvailable: { type: Boolean, default: true },
+  status: { type: String, enum: ['active', 'inactive'], default: 'active' },
+  tags: { type: [String], default: [] },
+  deliveryFormat: { type: String, default: 'email' },
+}, baseOptions);
+
+const Product = mongoose.model('Product', ProductSchema);
+export default Product;
