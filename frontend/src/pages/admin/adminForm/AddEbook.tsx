@@ -250,7 +250,7 @@ export default function AddEbook() {
       };
 
       // 3. Create ebook record MongoDB
-      const response = await api.post('/products', ebookData, {
+      const response = await api.post('/productEbook', ebookData, {
         cancelToken: tokenSource.token
       });
 

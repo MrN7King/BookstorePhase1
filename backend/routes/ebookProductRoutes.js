@@ -1,4 +1,4 @@
-// File: backend/routes/productRoutes.js
+// File: backend/routes/ebookProductRoutes.js
 import express from 'express';
 import { createEbook } from '../controllers/ebookAddController.js';
 

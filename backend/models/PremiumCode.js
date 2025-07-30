@@ -1,13 +1,11 @@
-//backend/models/PremiumCredential.js
+// models/PremiumCode.js
 import mongoose from 'mongoose';
 
-const premiumCredentialSchema = new mongoose.Schema({
+const premiumCodeSchema = new mongoose.Schema({
   productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },
-  email: { type: String, required: true },
-  password: { type: String, required: true },
-  additionalNotes: String,
+  encryptedCode: { type: String, required: true },
   isAssigned: { type: Boolean, default: false },
   assignedToOrderId: { type: mongoose.Schema.Types.ObjectId, ref: 'Order', default: null },
 }, { timestamps: true });
 
-export default mongoose.model('PremiumCredential', premiumCredentialSchema);
+export default mongoose.model('PremiumCode', premiumCodeSchema);

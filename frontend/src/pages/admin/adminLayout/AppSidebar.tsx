@@ -27,11 +27,12 @@ const navItems: NavItem[] = [
     path: "/profile",
   },
   {
-    name: "Add Products",
+    name: "Manage Products",
     iconName: "assignment", // Google Fonts icon name for forms/lists
     subItems: [
         { name: "Add E-books", path: "/admin/Add-ebooks", pro: false },
-        { name: "Add Premium Accounts", path: "/form-elements", pro: false },
+        { name: "Add Premium Accounts", path: "/admin/Add-premiumAccount", pro: false },
+        { name: "Add Premium Code & Edit Premium Accounts", path: "/admin/Add-premiumCodes", pro: false },
     ],
   },
   {
