@@ -1,64 +1,70 @@
-import { ReactNode } from "react";
+// frontend/src/pages/admin/adminUI/Table.tsx
+import React, { ReactNode, HTMLAttributes } from "react";
 
 // Props for Table
 interface TableProps {
   children: ReactNode; // Table content (thead, tbody, etc.)
-  className?: string; // Optional className for styling
+  className?: string;  // Optional className for styling
 }
 
 // Props for TableHeader
 interface TableHeaderProps {
-  children: ReactNode; // Header row(s)
-  className?: string; // Optional className for styling
+  children: ReactNode;
+  className?: string;
 }
 
 // Props for TableBody
 interface TableBodyProps {
-  children: ReactNode; // Body row(s)
-  className?: string; // Optional className for styling
+  children: ReactNode;
+  className?: string;
 }
 
-// Props for TableRow
-interface TableRowProps {
+// Props for TableRow (extends HTMLAttributes to allow click handlers, etc.)
+interface TableRowProps extends HTMLAttributes<HTMLTableRowElement> {
   children: ReactNode; // Cells (th or td)
-  className?: string; // Optional className for styling
+  className?: string;  // Optional className for styling
 }
 
 // Props for TableCell
-interface TableCellProps {
+interface TableCellProps extends React.HTMLAttributes<HTMLTableCellElement> {
   children: ReactNode; // Cell content
-  isHeader?: boolean; // If true, renders as <th>, otherwise <td>
-  className?: string; // Optional className for styling
+  isHeader?: boolean;  // If true, renders as <th>, otherwise <td>
+  className?: string;  // Optional className for styling
 }
 
 // Table Component
-const Table: React.FC<TableProps> = ({ children, className }) => {
-  return <table className={`min-w-full  ${className}`}>{children}</table>;
-};
+type TableFC = React.FC<TableProps>;
+export const Table: TableFC = ({ children, className = "" }) => (
+  <table className={`min-w-full ${className}`}>{children}</table>
+);
 
 // TableHeader Component
-const TableHeader: React.FC<TableHeaderProps> = ({ children, className }) => {
-  return <thead className={className}>{children}</thead>;
-};
+type TableHeaderFC = React.FC<TableHeaderProps>;
+export const TableHeader: TableHeaderFC = ({ children, className = "" }) => (
+  <thead className={className}>{children}</thead>
+);
 
 // TableBody Component
-const TableBody: React.FC<TableBodyProps> = ({ children, className }) => {
-  return <tbody className={className}>{children}</tbody>;
-};
+type TableBodyFC = React.FC<TableBodyProps>;
+export const TableBody: TableBodyFC = ({ children, className = "" }) => (
+  <tbody className={className}>{children}</tbody>
+);
 
 // TableRow Component
-const TableRow: React.FC<TableRowProps> = ({ children, className }) => {
-  return <tr className={className}>{children}</tr>;
-};
+type TableRowFC = React.FC<TableRowProps>;
+export const TableRow: TableRowFC = ({ children, className = "", ...rest }) => (
+  <tr className={className} {...rest}>
+    {children}
+  </tr>
+);
 
 // TableCell Component
-const TableCell: React.FC<TableCellProps> = ({
-  children,
-  isHeader = false,
-  className,
-}) => {
-  const CellTag = isHeader ? "th" : "td";
-  return <CellTag className={` ${className}`}>{children}</CellTag>;
+type TableCellFC = React.FC<TableCellProps>;
+export const TableCell: TableCellFC = ({ children, isHeader = false, className = "", ...rest }) => {
+  const Tag = isHeader ? 'th' : 'td';
+  return (
+    <Tag className={className} {...rest}>
+      {children}
+    </Tag>
+  );
 };
-
-export { Table, TableHeader, TableBody, TableRow, TableCell };

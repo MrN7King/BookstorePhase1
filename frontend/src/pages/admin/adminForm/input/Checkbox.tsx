@@ -1,3 +1,4 @@
+//frontend/src/pages/admin/adminForm/input/Checkbox.tsx
 import type React from "react";
 
 interface CheckboxProps {

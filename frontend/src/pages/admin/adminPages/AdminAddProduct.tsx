@@ -2,7 +2,7 @@
 import AddEbook from "../adminForm/AddEbook";
 import PageBreadcrumb from "../adminComponents/PageBreadCrumb";
 
-export default function FormElements() {
+export default function AdminAddProducts() {
   return (
     <div>
       <PageBreadcrumb pageTitle="Add Ebook" />
@@ -10,14 +10,6 @@ export default function FormElements() {
         <div className="space-y-6">
           <AddEbook/>
         </div>
-        {/* <div className="space-y-6"> */}
-          {/* <InputGroup />
-          <FileInputExample />
-          <CheckboxComponents />
-          <RadioButtons />
-          <ToggleSwitch />
-          <DropzoneComponent /> */}
-        {/* </div> */}
       </div>
     </div>
   );

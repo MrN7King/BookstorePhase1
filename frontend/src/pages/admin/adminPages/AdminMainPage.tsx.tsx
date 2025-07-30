@@ -6,6 +6,8 @@ import { ScrollToTop } from "../adminUI/ScrollToTop"; // Adjust path relative to
 import Dashboard from "./Dashboard"; // Renamed from Home to avoid confusion with main app's Home
 import AppLayout from "../adminLayout/AppLayout"; // Adjust path relative to AdminMainPage.tsx
 import AdminAddProduct from "./AdminAddProduct"; // Import the new Add Product page
+import AdminAddPremiumAccount from "./AdminAddPremiumAccount";
+import AdminAddPremiumAccountCodes from "./AdminAddPremiumCode";
 
 // Import all your admin-specific components (placeholders)
 // import UserProfiles from "../../UserProfiles"; // Assuming these are in a 'pages' or 'adminPages' folder
@@ -39,6 +41,9 @@ export default function AdminMainPage() {
           {/* Dashboard for admin, accessed at /admin */}
           <Route index element={<Dashboard />} />
           <Route path="/Add-ebooks" element={<AdminAddProduct />} />
+          <Route path="/Add-premiumAccount" element={<AdminAddPremiumAccount/>} />
+          <Route path="/Add-premiumCodes" element={<AdminAddPremiumAccountCodes/>}/>
+
           {/* Other Admin Pages */}
           {/* 
           <Route path="/calendar" element={<Calendar />} />
