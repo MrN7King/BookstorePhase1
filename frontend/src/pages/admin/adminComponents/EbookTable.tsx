@@ -1,4 +1,4 @@
-//frontend/src/pages/admin/adminComponents/PremiumAccountTable.tsx
+//frontend/src/pages/admin/adminComponents/EbookTable.tsx
 import {
   useEffect,
   useState,
@@ -16,7 +16,7 @@ import {
 } from '../adminUI/Table';
 import Badge from '../adminUI/Badge';
 
-export interface PremiumProduct {
+export interface EbookProduct {
   _id: string;
   name: string;
   slug: string;
@@ -24,22 +24,22 @@ export interface PremiumProduct {
   isAvailable: boolean;
   status: 'active' | 'inactive';
   tags: string[];
-  platform: string;
-  duration: string;
-  licenseType: 'key' | 'login' | 'serial';
+  language?: string;
+  author: string;
+  publicationDate?: string;
 }
 
-export interface PremiumAccountsTableProps {
-  onSelect: (product: PremiumProduct) => void;
+export interface EbooksTableProps {
+  onSelect: (product: EbookProduct) => void;
 }
 
-export interface PremiumAccountsTableRef {
+export interface EbooksTableRef {
   refresh: () => void;
 }
 
-const PremiumAccountsTable = forwardRef<PremiumAccountsTableRef, PremiumAccountsTableProps>(
+const EbooksTable = forwardRef<EbooksTableRef, EbooksTableProps>(
   ({ onSelect }, ref) => {
-    const [products, setProducts] = useState<PremiumProduct[]>([]);
+    const [ebooks, setEbooks] = useState<EbookProduct[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [page, setPage] = useState(1);
@@ -47,20 +47,20 @@ const PremiumAccountsTable = forwardRef<PremiumAccountsTableRef, PremiumAccounts
 
     const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-    const fetchProducts = async (pageNum = 1) => {
+    const fetchEbooks = async (pageNum = 1) => {
       setLoading(true);
       try {
         const api = axios.create({ baseURL: 'http://localhost:5000/api' });
-        const { data } = await api.get(`/premium?page=${pageNum}&limit=20`);
+        const { data } = await api.get(`/ebooks?page=${pageNum}&limit=20`);
         if (pageNum === 1) {
-          setProducts(data.products);
+          setEbooks(data.products);
         } else {
-          setProducts((prev) => [...prev, ...data.products]);
+          setEbooks((prev) => [...prev, ...data.products]);
         }
         setHasMore(pageNum < data.totalPages);
         setError(null);
-      } catch {
-        setError('Failed to load premium products');
+      } catch (err) {
+        setError('Failed to load eBooks');
       } finally {
         setLoading(false);
       }
@@ -69,22 +69,20 @@ const PremiumAccountsTable = forwardRef<PremiumAccountsTableRef, PremiumAccounts
     useImperativeHandle(ref, () => ({
       refresh: () => {
         setPage(1);
-        fetchProducts(1);
+        fetchEbooks(1);
       },
     }));
 
     useEffect(() => {
-      fetchProducts(page);
+      fetchEbooks(page);
     }, [page]);
 
-    // Scroll observer logic (same as PremiumCodesTable)
     useEffect(() => {
       const container = scrollContainerRef.current;
       if (!container) return;
 
       const handleScroll = () => {
         if (loading || !hasMore) return;
-
         const { scrollTop, scrollHeight, clientHeight } = container;
         if (scrollTop + clientHeight >= scrollHeight - 50) {
           setPage((prev) => prev + 1);
@@ -107,7 +105,7 @@ const PremiumAccountsTable = forwardRef<PremiumAccountsTableRef, PremiumAccounts
             <Table>
               <TableHeader className="border-b border-gray-100 dark:border-white/[0.05]">
                 <TableRow>
-                  {['ID', 'Name', 'Platform', 'Duration', 'Price', 'Status'].map((hdr) => (
+                  {['ID', 'Name', 'Author', 'Language', 'Price', 'Status'].map((hdr) => (
                     <TableCell
                       key={hdr}
                       isHeader
@@ -119,27 +117,27 @@ const PremiumAccountsTable = forwardRef<PremiumAccountsTableRef, PremiumAccounts
                 </TableRow>
               </TableHeader>
               <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
-                {products.map((prod) => (
+                {ebooks.map((ebook) => (
                   <TableRow
-                    key={prod._id}
+                    key={ebook._id}
                     className="cursor-pointer hover:bg-gray-50"
-                    onClick={() => onSelect(prod)}
+                    onClick={() => onSelect(ebook)}
                   >
                     <TableCell className="px-5 py-4 sm:px-6 text-start">
-                      {prod._id.slice(-6)}
+                      {ebook._id.slice(-6)}
                     </TableCell>
-                    <TableCell className="px-5 py-4 sm:px-6 text-start">{prod.name}</TableCell>
-                    <TableCell className="px-5 py-4 sm:px-6 text-start">{prod.platform}</TableCell>
-                    <TableCell className="px-5 py-4 sm:px-6 text-start">{prod.duration}</TableCell>
+                    <TableCell className="px-5 py-4 sm:px-6 text-start">{ebook.name}</TableCell>
+                    <TableCell className="px-5 py-4 sm:px-6 text-start">{ebook.author}</TableCell>
+                    <TableCell className="px-5 py-4 sm:px-6 text-start">{ebook.language || '-'}</TableCell>
                     <TableCell className="px-5 py-4 sm:px-6 text-start">
-                      ${prod.price.toFixed(2)}
+                      ${ebook.price.toFixed(2)}
                     </TableCell>
                     <TableCell className="px-5 py-4 sm:px-6 text-start">
                       <Badge
                         size="sm"
-                        color={prod.status === 'active' ? 'success' : 'error'}
+                        color={ebook.status === 'active' ? 'success' : 'error'}
                       >
-                        {prod.status.charAt(0).toUpperCase() + prod.status.slice(1)}
+                        {ebook.status.charAt(0).toUpperCase() + ebook.status.slice(1)}
                       </Badge>
                     </TableCell>
                   </TableRow>
@@ -156,7 +154,7 @@ const PremiumAccountsTable = forwardRef<PremiumAccountsTableRef, PremiumAccounts
                 {!hasMore && !loading && (
                   <TableRow>
                     <TableCell colSpan={6} className="p-4 text-center text-gray-500">
-                      All Premium Products Loaded
+                      All Ebooks Loaded
                     </TableCell>
                   </TableRow>
                 )}
@@ -169,4 +167,4 @@ const PremiumAccountsTable = forwardRef<PremiumAccountsTableRef, PremiumAccounts
   }
 );
 
-export default PremiumAccountsTable;
+export default EbooksTable;

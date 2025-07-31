@@ -80,9 +80,23 @@ export const createPremiumProduct = async (req, res) => {
 // GET /api/premium
 export const listPremiumProducts = async (req, res) => {
   try {
-    // find only those with discriminatorKey === 'premium_account'
-    const products = await PremiumProduct.find().lean();
-    return res.status(200).json(products);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const products = await PremiumProduct.find()
+      .skip(skip)
+      .limit(limit)
+      .lean();
+
+    const total = await PremiumProduct.countDocuments();
+
+    return res.status(200).json({
+      products,
+      total,
+      page,
+      totalPages: Math.ceil(total / limit),
+    });
   } catch (err) {
     console.error('Error listing premium products', err);
     return res.status(500).json({ error: 'Failed to fetch premium products' });

@@ -51,11 +51,12 @@ export const TableBody: TableBodyFC = ({ children, className = "" }) => (
 );
 
 // TableRow Component
-type TableRowFC = React.FC<TableRowProps>;
-export const TableRow: TableRowFC = ({ children, className = "", ...rest }) => (
-  <tr className={className} {...rest}>
-    {children}
-  </tr>
+export const TableRow = React.forwardRef<HTMLTableRowElement, TableRowProps>(
+  ({ children, className = "", ...rest }, ref) => (
+    <tr ref={ref} className={className} {...rest}>
+      {children}
+    </tr>
+  )
 );
 
 // TableCell Component

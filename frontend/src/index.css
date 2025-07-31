@@ -13,8 +13,6 @@ layer(base);
    --Info-Background : #ECEFF1;
 }
 
-
-
 @custom-variant dark (&:is(.dark *));
 
 @theme {
