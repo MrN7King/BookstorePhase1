@@ -1,5 +1,5 @@
 // src/components/AllBooksFilter.jsx
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 // AllBooksFilter component
 // It now accepts onClose, onApplyFilters, and showCategories props
@@ -147,8 +147,8 @@ const AllBooksFilter = ({ onClose, onApplyFilters, showCategories = true }) => {
         </div>
       </div>
 
-      {/* Price Filter */}
-      <div className="mb-6 border-b border-gray-200 pb-4">
+ {/* Price Range */}
+      <div className="mb-6">
         <button
           className="flex items-center justify-between w-full text-lg font-semibold text-gray-800 focus:outline-none"
           onClick={() => toggleSection(setIsPriceOpen)}
@@ -156,7 +156,7 @@ const AllBooksFilter = ({ onClose, onApplyFilters, showCategories = true }) => {
           Price
           <svg
             className={`w-5 h-5 text-gray-600 transform transition-transform duration-200 ${
-              isPriceOpen ? 'rotate-180' : 'rotate-0'
+              isPriceOpen ? 'rotate-90' : 'rotate-0'
             }`}
             fill="none"
             stroke="currentColor"
@@ -167,27 +167,23 @@ const AllBooksFilter = ({ onClose, onApplyFilters, showCategories = true }) => {
           </svg>
         </button>
         {isPriceOpen && (
-          <div className="mt-4">
-            <div className="flex justify-between items-center text-sm text-gray-600 mb-2">
-              <span>LKR{priceRange[0]}</span>
-              <span>LKR{priceRange[1]}</span>
+          <div className="mt-3">
+            <div className="flex justify-between text-sm text-black mb-1">
+              <span>LKR {priceRange[0]}</span>
+              <span>LKR {priceRange[1]}</span>
             </div>
-            {/* Simple range input - for a true slider, use a dedicated component */}
             <input
               type="range"
               min="100"
               max="10000"
               value={priceRange[1]}
               onChange={handlePriceChange}
-              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-              style={{
-                background: `linear-gradient(to right, #3B82F6 0%, #3B82F6 ${(priceRange[1] - 100) / 99}% , #D1D5DB ${(priceRange[1] - 100) / 99}% , #D1D5DB 100%)`
-              }}
+              className="w-full accent-blue-500"
             />
           </div>
         )}
       </div>
-
+   
       {/* Language Filter */}
       <div className="mb-6 border-b border-gray-200 pb-4">
         <button
@@ -197,7 +193,7 @@ const AllBooksFilter = ({ onClose, onApplyFilters, showCategories = true }) => {
           Language
           <svg
             className={`w-5 h-5 text-gray-600 transform transition-transform duration-200 ${
-              isLanguageOpen ? 'rotate-180' : 'rotate-0'
+              isLanguageOpen ? 'rotate-90' : 'rotate-0'
             }`}
             fill="none"
             stroke="currentColor"
@@ -233,7 +229,7 @@ const AllBooksFilter = ({ onClose, onApplyFilters, showCategories = true }) => {
           Format
           <svg
             className={`w-5 h-5 text-gray-600 transform transition-transform duration-200 ${
-              isFormatOpen ? 'rotate-180' : 'rotate-0'
+              isFormatOpen ? 'rotate-90' : 'rotate-0'
             }`}
             fill="none"
             stroke="currentColor"
@@ -270,7 +266,7 @@ const AllBooksFilter = ({ onClose, onApplyFilters, showCategories = true }) => {
             Categories
             <svg
               className={`w-5 h-5 text-gray-600 transform transition-transform duration-200 ${
-                isCategoriesOpen ? 'rotate-180' : 'rotate-0'
+                isCategoriesOpen ? 'rotate-90' : 'rotate-0'
               }`}
               fill="none"
               stroke="currentColor"
