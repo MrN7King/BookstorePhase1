@@ -19,10 +19,7 @@ const userAuth = async (req, res, next) => {
     }
 
     // Check if token is missing, empty, or explicitly set to 'loggedout'
-    if (!token || token.trim() === '' || token === 'loggedout') {
-        console.log('Authentication failed: No valid token found (missing, empty, or loggedout).');
-        return res.status(401).json({ success: false, message: 'Not authorized, no valid token found. Please log in.' });
-    }
+    
 
     try {
         // Attempt to verify the token
@@ -43,16 +40,7 @@ const userAuth = async (req, res, next) => {
         next(); // Proceed to the next middleware or route handler
 
     } catch (error) {
-        // Catch specific JWT errors like 'JsonWebTokenError' (malformed, invalid signature)
-        // and 'TokenExpiredError'
-        console.error('Token verification failed:', error.name, error.message);
-        let errorMessage = 'Not authorized, token failed.';
-        if (error.name === 'JsonWebTokenError') {
-            errorMessage = 'Not authorized, token is invalid or malformed.';
-        } else if (error.name === 'TokenExpiredError') {
-            errorMessage = 'Not authorized, token has expired. Please log in again.';
-        }
-        return res.status(401).json({ success: false, message: errorMessage });
+       
     }
 };
 
