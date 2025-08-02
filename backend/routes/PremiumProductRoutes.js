@@ -1,19 +1,30 @@
 //backend/routes/PremiumProductRoutes.js
 import express from 'express';
+import multer from 'multer';
+import { premiumThumbnailUpload } from '../config/multerConfig.js'; 
 import {
   createPremiumProduct,
   listPremiumProducts,
 } from '../controllers/PremiumAccountController.js';
 import {
   getPremiumProduct,
-  updatePremiumProduct,
+  updatePremiumAccount,
   deletePremiumProduct,
 } from '../controllers/PremiumAccountEditController.js';
 
 const router = express.Router();
 
 // Create new premium product
-router.post('/', createPremiumProduct);
+router.post('/', 
+  premiumThumbnailUpload, 
+  (err, req, res, next) => {
+    if (err) {
+      return res.status(400).json({ error: err.message });
+    }
+    next();
+  },
+  createPremiumProduct
+);
 
 // List all premium products (for your table)
 router.get('/', listPremiumProducts);
@@ -22,7 +33,18 @@ router.get('/', listPremiumProducts);
 router.get('/:id', getPremiumProduct);
 
 //Update Premium Product by ID
-router.put('/:id', updatePremiumProduct);
+router.put('/:id', 
+  premiumThumbnailUpload, 
+  (err, req, res, next) => {
+    if (err instanceof multer.MulterError) {
+      return res.status(400).json({ error: err.message });
+    } else if (err) {
+      return res.status(400).json({ error: err.message });
+    }
+    next();
+  },
+  updatePremiumAccount
+);
 
 //Delete Premium Product by ID
 router.delete('/:id', deletePremiumProduct);

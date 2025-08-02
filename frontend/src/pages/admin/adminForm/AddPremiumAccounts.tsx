@@ -1,6 +1,5 @@
 //frontend/src/pages/admin/adminForm/AddPremiumAccounts.tsx
-
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import ComponentCard from "../adminComponents/ComponentCard.tsx";
 import Label from "./FormElements/Label.tsx";
@@ -12,8 +11,10 @@ import MultiSelect from "./input/MultiSelect.tsx";
 import TextArea from "./input/TextArea.tsx";
 import Button from "../adminUI/Button.tsx";
 import Alert from "../adminUI/Alert.tsx";
+import DropzoneComponent from "./FormElements/DropZone.tsx";
 
 export default function AddPremiumAccount() {
+
     const [productName, setProductName] = useState('');
     const [slug, setSlug] = useState('');
     const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
@@ -30,6 +31,9 @@ export default function AddPremiumAccount() {
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState("");
 
+    // Create reusable axios instance
+    const api = useMemo(() => axios.create({ baseURL: 'http://localhost:5000/api' }), []);
+
     const tagOptions = [
         { value: "software", text: "Software" },
         { value: "subscription", text: "Subscription" },
@@ -45,6 +49,9 @@ export default function AddPremiumAccount() {
         { value: "serial", label: "Serial Number" },
     ];
 
+    const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
+    const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
+
     useEffect(() => {
         if (productName && !slugManuallyEdited) {
             const generatedSlug = productName
@@ -57,6 +64,14 @@ export default function AddPremiumAccount() {
         }
     }, [productName]);
 
+    useEffect(() => {
+        return () => {
+            if (thumbnailPreview) {
+                URL.revokeObjectURL(thumbnailPreview);
+            }
+        };
+    }, [thumbnailPreview]);
+
     const handleSlugChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSlug(e.target.value);
         setSlugManuallyEdited(true);
@@ -67,28 +82,35 @@ export default function AddPremiumAccount() {
         setSuccess(false);
         setError("");
 
-        try {
-            if (!productName.trim() || !slug.trim() || !price.trim() || !platform.trim() || !duration.trim()) {
+         try {
+            if (!productName.trim() || !slug.trim() || !price.trim() || 
+                !platform.trim() || !duration.trim()) {
                 throw new Error('Please fill all required fields');
             }
 
-            const premiumAccountData = {
-                name: productName,
-                slug,
-                description,
-                price: parseFloat(price),
-                isAvailable,
-                status: status.toLowerCase(),
-                tags,
-                deliveryFormat: "email",
-                type: "premium_account",
-                platform,
-                duration,
-                licenseType
-            };
+            const formData = new FormData();
+            // Append all form fields
+            formData.append('name', productName);
+            formData.append('slug', slug);
+            formData.append('description', description);
+            formData.append('price', price);
+            formData.append('isAvailable', isAvailable.toString());
+            formData.append('status', status);
+            formData.append('tags', tags.join(','));
+            formData.append('platform', platform);
+            formData.append('duration', duration);
+            formData.append('licenseType', licenseType);
+            
+            // Append thumbnail file if exists
+            if (thumbnailFile) {
+                formData.append('thumbnail', thumbnailFile);
+            }
 
-            const api = axios.create({ baseURL: 'http://localhost:5000/api' });
-            const response = await api.post('/premium', premiumAccountData);
+            const response = await api.post('/premium', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
 
             if (response.status >= 200 && response.status < 300) {
                 setSuccess(true);
@@ -99,7 +121,10 @@ export default function AddPremiumAccount() {
         } catch (err) {
             let errorMessage = 'An error occurred while adding the premium account';
             if (axios.isAxiosError(err)) {
-                errorMessage = err.response?.data?.error || err.response?.data?.message || `Server error: ${err.response?.status}` || err.message;
+                errorMessage = err.response?.data?.error ||
+                    err.response?.data?.message ||
+                    `Server error: ${err.response?.status}` ||
+                    err.message;
             } else if (err instanceof Error) {
                 errorMessage = err.message;
             }
@@ -121,7 +146,10 @@ export default function AddPremiumAccount() {
         setPlatform('');
         setDuration('');
         setLicenseType('key');
+        setThumbnailFile(null);
+        setThumbnailPreview(null);
     };
+
 
     return (
         <>
@@ -174,6 +202,29 @@ export default function AddPremiumAccount() {
                     <div>
                         <MultiSelect label="Tags" options={tagOptions} onChange={setTags} defaultSelected={tags} />
                     </div>
+
+                    <div>
+                        <Label>Add Thumbnail</Label>
+                        <DropzoneComponent
+                            onFileSelected={(file) => {
+                                setThumbnailFile(file);
+                                if (file) {
+                                    const previewUrl = URL.createObjectURL(file);
+                                    setThumbnailPreview(previewUrl);
+                                } else {
+                                    setThumbnailPreview(null);
+                                }
+                            }}
+                            acceptedTypes={['image/jpeg', 'image/png', 'image/webp']}
+                            maxSize={2 * 1024 * 1024}
+                        />
+                        {thumbnailPreview && (
+                            <div className="mt-2 border border-gray-300 rounded-lg p-2 w-48">
+                                <img src={thumbnailPreview} alt="Thumbnail preview" className="w-full h-auto rounded" />
+                            </div>
+                        )}
+                    </div>
+
                 </div>
             </ComponentCard>
 
@@ -209,6 +260,7 @@ export default function AddPremiumAccount() {
                         {isSubmitting ? 'Creating premium account...' : 'Add Premium Account'}
                     </Button>
 
+                    
                     {success && <Alert variant="success" title="Success" message="Premium account added successfully!" />}
                     {error && <Alert variant="error" title="Error" message={error} />}
                 </div>

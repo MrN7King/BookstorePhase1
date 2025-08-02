@@ -1,6 +1,9 @@
 // File: backend/controllers/PremiumAccountEditController.js
 import { PremiumProduct } from '../models/PremiumProduct.js';
+import { v2 as cloudinary } from 'cloudinary';
 import Product from '../models/Product.js';
+import stream from 'stream';
+
 
 // GET single premium product by ID
 export const getPremiumProduct = async (req, res) => {
@@ -16,35 +19,94 @@ export const getPremiumProduct = async (req, res) => {
 };
 
 // PUT update premium product
-export const updatePremiumProduct = async (req, res) => {
-  const { id } = req.params;
-  const update = { ...req.body };
-  delete update._id; // prevent changing ID
-
+export const updatePremiumAccount = async (req, res) => {
   try {
-    const updated = await PremiumProduct.findByIdAndUpdate(
-      id,
-      update,
-      { new: true, runValidators: true }
-    ).lean();
+    const { id } = req.params;
+    const premium = await PremiumProduct.findById(id);
+    if (!premium) return res.status(404).json({ error: 'Premium account not found' });
+    
+    // SAFETY: Handle undefined req.body
+    const body = req.body || {};
 
-    if (!updated) {
-      return res.status(404).json({ message: 'Product not found' });
-    }
+    // Handle thumbnail upload from Multer
+    if (req.file) {
+      const thumbFile = req.file;
 
-    return res.status(200).json(updated);
-  } catch (err) {
-    // Check for MongoDB duplicate key error (e.g., duplicate slug)
-    if (err.code === 11000 && err.keyPattern?.slug) {
-      return res.status(400).json({
-        message: 'Slug must be unique.',
-        code: 11000,
-        keyPattern: err.keyPattern
+      // Delete old thumbnail if exists
+      if (premium.thumbnailPublicId) {
+        try {
+          await cloudinary.uploader.destroy(premium.thumbnailPublicId, { invalidate: true });
+        } catch (err) {
+          console.warn('Could not delete old thumbnail:', err.message);
+        }
+      }
+
+      // Upload new thumbnail
+      const thumbRes = await new Promise((resolve, reject) => {
+        const uploadStream = cloudinary.uploader.upload_stream(
+          {
+            folder: 'premium-thumbnails',
+            transformation: [{ width: 500, height: 500, crop: 'limit' }]
+          },
+          (error, result) => {
+            if (error) reject(error);
+            else resolve(result);
+          }
+        );
+
+        // Use the buffer from Multer
+        uploadStream.end(thumbFile.buffer);
       });
+
+      premium.thumbnailUrl = thumbRes.secure_url;
+      premium.thumbnailPublicId = thumbRes.public_id;
+      
+      // Clear buffer memory after upload
+      thumbFile.buffer = null;
     }
 
-    console.error('Error updating product', err);
-    return res.status(500).json({ message: 'Server error' });
+    // Update other fields using the safe 'body' reference
+    const updateFields = [
+      'name', 'slug', 'description', 'price', 'isAvailable',
+      'status', 'tags', 'platform', 'duration', 'licenseType'
+    ];
+
+    updateFields.forEach(field => {
+      if (body[field] !== undefined) {
+        premium[field] = body[field];
+      }
+    });
+
+    // Handle array fields
+    if (body.tags) {
+      if (typeof body.tags === 'string') {
+        body.tags = body.tags.split(',').filter(tag => tag.trim() !== '');
+      }
+    }
+
+    if (body.tags !== undefined) {
+      premium.tags = body.tags;
+    }
+
+    // Convert price to number
+    if (body.price) {
+      premium.price = parseFloat(body.price);
+    }
+
+    // Convert boolean fields
+    if (body.isAvailable !== undefined) {
+      premium.isAvailable = body.isAvailable === 'true';
+    }
+
+    const updated = await premium.save();
+    res.json(updated);
+
+  } catch (err) {
+    console.error('Update error:', err);
+    res.status(500).json({
+      error: 'Internal server error',
+      details: err.message
+    });
   }
 };
 

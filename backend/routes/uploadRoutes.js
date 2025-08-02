@@ -65,7 +65,8 @@ router.post('/', upload.single('thumbnail'), async (req, res) => {
 
     res.json({ 
       success: true,
-      url: result.secure_url 
+      url: result.secure_url,
+      public_id: result.public_id 
     });
     
   } catch (error) {

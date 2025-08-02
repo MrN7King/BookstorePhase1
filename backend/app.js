@@ -17,6 +17,13 @@ import userRoutes from './routes/userRoutes.js';
 import ebookUploadRoutes from './routes/ebookUploadRoutes.js';
 import premiumProductRoutes from './routes/PremiumProductRoutes.js'; // Import premium product routes
 import premiumCodeRoutes from './routes/premiumCodesRoutes.js';
+import cloudinary from 'cloudinary';
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
 
 const app = express();
 

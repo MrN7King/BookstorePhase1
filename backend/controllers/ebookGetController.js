@@ -4,13 +4,35 @@ import ProductModel from '../models/Product.js'; // Import the base Product mode
 
 export const getAllEbooks = async (req, res) => {
   try {
-    const ebooks = await ProductModel.find({ type: 'ebook' }); // Filter by the discriminator key 'ebook'
-    res.status(200).json({ success: true, ebooks });
+    const page = parseInt(req.query.page) || 1;       // Current page
+    const limit = parseInt(req.query.limit) || 20;     // Items per page
+    const skip = (page - 1) * limit;
+
+    const query = { type: 'ebook' };
+
+    const [totalItems, ebooks] = await Promise.all([
+      ProductModel.countDocuments(query),
+      ProductModel.find(query)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+    ]);
+
+    const totalPages = Math.ceil(totalItems / limit);
+
+    res.status(200).json({
+      success: true,
+      products: ebooks,
+      currentPage: page,
+      totalPages,
+      totalItems,
+    });
   } catch (error) {
-    console.error('Error fetching all ebooks:', error);
+    console.error('Error fetching paginated ebooks:', error);
     res.status(500).json({ success: false, message: 'Failed to fetch ebooks' });
   }
 };
+
 
 
 export const getEbookById = async (req, res) => {

@@ -186,6 +186,7 @@ export default function AddEbook() {
       });
 
       const thumbnailUrl = thumbnailResponse.data.url;
+      const thumbnailPublicId = thumbnailResponse.data.public_id;
 
       setCurrentUpload('ebook');
       setUploadProgress(0);
@@ -235,6 +236,7 @@ export default function AddEbook() {
         tags: genreValues.map(val => tagLookup[val] || val),
         language: languageValue,
         thumbnailUrl,
+        thumbnailPublicId,
         deliveryFormat: "email",
         fileInfo, // From Backblaze upload
         author: authorName,
@@ -427,14 +429,11 @@ export default function AddEbook() {
               acceptedTypes={['image/jpeg', 'image/png', 'image/webp']}
               maxSize={2 * 1024 * 1024} // 2MB
               label="Drag & Drop your PNG, JPG, WebP Book Thumbnail Here" />
+
+
             {thumbnailPreview && (
-              <div className="mt-2">
-                <p className="text-sm">Thumbnail Preview:</p>
-                <img
-                  src={thumbnailPreview}
-                  alt="Thumbnail preview"
-                  className="mt-1 h-20 object-contain"
-                />
+              <div className="mt-2 border border-gray-300 rounded-lg p-2 w-48">
+                <img src={thumbnailPreview} alt="Thumbnail preview" className="w-full h-auto rounded" />
               </div>
             )}
           </div>

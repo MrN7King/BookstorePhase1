@@ -24,6 +24,7 @@ export const createEbook = async (req, res) => {
       tags,
       language,
       thumbnailUrl,
+       thumbnailPublicId: thumbnailUrl ? thumbnailUrl.split('/').slice(-2).join('/').replace(/\.[^/.]+$/, "") : undefined,
       deliveryFormat: deliveryFormat || 'email',
       fileInfo: {
         fileId: fileInfo.fileId,

@@ -9,7 +9,7 @@ const EbookSchema = new mongoose.Schema({
   publicationDate: Date,
   publisher: String,
   edition: String,
-  thumbnailUrl: String,
+  
   fileInfo: {
     fileId: String,
     fileName: String,

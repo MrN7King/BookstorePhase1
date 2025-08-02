@@ -8,6 +8,7 @@ import AppLayout from "../adminLayout/AppLayout"; // Adjust path relative to Adm
 import AdminAddProduct from "./AdminAddProduct"; // Import the new Add Product page
 import AdminAddPremiumAccount from "./AdminAddPremiumAccount";
 import AdminAddPremiumAccountCodes from "./AdminAddPremiumCode";
+import AdminEditEbook from "./AdminEditEbook"; // Import the new Edit Ebook page
 
 // Import all your admin-specific components (placeholders)
 // import UserProfiles from "../../UserProfiles"; // Assuming these are in a 'pages' or 'adminPages' folder
@@ -43,6 +44,7 @@ export default function AdminMainPage() {
           <Route path="/Add-ebooks" element={<AdminAddProduct />} />
           <Route path="/Add-premiumAccount" element={<AdminAddPremiumAccount/>} />
           <Route path="/Add-premiumCodes" element={<AdminAddPremiumAccountCodes/>}/>
+          <Route path="/edit-ebook" element={<AdminEditEbook/>} />
 
           {/* Other Admin Pages */}
           {/* 

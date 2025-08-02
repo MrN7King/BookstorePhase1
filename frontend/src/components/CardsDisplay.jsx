@@ -18,7 +18,7 @@ const BooksDisplay = () => {
       try {
         setLoading(true);
         setError(null);
-        const response = await axios.get('http://localhost:5000/api/productEbook/AllBooks');
+        const response = await axios.get('http://localhost:5000/api/productEbook/');
 
         if (response.data.success) {
           const fetchedEbooks = response.data.ebooks.filter(book => book.type === 'ebook');
