@@ -1,19 +1,22 @@
-// src/sections/AllBooksBody.jsx
-"use client"; // If using Next.js app router
+// src/sections/PremiumAccountsBody.jsx
+"use client"; // Important for Next.js app router components using hooks
 
 import axios from 'axios'; // Import axios for making HTTP requests
 import { useCallback, useEffect, useState } from 'react';
-import { AllBooksFilter } from '../components/AllBooksFilter'; // Adjust path if needed
-import BooksDisplay from '../components/CardsDisplay'; // Adjust path if needed
+import { PremiumAccountFilter } from '../components/AllBooksFilter'; // Re-using AllBooksFilter, assuming it's renamed/adapted for PremiumAccounts
+import PremiumAccountsDisplay from '../components/PremiumCardDisplay'; // This is the component I provided previously, renamed for clarity
 
-export default function HomePage() {
+// Assuming you have your API base URL defined, e.g., in a config file
+const API_BASE_URL = 'http://localhost:5000'; // Define your backend URL here
+
+export default function PremiumAccountsBody() {
   const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false);
-  const [books, setBooks] = useState([]);
+  const [premiumAccounts, setPremiumAccounts] = useState([]); // State for premium accounts
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [pagination, setPagination] = useState({
     page: 1,
-    limit: 10,
+    limit: 12, // Assuming 12 items per load for infinite scroll consistency
     totalResults: 0,
     totalPages: 1,
   });
@@ -29,8 +32,8 @@ export default function HomePage() {
     setIsFilterMenuOpen(false);
   };
 
-  // Function to fetch books from the backend
-  const fetchBooks = useCallback(async (filters, page = 1) => {
+  // Function to fetch premium accounts from the backend
+  const fetchPremiumAccounts = useCallback(async (filters, page = 1) => {
     setLoading(true);
     setError(null);
 
@@ -40,17 +43,17 @@ export default function HomePage() {
         ...filters,
         page,
         limit: pagination.limit, // Use current limit
-        // Add sortBy, sortOrder if you implement them in UI
-        // sortBy: 'name',
-        // sortOrder: 'asc',
       };
 
       // Remove undefined values
       Object.keys(params).forEach(key => params[key] === undefined && delete params[key]);
 
-      const response = await axios.get('http://localhost:5000/api/productEbook/filtered', { params }); // Adjust URL if different
+      // Adjust URL to your premium product API endpoint
+      const response = await axios.get(`${API_BASE_URL}/api/premium`, { params });
 
-      setBooks(response.data.ebooks);
+      // Assuming your backend response for /api/premium is structured similarly to ebooks
+      // e.g., { premiumAccounts: [], page: X, limit: Y, totalResults: Z }
+      setPremiumAccounts(response.data.premiumAccounts || []); // Adjust property name if different (e.g., response.data.products)
       setPagination({
         page: response.data.page,
         limit: response.data.limit,
@@ -58,45 +61,29 @@ export default function HomePage() {
         totalPages: Math.ceil(response.data.totalResults / response.data.limit),
       });
     } catch (err) {
-      console.error("Error fetching books:", err);
-      setError("Failed to load books. Please try again later.");
+      console.error("Error fetching premium accounts:", err);
+      setError("Failed to load premium accounts. Please try again later.");
     } finally {
       setLoading(false);
     }
   }, [pagination.limit]); // Dependency: only re-create if pagination.limit changes
 
-  // Handler for applying filters from the AllBooksFilter component
+  // Handler for applying filters from the PremiumAccountFilter component
   const handleApplyFilters = (filters) => {
     setActiveFilters(filters); // Update the active filters state
     setPagination(prev => ({ ...prev, page: 1 })); // Reset to first page on new filters
     closeFilterMenu(); // Close modal after applying filters
   };
 
-  // Effect hook to fetch books whenever activeFilters or page changes
+  // Effect hook to fetch premium accounts whenever activeFilters or page changes
   useEffect(() => {
-    fetchBooks(activeFilters, pagination.page);
-  }, [activeFilters, pagination.page, fetchBooks]); // Include fetchBooks in dependencies
+    fetchPremiumAccounts(activeFilters, pagination.page);
+  }, [activeFilters, pagination.page, fetchPremiumAccounts]); // Include fetchPremiumAccounts in dependencies
 
-  // Handlers for pagination buttons (Next, Previous)
-  const handleNextPage = () => {
-    if (pagination.page < pagination.totalPages) {
-      setPagination(prev => ({ ...prev, page: prev.page + 1 }));
-    }
-  };
-
-  const handlePreviousPage = () => {
-    if (pagination.page > 1) {
-      setPagination(prev => ({ ...prev, page: prev.page - 1 }));
-    }
-  };
+  // Removed handleNextPage and handlePreviousPage as PremiumAccountsDisplay uses infinite scroll
 
   return (
-    <div className="min-h-screen bg-White font-sans antialiased flex flex-col">
-      {/* Tailwind CSS CDN and Font for consistency */}
-  
-      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-      <style>{`body { font-family: 'Inter', sans-serif; }`}</style>
-
+    <div className="min-h-screen bg-white font-sans antialiased flex flex-col">
       {/* Mobile "Filter By" Button */}
       <div className="fixed top-4 right-4 z-50 lg:hidden">
         <button
@@ -113,31 +100,24 @@ export default function HomePage() {
       <div className="flex flex-1 relative">
         {/* Filter Component (Desktop Sidebar) */}
         <aside className="hidden lg:block lg:w-1/4 lg:max-w-xs p-4 overflow-y-auto">
-          <AllBooksFilter onApplyFilters={handleApplyFilters} />
+          <PremiumAccountFilter onApplyFilters={handleApplyFilters} />
         </aside>
 
-        {/* Main Content - Books Display */}
+        {/* Main Content - Premium Accounts Display */}
         <main className="flex-1 p-4 lg:p-8">
-          {loading && <div className="text-center text-lg text-blue-600">Loading books...</div>}
-          {error && <div className="text-center text-lg text-red-600">{error}</div>}
-          {!loading && !error && books.length === 0 && (
-            <div className="text-center text-lg text-gray-700">No books found matching your criteria.</div>
-          )}
-          {!loading && !error && books.length > 0 && (
-            <>
-              <BooksDisplay books={books} /> {/* Pass fetched books to BooksDisplay */}
-              {/* Pagination Controls */}
-              
-            
-            </>
-          )}
+          {/* We'll let PremiumAccountsDisplay handle its own loading/error/no results states now */}
+          <PremiumAccountsDisplay
+            premiumAccounts={premiumAccounts} // Pass fetched premium accounts
+            loading={loading}
+            error={error}
+          />
         </main>
       </div>
 
       {/* Full-screen Filter Modal for Mobile */}
       {isFilterMenuOpen && (
         <div className="fixed inset-0 bg-white z-[60] overflow-y-auto flex flex-col">
-          <AllBooksFilter onClose={closeFilterMenu} onApplyFilters={handleApplyFilters} />
+          <PremiumAccountFilter onClose={closeFilterMenu} onApplyFilters={handleApplyFilters} />
         </div>
       )}
     </div>

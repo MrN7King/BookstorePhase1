@@ -7,16 +7,17 @@ import './cron/AccountCleanup.js';
 import analyticsRoutes from './routes/analyticsRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import categoryRoutes from './routes/categoryRoutes.js';
+import ebookProductRoutes from './routes/ebookProductRoutes.js';
 import miscRoutes from './routes/miscRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
-import ebookProductRoutes from './routes/ebookProductRoutes.js';
 import roleRoutes from './routes/roleRoutes.js';
+import sliderEbookRoutes from './routes/sliderEbooksRoutes.js'; // Import slider ebook routes
 import uploadRoutes from './routes/uploadRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 //to upload ebook to backblaze b2 bucket
 import ebookUploadRoutes from './routes/ebookUploadRoutes.js';
-import premiumProductRoutes from './routes/PremiumProductRoutes.js'; // Import premium product routes
 import premiumCodeRoutes from './routes/premiumCodesRoutes.js';
+import premiumProductRoutes from './routes/PremiumProductRoutes.js'; // Import premium product routes
 
 const app = express();
 
@@ -54,5 +55,6 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/roles', roleRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/slider-ebooks', sliderEbookRoutes); // NEW: Mount slider ebook routes
 
 export default app;

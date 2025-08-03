@@ -1,72 +1,104 @@
 // src/sections/BestSellerSlider.jsx
 "use client";
 
+import { Spinner } from '@material-tailwind/react'; // Assuming you have Material Tailwind Spinner
+import axios from 'axios'; // Import axios
 import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
 import Cards from '../components/Cards';
 
 // --- BestSellerSlider Component (4 Cards Scroll + All Cards In Color) ---
 
-const BestSellerSlider = ({ headingText = "Best Sellers" }) => {
+// fetchType can be 'newest', 'random', 'bestseller', 'popular'
+const BestSellerSlider = ({ headingText = "Best Sellers", fetchType = "random" }) => {
   const sliderRef = useRef(null);
+  const navigate = useNavigate(); // Initialize useNavigate
+  const [books, setBooks] = useState([]); // State to hold fetched books
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [activeCardIndex, setActiveCardIndex] = useState(0); // State to manage the active card's index (for dots/scrolling logic)
 
-  // >>> PRESERVED ORIGINAL BOOK DATA LOOP AS REQUESTED <<<
-  const templateBook = {
-    image: "/assets/Book1.jpg",
-    title: "Mystery of the Lost Island",
-    author: "Matt Murdock",
-    rating: 3.5,
-    description: "A thrilling adventure that takes you deep into the heart of an uncharted island, where secrets and danger lurk at every turn.",
-    price: "RS 175.00",
-  };
+  useEffect(() => {
+    const fetchBooks = async () => {
+      setLoading(true);
+      setError(null);
+      let endpoint = '';
 
-  const bestSellerBooks = Array.from({ length: 8 }, (_, index) => ({
-    id: index + 1,
-    ...templateBook,
-  }));
-  // >>> END OF PRESERVED ORIGINAL BOOK DATA LOOP <<<
+      // Determine the API endpoint based on fetchType
+      if (fetchType === 'newest') {
+        endpoint = 'http://localhost:5000/api/slider-ebooks/newest';
+      } else if (fetchType === 'random' || fetchType === 'bestseller' || fetchType === 'popular') {
+        // For 'bestseller' and 'popular', we can use 'random' as a fallback if no specific logic exists
+        endpoint = 'http://localhost:5000/api/slider-ebooks/random';
+      } else {
+        setError('Invalid fetch type provided.');
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const response = await axios.get(endpoint);
+        if (response.data.success) {
+          setBooks(response.data.ebooks); // Assuming 'ebooks' array in response
+        } else {
+          setError(response.data.message || 'Failed to fetch books.');
+        }
+      } catch (err) {
+        console.error(`Error fetching ${fetchType} books:`, err.response?.data || err.message);
+        setError(`Failed to load ${fetchType} books. Please try again later.`);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBooks();
+  }, [fetchType]); // Re-fetch when fetchType changes
 
 
-  // Handles clicking a card to center it and set it as active
-  const handleCardClick = (index) => {
-    setActiveCardIndex(index);
-    if (sliderRef.current) {
-      const cardElements = Array.from(sliderRef.current.children);
-      const cardElement = cardElements[index];
-      if (cardElement) {
-        const cardOffsetLeft = cardElement.offsetLeft;
-        const cardWidth = cardElement.offsetWidth;
-        const containerWidth = sliderRef.current.offsetWidth;
-        // Calculate scroll position to center the card within the visible area.
-        const scrollLeftPosition = cardOffsetLeft - (containerWidth / 2) + (cardWidth / 2);
-        sliderRef.current.scrollTo({ left: scrollLeftPosition, behavior: 'smooth' });
+  // Handles clicking a card to center it and set it as active, and also redirects
+  const handleCardClick = (bookId) => {
+    // Find the index of the clicked book to update activeCardIndex for dot logic
+    const clickedIndex = books.findIndex(book => book.id === bookId);
+    if (clickedIndex !== -1) {
+      setActiveCardIndex(clickedIndex);
+      if (sliderRef.current) {
+        const cardElements = Array.from(sliderRef.current.children);
+        const cardElement = cardElements[clickedIndex];
+        if (cardElement) {
+          const cardOffsetLeft = cardElement.offsetLeft;
+          const cardWidth = cardElement.offsetWidth;
+          const containerWidth = sliderRef.current.offsetWidth;
+          const scrollLeftPosition = cardOffsetLeft - (containerWidth / 2) + (cardWidth / 2);
+          sliderRef.current.scrollTo({ left: scrollLeftPosition, behavior: 'smooth' });
+        }
       }
     }
+    // Redirect to the product detail page
+    navigate(`/product/${bookId}`);
   };
 
   // Smarter Scrolling Logic for arrows
   const scroll = (direction) => {
-    if (sliderRef.current && bestSellerBooks.length > 0) {
-      const cardsToMove = 4; // FIXED: Scroll exactly 4 cards at once
+    if (sliderRef.current && books.length > 0) {
+      const cardsToMove = 4; // Scroll exactly 4 cards at once
 
       let targetIndex;
       if (direction === 'left') {
         targetIndex = Math.max(0, activeCardIndex - cardsToMove);
       } else { // direction === 'right'
-        targetIndex = Math.min(bestSellerBooks.length - 1, activeCardIndex + cardsToMove);
+        targetIndex = Math.min(books.length - 1, activeCardIndex + cardsToMove);
       }
-
 
       if (targetIndex === activeCardIndex) {
           if (direction === 'left' && activeCardIndex > 0) {
               targetIndex = activeCardIndex - 1;
-          } else if (direction === 'right' && activeCardIndex < bestSellerBooks.length - 1) {
+          } else if (direction === 'right' && activeCardIndex < books.length - 1) {
               targetIndex = activeCardIndex + 1;
           }
       }
 
       if (targetIndex !== activeCardIndex) { // Only scroll if the target is different
-          handleCardClick(targetIndex);
+          handleCardClick(books[targetIndex].id); // Pass the ID for scrolling and redirection
       }
     }
   };
@@ -79,14 +111,13 @@ const BestSellerSlider = ({ headingText = "Best Sellers" }) => {
 
     const handleScroll = () => {
       const scrollLeft = slider.scrollLeft;
-      const clientWidth = slider.clientWidth; // Get client width to check scroll end accurately
+      const clientWidth = slider.clientWidth;
       const scrollWidth = slider.scrollWidth;
       const cardElements = Array.from(slider.children);
 
       let closestCardIndex = 0;
       let minDistance = Infinity;
 
-      // Find the card closest to the center of the viewport
       cardElements.forEach((card, index) => {
         const cardCenter = card.offsetLeft + card.offsetWidth / 2;
         const viewportCenter = scrollLeft + clientWidth / 2;
@@ -98,11 +129,10 @@ const BestSellerSlider = ({ headingText = "Best Sellers" }) => {
         }
       });
 
-      // Handle edge cases for the very first and very last cards
-      if (scrollLeft < 1) { // If scrolled almost to the very beginning
+      if (scrollLeft < 1) {
         closestCardIndex = 0;
-      } else if (scrollLeft + clientWidth >= scrollWidth - 1) { // If scrolled almost to the very end
-        closestCardIndex = bestSellerBooks.length - 1;
+      } else if (scrollLeft + clientWidth >= scrollWidth - 1) {
+        closestCardIndex = books.length - 1;
       }
 
       if (closestCardIndex !== activeCardIndex) {
@@ -116,7 +146,34 @@ const BestSellerSlider = ({ headingText = "Best Sellers" }) => {
     return () => {
       slider.removeEventListener('scroll', handleScroll);
     };
-  }, [bestSellerBooks.length, activeCardIndex]); // Re-run if number of books changes or active index changes
+  }, [books.length, activeCardIndex]);
+
+
+  if (loading) {
+    return (
+      <section className="pt-10 px-4 md:px-8 lg:px-12 flex justify-center items-center h-64">
+        <Spinner className="h-12 w-12" />
+        <p className="ml-4 text-lg text-gray-700">Loading {headingText}...</p>
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section className="pt-10 px-4 md:px-8 lg:px-12 text-center text-red-600">
+        <p className="text-xl font-semibold">Error loading {headingText}:</p>
+        <p>{error}</p>
+      </section>
+    );
+  }
+
+  if (books.length === 0) {
+    return (
+      <section className="pt-10 px-4 md:px-8 lg:px-12 text-center text-gray-600">
+        <p className="text-xl font-semibold">No {headingText.toLowerCase()} found.</p>
+      </section>
+    );
+  }
 
 
   return (
@@ -129,10 +186,10 @@ const BestSellerSlider = ({ headingText = "Best Sellers" }) => {
         <a
           href="#" // Replace with your actual "view all" page URL
           className="flex items-center text-black hover:text-blue-600 transition-colors duration-200
-                             font-semibold text-lg md:text-xl group" // Added group for hover effect on arrow
+                     font-semibold text-lg md:text-xl group"
         >
-          <h2 className='mt-2 text-base sm:text-lg md:text-xl'>View More</h2> {/* Adjusted font sizes for responsiveness */}
-          <span className="ml-2 text-2xl sm:text-3xl md:text-4xl">›</span> {/* Adjusted arrow size for responsiveness */}
+          <h2 className='mt-2 text-base sm:text-lg md:text-xl'>View More</h2>
+          <span className="ml-2 text-2xl sm:text-3xl md:text-4xl">›</span>
         </a>
       </div>
 
@@ -154,20 +211,25 @@ const BestSellerSlider = ({ headingText = "Best Sellers" }) => {
         </button>
 
         {/* Scrollable Container Wrapper */}
-        <div className="relative w-full max-w-7xl mx-auto overflow-hiddenS">
+        <div className="relative w-full max-w-7xl mx-auto overflow-hidden">
           {/* Actual Scrollable Content */}
           <div
             ref={sliderRef}
-            className="flex overflow-x-auto overflow-y-hidden px-4 sm:px-8 py-4 space-x-10" /* Added overflow-y-hidden */
+            className="flex overflow-x-auto overflow-y-hidden px-4 sm:px-8 py-4 space-x-10"
             style={{ scrollSnapType: 'x mandatory', scrollBehavior: 'smooth' }}
           >
-            {bestSellerBooks.map((book, index) => (
-              <div key={book.id} className="scroll-snap-align-center flex-shrink-0">
-                <Cards // Using the inlined 'Card' component
-                  book={book}
-                  index={index}
-                  isActive={index === activeCardIndex} // Pass isActive prop (for dot logic, not card styling now)
-                  onCardClick={handleCardClick}
+            {books.map((book, index) => (
+              <div key={book._id} className="scroll-snap-align-center flex-shrink-0 w-[260px]"> {/* Added fixed width here */}
+                <Cards
+                  book={{
+                    id: book._id, // Pass _id as id
+                    title: book.name,
+                    author: book.author,
+                    rating: book.rating || 0,
+                    price: `LKR ${book.price.toFixed(2)}`,
+                    image: book.thumbnailUrl || 'https://placehold.co/300x400?text=No+Image',
+                  }}
+                  onCardClick={handleCardClick} // Pass the handleCardClick for redirection
                 />
               </div>
             ))}
@@ -187,10 +249,6 @@ const BestSellerSlider = ({ headingText = "Best Sellers" }) => {
           </svg>
         </button>
       </div>
-
-
-     
-
     </section>
   );
 };

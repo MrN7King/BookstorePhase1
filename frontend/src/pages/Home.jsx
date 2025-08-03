@@ -18,8 +18,6 @@ const Home = () => {
      <div className="pt-20"><PremAccLink/></div>
      <PremiumSlider/>
      <div className='w-full pt-4'> <Info_Homepage /> </div>
-      
-      
       <div className="pt-4"><Newsletter /></div>
      <div><FooterWithSitemap /></div>
     </>

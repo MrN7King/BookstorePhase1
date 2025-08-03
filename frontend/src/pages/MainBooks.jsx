@@ -7,20 +7,19 @@ import { FooterWithSitemap } from '../sections/Footer';
 
 const MainBooks = () => {
   return (
-  <>
-    <div className='container mx-auto pt-8 overflow-hidden'>
-         <Navigation /></div>
-         <HeroTwo />
-         <GenreSlides />
-         <BestSellerSlider />
-         <BestSellerSlider headingText="Newest Books"/>
-         <BestSellerSlider headingText="Popular Books"/>
-         <div className="pt-20"><Newsletter /></div>
-         <FooterWithSitemap/>
-         
-
+    <>
+      <div className='container mx-auto pt-8 overflow-hidden'>
+        <Navigation />
+      </div>
+      <HeroTwo />
+      <GenreSlides />
+      <BestSellerSlider headingText="Best Sellers" fetchType="random" />
+      <BestSellerSlider headingText="Newest Books" fetchType="newest" />
+      <BestSellerSlider headingText="Popular Books" fetchType="random" />
+      <div className="pt-20"><Newsletter /></div>
+      <FooterWithSitemap />
     </>
-  )
+  );
 }
 
-export default MainBooks
+export default MainBooks;

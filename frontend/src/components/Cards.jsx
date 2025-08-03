@@ -2,7 +2,9 @@
 
 const STAR_SVG_PATH = "M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.538 1.118l-2.8-2.034a1 1 0 00-1.176 0l-2.8 2.034c-.783.57-1.838-.197-1.538-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.462a1 1 0 00.95-.69l1.07-3.292z";
 
-const Card = ({ book, index, onCardClick }) => {
+// ... (previous imports and STAR_SVG_PATH)
+
+const Card = ({ book, onCardClick }) => { // Remove 'index' from props
   if (!book) return null;
 
   const renderStars = (rating) => {
@@ -46,16 +48,20 @@ const Card = ({ book, index, onCardClick }) => {
 
   return (
     <div
-      onClick={() => onCardClick?.(index)}
+       onClick={() => {
+        console.log("Card clicked, navigating with ID:", book.id); // ADD THIS LINE
+        onCardClick?.(book.id);
+      } 
+      } 
       className="
-  relative group flex flex-col w-full max-w-[250px]
-  rounded-2xl shadow-md border border-white/10 overflow-hidden cursor-pointer
-  bg-gradient-to-br from-[#f0f9ff] via-[#e0f2fe] to-[#e3fff9]
-  transition-shadow hover:shadow-xl duration-300
+ relative group flex flex-col w-full max-w-[250px]
+ rounded-2xl shadow-md border border-white/10 overflow-hidden cursor-pointer
+ bg-gradient-to-br from-[#f0f9ff] via-[#e0f2fe] to-[#e3fff9]
+ transition-shadow hover:shadow-xl duration-300
 "
- >
+   >
       {/* Book Cover */}
-      <div className="relative w-full md:h-[300px] overflow-hidden ">
+      <div className="relative w-full h-[200px] md:h-[300px] overflow-hidden">
         <img
           src={book.image || "https://placehold.co/160x220/eeeeee/444444?text=Book"}
           alt={book.title || "Book Cover"}
@@ -73,7 +79,7 @@ const Card = ({ book, index, onCardClick }) => {
         <h3 className="text-base font-semibold text-gray-900 line-clamp-2">{book.title || "Untitled Book"}</h3>
         <p className="text-sm text-gray-600">{book.author || "Unknown Author"}</p>
         <div className="flex items-center justify-between mt-1">
-          <span className="text-sm font-semibold text-sky-700">{book.price ? `${book.price}` : "Free"}</span>
+          <span className="text-xs font-semibold text-sky-700">{book.price ? `${book.price}` : "Free"}</span>
           {renderStars(book.rating || 0)}
           
         </div>

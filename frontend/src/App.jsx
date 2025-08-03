@@ -1,7 +1,9 @@
 //file: frontend/src/App.jsx
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
+import ScrollToTop from './components/ScrollToTop.jsx';
 import AboutUs from './pages/AboutUs';
 import AllBooks from './pages/AllBooks';
+import AllPremiumAccounts from './pages/AllPremiumAccounts'; // Importing the AllPremiumAccounts component
 import CartPage from './pages/CartPage'; // Importing the ShoppingPage component
 import CheckoutDetailsPage from './pages/CheckoutDetailsPage';
 import ContactUs from './pages/ContactUs';
@@ -17,6 +19,8 @@ import AdminMainPage from './pages/admin/adminPages/AdminMainPage.tsx'; // Impor
 
 const App = () => {
   return (
+    <>
+      <ScrollToTop /> {/* This will scroll to the top of the page on route change */}
     <Routes>
       <Route path={"/"} element={<Home />} />
       <Route path="*" element={<PageNotFound/>} />
@@ -32,9 +36,12 @@ const App = () => {
       <Route path='/contactus' element={<ContactUs/>}/>
       <Route path='/aboutus' element={<AboutUs/>} />
       <Route path='/profilesettings' element={<ProfileSettings /> }/>
+        <Route path='/product/:bookId' element={<ProductPage />}/>
       {/* Admin pages */}
+      <Route path='/AllPremiumAccounts' element={<AllPremiumAccounts />} />
       <Route path='/admin/*' element={<AdminMainPage />} />
     </Routes>
+    </>
   )
 }
 

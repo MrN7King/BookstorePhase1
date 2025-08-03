@@ -1,8 +1,8 @@
 import { FooterWithSitemap } from "@/sections/Footer";
+import GenreSpecificBody from "@/sections/GenreSpecificBody"; // Adjusted import path to match the new structure
 import Navigation from "@/sections/Navigation";
-import GenreSpecificBody from "@/sections/GenreSpecificBody";// Adjusted import path to match the new structure
 import GenreBanner from '../components/GenreBanner'; // Path: src/app/page.jsx -> ../components/GenreBanner.jsx
-import GenreSection from "../components/GenreSection";  
+
 
 const GenreSpecificPage = () => {
   return (

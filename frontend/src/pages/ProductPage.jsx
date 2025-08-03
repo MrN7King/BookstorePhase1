@@ -5,7 +5,7 @@ import ProductDetails from "@/sections/productDetails";
 const ProductPage = () => {
   return (
     <>
-    <div className='container mx-auto pt-16 overflow-hidden'>
+    <div className='container mx-auto pt-6 overflow-hidden'>
      <Navigation /></div>
      <ProductDetails />
      

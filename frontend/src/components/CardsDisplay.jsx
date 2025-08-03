@@ -2,46 +2,25 @@
 
 import Cards from "@/components/Cards";
 import { Spinner } from "@material-tailwind/react";
-import axios from "axios";
 import { useEffect, useRef, useState } from "react";
+import { useNavigate } from 'react-router-dom';
 
-const BooksDisplay = () => {
-  const [books, setBooks] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+// BooksDisplay now accepts 'books', 'loading', 'error' as props
+const BooksDisplay = ({ books, loading, error }) => {
+  const navigate = useNavigate();
+
+
   const [visibleCount, setVisibleCount] = useState(12);
   const BOOKS_PER_LOAD = 12;
-  const observerRef = useRef(); // Ref for Intersection Observer
+  const observerRef = useRef();
 
-  useEffect(() => {
-    const fetchEbooks = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const response = await axios.get('http://localhost:5000/api/productEbook/AllBooks');
 
-        if (response.data.success) {
-          const fetchedEbooks = response.data.ebooks.filter(book => book.type === 'ebook');
-          setBooks(fetchedEbooks);
-        } else {
-          setError(response.data.message || 'Failed to fetch ebooks.');
-        }
-      } catch (err) {
-        console.error('Error fetching ebooks:', err.response?.data || err.message);
-        setError('Failed to load books. Please try again later.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchEbooks();
-  }, []);
-
-  // Infinite scroll logic
+  // Infinite scroll logic - now depends on the 'books' prop's length
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && visibleCount < books.length) {
+        // Only load more if not currently loading and there are more books to show
+        if (!loading && entries[0].isIntersecting && visibleCount < books.length) {
           setVisibleCount((prev) => prev + BOOKS_PER_LOAD);
         }
       },
@@ -61,8 +40,14 @@ const BooksDisplay = () => {
         observer.unobserve(observerRef.current);
       }
     };
-  }, [books.length, visibleCount]);
+  }, [books.length, visibleCount, loading]); // Added 'loading' to dependencies
 
+  // Handler for when a card is clicked - now redirects to product page
+  const handleCardClick = (bookId) => {
+    navigate(`/product/${bookId}`);
+  };
+
+  // The loading, error, and no books found checks are now handled by the props
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -84,8 +69,8 @@ const BooksDisplay = () => {
   if (books.length === 0) {
     return (
       <div className="text-center p-4 text-gray-600">
-        <p className="text-xl font-semibold">No ebooks found.</p>
-        <p>It looks like there are no ebooks available at the moment.</p>
+        <p className="text-xl font-semibold">No ebooks found matching your criteria.</p>
+        <p>Try adjusting your filters.</p>
       </div>
     );
   }
@@ -104,7 +89,7 @@ const BooksDisplay = () => {
               price: `LKR ${book.price.toFixed(2)}`,
               image: book.thumbnailUrl || 'https://placehold.co/300x400?text=No+Image',
             }}
-            onCardClick={() => console.log("Clicked:", book.name)}
+            onCardClick={handleCardClick}
           />
         ))}
       </div>
