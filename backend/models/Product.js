@@ -15,6 +15,8 @@ const ProductSchema = new mongoose.Schema({
   isAvailable: { type: Boolean, default: true },
   status: { type: String, enum: ['active', 'inactive'], default: 'active' },
   tags: { type: [String], default: [] },
+  thumbnailUrl: { type: String, default: '' },
+  thumbnailPublicId: { type: String, default: '' },
   deliveryFormat: { type: String, default: 'email' },
 }, baseOptions);
 

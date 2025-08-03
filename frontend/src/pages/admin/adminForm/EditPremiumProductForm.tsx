@@ -9,6 +9,8 @@ import Button from '../adminUI/Button';
 import Alert from '../adminUI/Alert';
 import { PremiumProduct } from '../adminComponents/PremiumAccountsTable';
 import Label from "./FormElements/Label.tsx";
+import DropzoneComponent from './FormElements/DropZone'; 
+import MultiSelect from './input/MultiSelect';
 
 interface EditFormProps {
     productId: string;
@@ -17,14 +19,34 @@ interface EditFormProps {
 }
 
 export default function EditPremiumProductForm({ productId, onSaved, onDeleted }: EditFormProps) {
-    const [product, setProduct] = useState<Partial<PremiumProduct & { description?: string; tags?: string[] }>>({});
+    const [product, setProduct] = useState<Partial<PremiumProduct & { description?: string; tags?: string[]; thumbnailUrl?: string; }>>({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [message, setMessage] = useState<string | null>(null);
 
+    const tagOptions = [
+        { value: "software", text: "Software" },
+        { value: "subscription", text: "Subscription" },
+        { value: "license", text: "License" },
+        { value: "premium", text: "Premium" },
+        { value: "account", text: "Account" },
+        { value: "Special-Products", text: "Special Products" },
+    ];
+
+     // thumbnail state
+    const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
+    const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
+    const [isUploading, setIsUploading] = useState(false);
+
     useEffect(() => {
         axios.get(`http://localhost:5000/api/premium/${productId}`)
-            .then(res => { setProduct(res.data); setLoading(false); })
+            .then(res => { 
+                setProduct(res.data); setLoading(false); 
+                if (res.data.thumbnailUrl) {
+                    setThumbnailPreview(res.data.thumbnailUrl);
+                }
+                 setLoading(false);
+            })
             .catch(() => setError('Failed to load product'));
     }, [productId]);
 
@@ -34,6 +56,17 @@ export default function EditPremiumProductForm({ productId, onSaved, onDeleted }
             return () => clearTimeout(timeout);
         }
     }, [message]);
+
+    // Handle thumbnail changes
+    const handleThumbnailChange = (file: File | null) => {
+        setThumbnailFile(file);
+        if (file) {
+            const previewUrl = URL.createObjectURL(file);
+            setThumbnailPreview(previewUrl);
+        } else {
+            setThumbnailPreview(product.thumbnailUrl || null);
+        }
+    };
 
     // Clear message when product changes
     useEffect(() => {
@@ -45,23 +78,57 @@ export default function EditPremiumProductForm({ productId, onSaved, onDeleted }
     };
 
     const handleSave = async () => {
-        try {
-            const res = await axios.put(`http://localhost:5000/api/premium/${productId}`, product);
-            setMessage('Updated successfully');
-            onSaved(res.data);
-        }  catch (err: any) {
-        if (
-            err.response?.status === 400 &&
-            err.response?.data?.code === 11000 &&
-            err.response?.data?.keyPattern?.slug
-        ) {
-            setMessage('Slug already exists. Please choose a different one.');
-        } else if (err.response?.data?.message) {
-            setMessage(err.response.data.message);
-        } else {
-            setMessage('Update failed. Please try again.');
+         setIsUploading(true);
+        setMessage(null);
+        setError(null);
+
+          try {
+            const formData = new FormData();
+            
+            // Append text fields
+            formData.append('name', product.name || '');
+            formData.append('slug', product.slug || '');
+            formData.append('description', product.description || '');
+            formData.append('price', String(product.price || 0));
+            formData.append('isAvailable', String(product.isAvailable || false));
+            formData.append('status', product.status || 'active');
+
+            formData.append('tags', product.tags ? product.tags.join(',') : '');
+
+            formData.append('platform', product.platform || '');
+            formData.append('duration', product.duration || '');
+            formData.append('licenseType', product.licenseType || 'key');
+            
+            // Append thumbnail if changed
+            if (thumbnailFile) {
+                formData.append('thumbnail', thumbnailFile);
+            }
+
+            const response = await axios.put(
+                `http://localhost:5000/api/premium/${productId}`,
+                formData,
+                {
+                    headers: {
+                        'Content-Type': 'multipart/form-data'
+                    }
+                }
+            );
+
+            setMessage('Product updated successfully');
+            onSaved(response.data);
+        } catch (err: any) {
+            let errorMsg = 'Update failed. Please try again.';
+            
+            if (err.response?.data?.message) {
+                errorMsg = err.response.data.message;
+            } else if (err.message) {
+                errorMsg = err.message;
+            }
+            
+            setError(errorMsg);
+        } finally {
+            setIsUploading(false);
         }
-    }
 
     };
 
@@ -112,6 +179,16 @@ export default function EditPremiumProductForm({ productId, onSaved, onDeleted }
                     defaultValue={product.status}
                     onChange={val => handleChange('status', val)} />
             </div>
+   
+            <div>
+                <Label>Tags</Label>
+                <MultiSelect 
+                    label="Tags" 
+                    options={tagOptions} 
+                    onChange={(selectedTags) => handleChange('tags', selectedTags)} 
+                    defaultSelected={product.tags || []} 
+                />
+            </div>
 
             <div>
                 <Label htmlFor="platform">Platform</Label>
@@ -134,8 +211,36 @@ export default function EditPremiumProductForm({ productId, onSaved, onDeleted }
                     onChange={val => handleChange('licenseType', val)} />
             </div>
 
+            <div>
+            {/* Add thumbnail section */}
+                <Label>Thumbnail</Label>
+                <DropzoneComponent 
+                    onFileSelected={handleThumbnailChange}
+                    acceptedTypes={['image/jpeg', 'image/png', 'image/webp']}
+                    maxSize={2 * 1024 * 1024} // 2MB
+                />
+                {thumbnailPreview && (
+                    <div className="mt-2 border border-gray-300 rounded-lg p-2 w-48">
+                        <img 
+                            src={thumbnailPreview} 
+                            alt="Thumbnail preview" 
+                            className="w-full h-auto rounded" 
+                        />
+                        <p className="text-xs text-gray-500 mt-1">
+                            {thumbnailFile ? "New thumbnail" : "Current thumbnail"}
+                        </p>
+                    </div>
+                )}
+            </div>
+
             <div className="flex gap-2 justify-center">
-                <Button variant="primary" onClick={handleSave}>Save Changes</Button>
+                <Button 
+                    variant="primary" 
+                    onClick={handleSave}
+                    disabled={isUploading}
+                >
+                    {isUploading ? 'Saving...' : 'Save Changes'}
+                </Button>
                 <Button variant="destruction" onClick={handleDelete}>Delete</Button>
             </div>
 

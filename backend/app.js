@@ -15,9 +15,16 @@ import sliderEbookRoutes from './routes/sliderEbooksRoutes.js'; // Import slider
 import uploadRoutes from './routes/uploadRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 //to upload ebook to backblaze b2 bucket
+import cloudinary from 'cloudinary';
 import ebookUploadRoutes from './routes/ebookUploadRoutes.js';
 import premiumCodeRoutes from './routes/premiumCodesRoutes.js';
 import premiumProductRoutes from './routes/PremiumProductRoutes.js'; // Import premium product routes
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
 
 const app = express();
 

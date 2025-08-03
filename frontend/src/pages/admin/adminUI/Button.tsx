@@ -2,8 +2,8 @@ import { ReactNode } from "react";
 
 interface ButtonProps {
   children: ReactNode; // Button text or content
-  size?: "sm" | "md"; // Button size
-  variant?: "primary" | "outline" | "destruction"; // Button variant
+  size?:"xs" | "sm" | "md" ; // Button size
+  variant?: "primary" | "outline" | "destruction" | "lightDestruction"; // Button variant
   startIcon?: ReactNode; // Icon before the text
   endIcon?: ReactNode; // Icon after the text
   onClick?: () => void; // Click handler
@@ -23,6 +23,7 @@ const Button: React.FC<ButtonProps> = ({
 }) => {
   // Size Classes
   const sizeClasses = {
+    xs: "px-2.5 py-0.5 font-medium",
     sm: "px-4 py-3 text-sm",
     md: "px-5 py-3.5 text-sm",
   };
@@ -35,7 +36,8 @@ const Button: React.FC<ButtonProps> = ({
       "bg-white text-gray-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-400 dark:ring-gray-700 dark:hover:bg-white/[0.03] dark:hover:text-gray-300",
     destruction:
       "focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 rounded-lg dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900",
-  
+    lightDestruction:
+      "focus:outline-none bg-error-50 hover:bg-red-600 hover:text-white text-error-600 dark:bg-error-500/15 dark:text-error-500",     
   };
 
   return (
