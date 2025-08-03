@@ -12,9 +12,9 @@ import Home from "./pages/Home";
 import MainBooks from './pages/MainBooks';
 import PageNotFound from './pages/PageNotFound';
 import PaymentPage from './pages/PaymentPage'; // Importing the PaymentPage component
+import PremiumProductPage from './pages/PremiumProductPage'; // Importing the PremiumProductPage component
 import ProductPage from './pages/ProductPage';
 import ProfileSettings from './pages/ProfileSettings';
-
 import AdminMainPage from './pages/admin/adminPages/AdminMainPage.tsx'; // Importing the AdminDashboard component
 
 const App = () => {
@@ -37,6 +37,12 @@ const App = () => {
       <Route path='/aboutus' element={<AboutUs/>} />
       <Route path='/profilesettings' element={<ProfileSettings /> }/>
         <Route path="/product/:bookId/:bookSlug?" element={<ProductPage />}/>
+            {/* Premium Accounts Routes */}
+        {/* Route for the main listing of all premium accounts */}
+        <Route path='/premium-accounts' element={<AllPremiumAccounts />} />
+      <Route path="/premium-product/:id/:slug?" element={<PremiumProductPage />} />
+
+
       {/* Admin pages */}
       <Route path='/AllPremiumAccounts' element={<AllPremiumAccounts />} />
       <Route path='/admin/*' element={<AdminMainPage />} />

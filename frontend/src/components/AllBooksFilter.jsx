@@ -1,3 +1,5 @@
+"use client";
+
 import { useCallback, useState } from 'react';
 import { Range, getTrackBackground } from 'react-range';
 
@@ -17,11 +19,10 @@ const BOOK_CATEGORIES = [
 ];
 const BOOK_FORMATS = ['E-Book', 'Audiobook'];
 
-
 const ACCOUNT_DURATIONS = ['1 Month', '3 Months', '6 Months', '1 Year', 'Lifetime'];
 const ACCOUNT_LICENSE_TYPES = ['Activation Key', 'Account Login', 'Serial Number'];
 const ACCOUNT_TAGS = ['Software', 'Subscription', 'License', 'Premium', 'Account', 'Special Products'];
-
+// Removed ACCOUNT_PLATFORMS as requested
 
 export const AllBooksFilter = ({ onClose, onApplyFilters, showCategories = true }) => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -314,23 +315,22 @@ export const AllBooksFilter = ({ onClose, onApplyFilters, showCategories = true 
 };
 
 
-
- 
 export const PremiumAccountFilter = ({ onClose, onApplyFilters }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [priceRange, setPriceRange] = useState([MIN_ACCOUNT_PRICE, MAX_ACCOUNT_PRICE]);
-  const [selectedPlatforms, setSelectedPlatforms] = useState([]);
+  // Removed selectedPlatforms state
   const [selectedDurations, setSelectedDurations] = useState([]);
   const [selectedLicenseTypes, setSelectedLicenseTypes] = useState([]);
-  const [selectedDeliveryFormats, setSelectedDeliveryFormats] = useState([]);
   const [selectedTags, setSelectedTags] = useState([]);
-  const [status, setStatus] = useState(null); // 'available' or 'not_available'
+  const [status, setStatus] = useState(''); // 'active' or 'inactive'
 
   // Default open state for filter sections
   const [isPriceOpen, setIsPriceOpen] = useState(true);
+  // Removed isPlatformOpen state
   const [isDurationOpen, setIsDurationOpen] = useState(true);
   const [isLicenseTypeOpen, setIsLicenseTypeOpen] = useState(true);
   const [isTagsOpen, setIsTagsOpen] = useState(false); // Tags often start closed
+  const [isStatusOpen, setIsStatusOpen] = useState(true); // State for status filter
 
 
   const handleSearchChange = (e) => {
@@ -349,19 +349,20 @@ export const PremiumAccountFilter = ({ onClose, onApplyFilters }) => {
         ? prevSelected.filter((i) => i !== item)
         : [...prevSelected, item]
     );
-  }, []); // useCallback to memoize this function
+  }, []);
 
   const toggleSection = useCallback((setter) => {
     setter((prev) => !prev);
-  }, []); // useCallback to memoize this function
+  }, []);
 
   const resetFilters = () => {
     setSearchQuery('');
     setPriceRange([MIN_ACCOUNT_PRICE, MAX_ACCOUNT_PRICE]);
+    // Removed setSelectedPlatforms([])
     setSelectedDurations([]);
     setSelectedLicenseTypes([]);
     setSelectedTags([]);
-    setStatus(null);
+    setStatus(''); // Reset status
     if (onApplyFilters) {
       onApplyFilters({});
     }
@@ -372,10 +373,9 @@ export const PremiumAccountFilter = ({ onClose, onApplyFilters }) => {
       searchQuery: searchQuery || undefined,
       minPrice: priceRange[0],
       maxPrice: priceRange[1],
-      platform: selectedPlatforms.length > 0 ? selectedPlatforms.join(',') : undefined,
+      // Removed platform from filters
       duration: selectedDurations.length > 0 ? selectedDurations.join(',') : undefined,
       licenseType: selectedLicenseTypes.length > 0 ? selectedLicenseTypes.join(',') : undefined,
-      deliveryFormat: selectedDeliveryFormats.length > 0 ? selectedDeliveryFormats.join(',') : undefined,
       tags: selectedTags.length > 0 ? selectedTags.join(',') : undefined,
       status: status || undefined,
     };
@@ -513,6 +513,8 @@ export const PremiumAccountFilter = ({ onClose, onApplyFilters }) => {
         )}
       </div>
 
+      {/* Removed Platforms Section */}
+
       <div className="mb-6 border-b border-gray-200 pb-4">
         <button
           className="flex items-center justify-between w-full text-lg font-semibold text-gray-800 focus:outline-none"
@@ -600,7 +602,54 @@ export const PremiumAccountFilter = ({ onClose, onApplyFilters }) => {
         )}
       </div>
 
-      
+      {/* NEW: Status Section */}
+      <div className="mb-6 border-b border-gray-200 pb-4">
+        <button
+          className="flex items-center justify-between w-full text-lg font-semibold text-gray-800 focus:outline-none"
+          onClick={() => toggleSection(setIsStatusOpen)}
+          aria-expanded={isStatusOpen}
+          aria-controls="status-section-accounts"
+        >
+          Status
+          <svg className={`w-5 h-5 text-gray-600 transform transition-transform duration-200 ${isStatusOpen ? 'rotate-90' : 'rotate-0'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+          </svg>
+        </button>
+        {isStatusOpen && (
+          <div id="status-section-accounts" className="mt-4 space-y-3">
+            <label className="flex items-center cursor-pointer">
+              <input
+                type="radio"
+                name="account-status"
+                className="form-radio h-5 w-5 text-blue-600 focus:ring-blue-500"
+                checked={status === 'active'}
+                onChange={() => setStatus('active')}
+              />
+              <span className="ml-3 text-base text-gray-700">Available (Active)</span>
+            </label>
+            <label className="flex items-center cursor-pointer">
+              <input
+                type="radio"
+                name="account-status"
+                className="form-radio h-5 w-5 text-blue-600 focus:ring-blue-500"
+                checked={status === 'inactive'}
+                onChange={() => setStatus('inactive')}
+              />
+              <span className="ml-3 text-base text-gray-700">Not Available (Inactive)</span>
+            </label>
+            <label className="flex items-center cursor-pointer">
+              <input
+                type="radio"
+                name="account-status"
+                className="form-radio h-5 w-5 text-blue-600 focus:ring-blue-500"
+                checked={status === ''}
+                onChange={() => setStatus('')} // Option to clear status filter
+              />
+              <span className="ml-3 text-base text-gray-700">All</span>
+            </label>
+          </div>
+        )}
+      </div>
 
       <div className="mt-7 pt-4 sticky bottom-0 bg-white shadow-lg lg:shadow-none flex justify-center">
         <button

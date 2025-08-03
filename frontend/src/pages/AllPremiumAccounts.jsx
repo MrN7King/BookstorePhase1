@@ -10,7 +10,7 @@ const AllBooks = () => {
      <Navigation /></div>
       <GenreSlides />
       <h2 style={{ fontFamily: 'Inter, sans-serif' }} className=" py-4 text-3xl md:text-4xl font-extrabold text-center text-gray-800">
-        All Books
+        All Accounts
       </h2>
       <hr></hr>
      <AllPremiumAccountsBody/>

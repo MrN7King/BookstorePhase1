@@ -1,32 +1,35 @@
-// components/PremiumAccountsDisplay.jsx (or wherever you prefer to place it)
 "use client";
 
 import Card from "@/components/Cards"; // Assuming Cards.jsx is in components/Cards.jsx
 import { Spinner } from "@material-tailwind/react";
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from 'react-router-dom'; // Assuming you are using react-router-dom
+import { useNavigate } from 'react-router-dom';
 
-const PREMIUM_ACCOUNTS_PER_LOAD = 12; // Adjusted constant name
-
-const PremiumAccountsDisplay = ({ premiumAccounts, loading, error }) => {
+const PremiumAccountsDisplay = ({ premiumAccounts, loading, error, loadMore, hasMore }) => {
   const navigate = useNavigate();
-
-  const [visibleCount, setVisibleCount] = useState(PREMIUM_ACCOUNTS_PER_LOAD);
   const observerRef = useRef();
 
-  // Infinite scroll logic - now depends on the 'premiumAccounts' prop's length
+  // State to track if the initial render with data has completed
+  const [initialRenderDone, setInitialRenderDone] = useState(false);
+
+  // Infinite scroll logic
   useEffect(() => {
+    // Only set up observer once the component has data (to avoid false positives on initial empty array)
+    if (!initialRenderDone && premiumAccounts.length > 0) {
+      setInitialRenderDone(true);
+    }
+
     const observer = new IntersectionObserver(
       (entries) => {
-        // Only load more if not currently loading and there are more premiumAccounts to show
-        if (!loading && entries[0].isIntersecting && visibleCount < premiumAccounts.length) {
-          setVisibleCount((prev) => prev + PREMIUM_ACCOUNTS_PER_LOAD);
+        // Trigger loadMore when the target is intersecting and there's more data to fetch
+        if (entries[0].isIntersecting && !loading && hasMore) {
+          loadMore(); // Call the loadMore function passed from the parent
         }
       },
       {
-        root: null,
+        root: null, // relative to the viewport
         rootMargin: "0px",
-        threshold: 1.0,
+        threshold: 1.0, // Trigger when 100% of the target is visible
       }
     );
 
@@ -34,20 +37,19 @@ const PremiumAccountsDisplay = ({ premiumAccounts, loading, error }) => {
       observer.observe(observerRef.current);
     }
 
+    // Cleanup function
     return () => {
       if (observerRef.current) {
         observer.unobserve(observerRef.current);
       }
     };
-  }, [premiumAccounts.length, visibleCount, loading]);
+  }, [loading, hasMore, loadMore, premiumAccounts.length, initialRenderDone]); // Dependencies updated
 
-  // Handler for when a card is clicked - now redirects to premium product page
   const handleCardClick = (premiumAccountId) => {
-    // IMPORTANT: Make sure you have a route like /premium-product/:id set up in your frontend router
     navigate(`/premium-product/${premiumAccountId}`);
   };
 
-  if (loading) {
+  if (loading && premiumAccounts.length === 0) { // Only show full spinner on initial load when no data is present
     return (
       <div className="flex justify-center items-center h-64">
         <Spinner className="h-12 w-12" />
@@ -77,18 +79,17 @@ const PremiumAccountsDisplay = ({ premiumAccounts, loading, error }) => {
   return (
     <div className="container mx-auto px-2 py-4">
       <div className="grid max-[325px]:grid-cols-1 max-[325px]:place-items-center min-[326px]:grid-cols-2 gap-5 sm:grid-cols-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
-        {premiumAccounts.slice(0, visibleCount).map((account) => (
+        {premiumAccounts.map((account) => (
           <Card
-            key={account._id} // Use _id from the backend data
-            book={{ // Mapping premium account data to the 'book' prop expected by the Card component
+            key={account._id}
+            book={{ // Mapping premium account data to the 'book' prop expected by Card
               id: account._id,
-              title: account.name || "Untitled Account", // Assuming 'name' from backend is the title
-              author: account.platform || "N/A", // Using platform as a secondary identifier if no specific 'author' equivalent
-              rating: account.rating || 0, // Premium accounts might not have ratings, default to 0
-              price: `LKR ${account.price ? account.price.toFixed(2) : '0.00'}`, // Ensure price is formatted
-              image: account.thumbnailUrl || 'https://placehold.co/300x400?text=No+Image', // Assuming thumbnailUrl for image
-              genre: account.platform || "Platform", // Using platform as the genre/category
-              // Add other relevant premium account fields here if Card can display them
+              title: account.name || "Untitled Account",
+              author: account.platform || "N/A", // Re-using 'author' for platform if needed for display
+              rating: account.rating || 0, // Assuming rating might be part of premium account
+              price: `LKR ${account.price ? account.price.toFixed(2) : '0.00'}`,
+              image: account.thumbnailUrl || 'https://placehold.co/300x400?text=No+Image',
+              genre: account.platform || "Platform", 
             }}
             onCardClick={handleCardClick}
           />
@@ -96,12 +97,16 @@ const PremiumAccountsDisplay = ({ premiumAccounts, loading, error }) => {
       </div>
 
       {/* Intersection Observer Trigger */}
-      {visibleCount < premiumAccounts.length && (
+      {hasMore && ( // Only show trigger if there's more to load
         <div
           ref={observerRef}
           className="w-full flex justify-center py-8"
         >
-          <Spinner className="h-10 w-10 text-sky-500" />
+          {loading ? ( // Show spinner only when loading more
+            <Spinner className="h-10 w-10 text-sky-500" />
+          ) : (
+            <div className="text-gray-500">Scroll down to load more...</div>
+          )}
         </div>
       )}
     </div>

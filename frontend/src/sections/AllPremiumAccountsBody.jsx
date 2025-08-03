@@ -1,17 +1,15 @@
-// src/sections/PremiumAccountsBody.jsx
-"use client"; // Important for Next.js app router components using hooks
+"use client";
 
-import axios from 'axios'; // Import axios for making HTTP requests
+import axios from 'axios';
 import { useCallback, useEffect, useState } from 'react';
-import { PremiumAccountFilter } from '../components/AllBooksFilter'; // Re-using AllBooksFilter, assuming it's renamed/adapted for PremiumAccounts
-import PremiumAccountsDisplay from '../components/PremiumCardDisplay'; // This is the component I provided previously, renamed for clarity
+import { PremiumAccountFilter } from '../components/AllBooksFilter'; // Correct path
+import PremiumAccountsDisplay from '../components/PremiumCardDisplay'; // Correct path
 
-// Assuming you have your API base URL defined, e.g., in a config file
 const API_BASE_URL = 'http://localhost:5000'; // Define your backend URL here
 
 export default function PremiumAccountsBody() {
   const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false);
-  const [premiumAccounts, setPremiumAccounts] = useState([]); // State for premium accounts
+  const [premiumAccounts, setPremiumAccounts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [pagination, setPagination] = useState({
@@ -48,12 +46,15 @@ export default function PremiumAccountsBody() {
       // Remove undefined values
       Object.keys(params).forEach(key => params[key] === undefined && delete params[key]);
 
-      // Adjust URL to your premium product API endpoint
       const response = await axios.get(`${API_BASE_URL}/api/premium`, { params });
 
-      // --- CRUCIAL CHANGE HERE ---
-      // Access the 'products' array from the response data
-      setPremiumAccounts(response.data.products || []); // Corrected property name from .premiumAccounts to .products
+      // Append new data for infinite scroll if page > 1, otherwise set new data
+      setPremiumAccounts(prevAccounts =>
+        page === 1
+          ? response.data.products || []
+          : [...prevAccounts, ...(response.data.products || [])]
+      );
+
       setPagination({
         page: response.data.page,
         limit: pagination.limit, // Keep original limit from state or response if provided
@@ -66,7 +67,7 @@ export default function PremiumAccountsBody() {
     } finally {
       setLoading(false);
     }
-  }, [pagination.limit]);
+  }, [pagination.limit]); // fetchPremiumAccounts now depends on pagination.limit
 
   // Handler for applying filters from the PremiumAccountFilter component
   const handleApplyFilters = (filters) => {
@@ -80,7 +81,13 @@ export default function PremiumAccountsBody() {
     fetchPremiumAccounts(activeFilters, pagination.page);
   }, [activeFilters, pagination.page, fetchPremiumAccounts]);
 
-  // Removed handleNextPage and handlePreviousPage as PremiumAccountsDisplay uses infinite scroll
+  // Adjust pagination.page for infinite scroll
+  const loadMorePremiumAccounts = useCallback(() => {
+    if (pagination.page < pagination.totalPages && !loading) {
+      setPagination(prev => ({ ...prev, page: prev.page + 1 }));
+    }
+  }, [pagination.page, pagination.totalPages, loading]);
+
 
   return (
     <div className="min-h-screen bg-white font-sans antialiased flex flex-col">
@@ -109,6 +116,8 @@ export default function PremiumAccountsBody() {
             premiumAccounts={premiumAccounts} // Pass fetched premium accounts
             loading={loading}
             error={error}
+            loadMore={loadMorePremiumAccounts} // Pass the loadMore function
+            hasMore={pagination.page < pagination.totalPages} // Indicate if more pages exist
           />
         </main>
       </div>
