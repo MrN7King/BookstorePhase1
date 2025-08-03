@@ -1,3 +1,5 @@
+//frontend/src/sections/PremAccLink.jsx
+
 "use client";
 
 
@@ -11,7 +13,7 @@ const PremAccLink = () => {
           Searching for premium accounts?
         </h2>
         <a
-          href="/premium-accounts"
+          href="/AllPremiumAccounts"
           className="bg-green-500 text-white py-3 px-6 sm:px-8 rounded-lg hover:bg-green-600 transition-colors duration-200 
                      shadow-md hover:shadow-lg inline-block text-sm sm:text-base"
         >

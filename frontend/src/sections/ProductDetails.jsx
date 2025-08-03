@@ -8,8 +8,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 // Define your API base URL here (from .env file)
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-const ProductDetails = () => {
-  const { bookId } = useParams();
+const ProductDetails = ({ bookId, bookSlug }) => { 
+  
   const navigate = useNavigate();
 
   const [book, setBook] = useState(null);
@@ -41,6 +41,22 @@ const ProductDetails = () => {
       fetchBookDetails();
     }
   }, [bookId]);
+
+
+useEffect(() => {
+  // This logic should only run if the book data has been successfully fetched
+  if (book && book.slug) {
+    // Use the slug directly from the fetched book object
+    const correctSlug = book.slug;
+
+    // If the current URL slug is missing or doesn't match the correct slug, update the URL
+    if (bookSlug !== correctSlug) {
+      // Using `Maps` with `replace: true` to prevent a new history entry
+       navigate(`/product/${bookId}/${correctSlug}`, { replace: true });
+      
+    }
+  }
+}, [book, bookId, bookSlug, navigate]);  
 
   const renderStars = (rating) => {
     const stars = [];
@@ -175,43 +191,39 @@ const ProductDetails = () => {
 
           {/* Tab Section: Adjusting font sizes for responsiveness */}
           <div className="flex justify-between border-b border-gray-200 mb-4 sm:mb-5">
-            
+
             <button
-              className={`flex-1 text-center py-2 px-1 text-xs sm:text-sm md:text-base cursor-pointer outline-none border-b-2 transition-all duration-300 ${
-                activeTab === 'description'
+              className={`flex-1 text-center py-2 px-1 text-xs sm:text-sm md:text-base cursor-pointer outline-none border-b-2 transition-all duration-300 ${activeTab === 'description'
                   ? 'text-gray-900 border-gray-900 font-semibold'
                   : 'text-gray-600 border-transparent hover:text-blue-600 hover:border-blue-600'
-              }`}
+                }`}
               onClick={() => setActiveTab('description')}
             >
               DESCRIPTION
             </button>
             <button
-              className={`flex-1 text-center py-2 px-1 text-xs sm:text-sm md:text-base cursor-pointer outline-none border-b-2 transition-all duration-300 ${
-                activeTab === 'reviews'
+              className={`flex-1 text-center py-2 px-1 text-xs sm:text-sm md:text-base cursor-pointer outline-none border-b-2 transition-all duration-300 ${activeTab === 'reviews'
                   ? 'text-gray-900 border-gray-900 font-semibold'
                   : 'text-gray-600 border-transparent hover:text-blue-600 hover:border-blue-600'
-              }`}
+                }`}
               onClick={() => setActiveTab('reviews')}
             >
               REVIEWS (0)
             </button>
             <button
-              className={`flex-1 text-center py-2 px-1 text-xs sm:text-sm md:text-base cursor-pointer outline-none border-b-2 transition-all duration-300 ${
-                activeTab === 'productDetails'
+              className={`flex-1 text-center py-2 px-1 text-xs sm:text-sm md:text-base cursor-pointer outline-none border-b-2 transition-all duration-300 ${activeTab === 'productDetails'
                   ? 'text-gray-900 border-gray-900 font-semibold'
                   : 'text-gray-600 border-transparent hover:text-blue-600 hover:border-blue-600'
-              }`}
+                }`}
               onClick={() => setActiveTab('productDetails')}
             >
               PRODUCT DETAILS
             </button>
             <button
-              className={`flex-1 text-center py-2 px-1 text-xs sm:text-sm md:text-base cursor-pointer outline-none border-b-2 transition-all duration-300 ${
-                activeTab === 'aboutTheAuthor'
+              className={`flex-1 text-center py-2 px-1 text-xs sm:text-sm md:text-base cursor-pointer outline-none border-b-2 transition-all duration-300 ${activeTab === 'aboutTheAuthor'
                   ? 'text-gray-900 border-gray-900 font-semibold'
                   : 'text-gray-600 border-transparent hover:text-blue-600 hover:border-blue-600'
-              }`}
+                }`}
               onClick={() => setActiveTab('aboutTheAuthor')}
             >
               ABOUT THE AUTHOR

@@ -100,6 +100,11 @@ const Navigation = () => {
     }, 300);
   };
 
+   const handleMenuItemClick = (path) => {
+    navigate(path);
+    closePanel();
+  };
+
   const goToBooksMenu = () => {
     setCurrentMenuLevel('books');
   };
@@ -109,11 +114,26 @@ const Navigation = () => {
     setExpandedCategory(null);
   };
 
+  const gotoContactUs = () => {
+    navigate('/contactus');
+    closePanel();
+  };
+
+  const gotoAboutUs = () => {
+    navigate('/aboutus');
+    closePanel();
+  };
+
   const toggleCategoryExpansion = (category) => {
     setExpandedCategory(expandedCategory === category ? null : category);
   };
 
-  const handleMenuItemClick = () => {
+  const gotoSubscriptions = () => {
+    setCurrentMenuLevel('subsriptions');
+  };
+
+  const handleGoAllPremium = () =>{
+    navigate('/AllPremiumAccounts');
     closePanel();
   };
 
@@ -252,7 +272,7 @@ const Navigation = () => {
               </button>
             </li>
             <li className="py-2 px-4">
-              <a href="#subscriptions" className="flex items-center justify-between w-full text-2xl font-bold uppercase hover:text-sky-500" onClick={handleMenuItemClick}>
+              <a href="#subscriptions" className="flex items-center justify-between w-full text-2xl font-bold uppercase hover:text-sky-500" onClick={gotoSubscriptions}>
                 SUBSCRIPTIONS<span className="ml-2 text-3xl">›</span>
               </a>
             </li>
@@ -288,9 +308,14 @@ const Navigation = () => {
               </div>
             )}
 
-            <div className="flex items-center justify-between py-3 px-4 cursor-pointer">
+            <div className="flex items-center justify-between py-3 px-4 cursor-pointer" onClick={gotoContactUs}>
               <span className="text-base text-gray-800 hover:text-sky-500">Contact Us</span>
               <img src="/icons/phone.svg" alt="Contact" className="w-8 h-8" />
+            </div>
+
+            <div className="flex items-center justify-between py-3 px-4 cursor-pointer" onClick={gotoAboutUs}>
+              <span className="text-base text-gray-800 hover:text-sky-500">About Us</span>
+              <img src="/icons/aboutus.svg" alt="Contact" className="w-8 h-8" />
             </div>
           </ul>
         </div>
@@ -383,6 +408,102 @@ const Navigation = () => {
                 <ul className="ml-4 mt-2 space-y-1 text-base pl-4">
                   <li className="hover:text-sky-500 cursor-pointer" onClick={handleMenuItemClick}>Fantasy YA</li>
                   <li className="hover:text-sky-500 cursor-pointer" onClick={handleMenuItemClick}>Contemporary YA</li>
+                </ul>
+              )}
+            </li>
+          </ul>
+        </div>
+
+        {/* Subscription Sub-Menu Level Content Wrapper */}
+        <div className={`absolute inset-0 transition-transform duration-300 ${
+          currentMenuLevel === 'subsriptions' ? 'translate-x-0' : 'translate-x-full'
+        }`}>
+          <div className="flex items-center justify-between p-4 sticky top-0 bg-white z-20">
+            <button onClick={goBackToMainMenu} className="hover:opacity-70 flex items-center text-left">
+              <span className="mr-2 font-bold text-4xl">‹</span>
+              <span className="text-2xl font-semibold text-gray-800 mt-2">SUBSCRIPTIONS</span>
+            </button>
+            <button onClick={closePanel} className="hover:opacity-70 p-2 mt-2.5">
+              <img src="/icons/close.svg" alt="Close" className="w-8 h-8" />
+            </button>
+          </div>
+          <ul className="flex flex-col text-lg pt-4 pb-4">
+            <li className="py-2 px-4">
+              <label className="hover:text-sky-500 cursor-pointer" onClick={handleGoAllPremium}>All Premium Accounts</label>
+            </li>
+            <li className="py-2 px-4">
+              <button
+              
+                onClick={() => toggleCategoryExpansion('Software')}
+                className="flex items-center justify-between w-full font-bold uppercase hover:text-sky-500"
+              >
+                Software <span className="ml-2 text-2xl">{expandedCategory === 'Software' ? '-' : '+'}</span>
+              </button>
+              {expandedCategory === 'Software' && (
+                <ul className="ml-4 mt-2 space-y-1 text-md pl-4">
+                  <li className="hover:text-sky-500 cursor-pointer" onClick={handleMenuItemClick}>New Releases</li>
+                  <li className="hover:text-sky-500 cursor-pointer" onClick={handleMenuItemClick}>Top Sellers</li>
+                  <li className="hover:text-sky-500 cursor-pointer" onClick={handleMenuItemClick}>Staff Picks</li>
+                </ul>
+              )}
+            </li>
+            <li className="py-2 px-4">
+              <button
+                onClick={() => toggleCategoryExpansion('Subscription')}
+                className="flex items-center justify-between w-full font-bold uppercase hover:text-sky-500"
+              >
+                Subscription <span className="ml-2 text-2xl">{expandedCategory === 'Subscription' ? '-' : '+'}</span>
+              </button>
+              {expandedCategory === 'Subscription' && (
+                <ul className="ml-4 mt-2 space-y-1 text-md pl-4">
+                  <li className="hover:text-sky-500 cursor-pointer" onClick={handleMenuItemClick}>New Releases</li>
+                  <li className="hover:text-sky-500 cursor-pointer" onClick={handleMenuItemClick}>Top Sellers</li>
+                  <li className="hover:text-sky-500 cursor-pointer" onClick={handleMenuItemClick}>Staff Picks</li>
+                </ul>
+              )}
+            </li>
+            <li className="py-2 px-4">
+              <button
+                onClick={() => toggleCategoryExpansion('License')}
+                className="flex items-center justify-between w-full font-bold uppercase hover:text-sky-500"
+              >
+                License <span className="ml-2 text-2xl">{expandedCategory === 'License' ? '-' : '+'}</span>
+              </button>
+              {expandedCategory === 'License' && (
+                <ul className="ml-4 mt-2 space-y-1 text-md pl-4">
+                  <li className="hover:text-sky-500 cursor-pointer" onClick={handleMenuItemClick}>New Releases</li>
+                  <li className="hover:text-sky-500 cursor-pointer" onClick={handleMenuItemClick}>Top Sellers</li>
+                  <li className="hover:text-sky-500 cursor-pointer" onClick={handleMenuItemClick}>Staff Picks</li>
+                </ul>
+              )}
+            </li>
+            <li className="py-2 px-4">
+              <button
+                onClick={() => toggleCategoryExpansion('Premium')}
+                className="flex items-center justify-between w-full font-bold uppercase hover:text-sky-500"
+              >
+                Premium <span className="ml-2 text-2xl">{expandedCategory === 'Premium' ? '-' : '+'}</span>
+              </button>
+              {expandedCategory === 'Premium' && (
+                <ul className="ml-4 mt-2 space-y-1 text-md pl-4">
+                  <li className="hover:text-sky-500 cursor-pointer" onClick={handleMenuItemClick}>New Releases</li>
+                  <li className="hover:text-sky-500 cursor-pointer" onClick={handleMenuItemClick}>Top Sellers</li>
+                  <li className="hover:text-sky-500 cursor-pointer" onClick={handleMenuItemClick}>Staff Picks</li>
+                </ul>
+              )}
+            </li>
+            <li className="py-2 px-4">
+              <button
+                onClick={() => toggleCategoryExpansion('Account')}
+                className="flex items-center justify-between w-full font-bold uppercase hover:text-sky-500"
+              >
+                Account <span className="ml-2 text-2xl">{expandedCategory === 'Account' ? '-' : '+'}</span>
+              </button>
+              {expandedCategory === 'Account' && (
+                <ul className="ml-4 mt-2 space-y-1 text-md pl-4">
+                  <li className="hover:text-sky-500 cursor-pointer" onClick={handleMenuItemClick}>New Releases</li>
+                  <li className="hover:text-sky-500 cursor-pointer" onClick={handleMenuItemClick}>Top Sellers</li>
+                  <li className="hover:text-sky-500 cursor-pointer" onClick={handleMenuItemClick}>Staff Picks</li>
                 </ul>
               )}
             </li>

@@ -126,7 +126,7 @@ const BestSellerSlider = ({ headingText = "Best Sellers" }) => {
           {headingText}
         </h2>
         <a
-          href="#" // Replace with your actual "view all" page URL
+          href="AllPremiumAccounts" // Replace with your actual "view all" page URL
           className="flex items-center text-black hover:text-blue-600 transition-colors duration-200
                              font-semibold text-lg md:text-xl group" // Added group for hover effect on arrow
         >

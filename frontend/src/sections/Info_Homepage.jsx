@@ -1,3 +1,4 @@
+//file: frontend/src/sections/info_Homepage.jsx
 import React from 'react';
 
 const Info_Homepage = () => {

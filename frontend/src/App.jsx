@@ -24,7 +24,7 @@ const App = () => {
     <Routes>
       <Route path={"/"} element={<Home />} />
       <Route path="*" element={<PageNotFound/>} />
-      <Route path='/P2' element={<MainBooks/>} />    {/* Add more routes here as needed */}
+      <Route path='/Books' element={<MainBooks/>} />    {/* Add more routes here as needed */}
       <Route path='/AllBooks' element={<AllBooks/>} />
       <Route path='/ProductInfo' element={<ProductPage/>}/>
       <Route path='/GenreSpecific' element={<GenreSpecificPage/>}/>
@@ -36,7 +36,7 @@ const App = () => {
       <Route path='/contactus' element={<ContactUs/>}/>
       <Route path='/aboutus' element={<AboutUs/>} />
       <Route path='/profilesettings' element={<ProfileSettings /> }/>
-        <Route path='/product/:bookId' element={<ProductPage />}/>
+        <Route path="/product/:bookId/:bookSlug?" element={<ProductPage />}/>
       {/* Admin pages */}
       <Route path='/AllPremiumAccounts' element={<AllPremiumAccounts />} />
       <Route path='/admin/*' element={<AdminMainPage />} />
