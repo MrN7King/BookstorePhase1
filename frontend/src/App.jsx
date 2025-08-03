@@ -36,7 +36,7 @@ const App = () => {
       <Route path='/contactus' element={<ContactUs/>}/>
       <Route path='/aboutus' element={<AboutUs/>} />
       <Route path='/profilesettings' element={<ProfileSettings /> }/>
-        <Route path='/product/:bookId' element={<ProductPage />}/>
+        <Route path="/product/:bookId/:bookSlug?" element={<ProductPage />}/>
       {/* Admin pages */}
       <Route path='/AllPremiumAccounts' element={<AllPremiumAccounts />} />
       <Route path='/admin/*' element={<AdminMainPage />} />
