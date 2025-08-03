@@ -140,7 +140,7 @@ const BestSellerSlider = ({ headingText = "Best Sellers" }) => {
         <a
           href="/premium-accounts" // --- MODIFIED: Link to your premium accounts page ---
           className="flex items-center text-black hover:text-blue-600 transition-colors duration-200
-                     font-semibold text-lg md:text-xl group"
+                       font-semibold text-lg md:text-xl group"
         >
           <h2 className='mt-2 text-base sm:text-lg md:text-xl'>View More</h2>
           <span className="ml-2 text-2xl sm:text-3xl md:text-4xl">›</span>
@@ -170,8 +170,8 @@ const BestSellerSlider = ({ headingText = "Best Sellers" }) => {
           <button
             onClick={() => scroll('left')}
             className="absolute left-0 lg:left-4 z-30 p-4 rounded-full bg-white border border-gray-200 shadow-md
-                        text-gray-700 hover:text-blue-600 hover:bg-gray-50 transition-all duration-300 transform hover:-translate-x-1 hover:scale-110
-                        opacity-0 group-hover:opacity-100 hidden sm:block"
+                         text-gray-700 hover:text-blue-600 hover:bg-gray-50 transition-all duration-300 transform hover:-translate-x-1 hover:scale-110
+                         opacity-0 group-hover:opacity-100 hidden sm:block"
             aria-label="Previous books"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
@@ -188,7 +188,7 @@ const BestSellerSlider = ({ headingText = "Best Sellers" }) => {
               style={{ scrollSnapType: 'x mandatory', scrollBehavior: 'smooth' }}
             >
               {products.map((product, index) => (
-                <div key={product._id} className="scroll-snap-align-center flex-shrink-0">
+                <div key={product._id} className="scroll-snap-align-start flex-shrink-0 w-64"> {/* Added w-64 for fixed width */}
                   <Cards
                     book={{
                       id: product._id, // Use _id for internal tracking
@@ -197,7 +197,7 @@ const BestSellerSlider = ({ headingText = "Best Sellers" }) => {
                       rating: product.rating || 0, // Assuming a rating field for premium products or default to 0
                       price: `LKR ${product.price ? product.price.toFixed(2) : '0.00'}`,
                       image: product.thumbnailUrl || 'https://placehold.co/300x400?text=No+Image',
-                      genre: product.deliveryFormat || "Digital", // Original 'genre' for book compatibility
+                      genre: product.platform || "Platform", // Original 'genre' for book compatibility
                       slug: product.slug, // Pass slug for navigation
                     }}
                     topRightPillText={product.platform} // Use platform for the pill text
@@ -212,8 +212,8 @@ const BestSellerSlider = ({ headingText = "Best Sellers" }) => {
           <button
             onClick={() => scroll('right')}
             className="absolute right-0 lg:right-4 z-30 p-4 rounded-full bg-white border border-gray-200 shadow-md
-                        text-gray-700 hover:text-blue-600 hover:bg-gray-50 transition-all duration-300 transform hover:translate-x-1 hover:scale-110
-                        opacity-0 group-hover:opacity-100 hidden sm:block"
+                         text-gray-700 hover:text-blue-600 hover:bg-gray-50 transition-all duration-300 transform hover:translate-x-1 hover:scale-110
+                         opacity-0 group-hover:opacity-100 hidden sm:block"
             aria-label="Next books"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
