@@ -6,8 +6,8 @@ import express from 'express';
 import './cron/AccountCleanup.js';
 import analyticsRoutes from './routes/analyticsRoutes.js';
 import authRoutes from './routes/authRoutes.js';
-import categoryRoutes from './routes/categoryRoutes.js';
 import ebookProductRoutes from './routes/ebookProductRoutes.js';
+import GenreRoutes from './routes/GenreRoutes.js';
 import miscRoutes from './routes/miscRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
 import roleRoutes from './routes/roleRoutes.js';
@@ -59,8 +59,8 @@ app.use('/api/upload', uploadRoutes);// Route for thumbnail image upload
 app.use('/api/premium', premiumProductRoutes); // Route for premium products
 app.use('/api/premium/codes', premiumCodeRoutes); // Route for premium codes
 app.use('/api/orders', orderRoutes);
-app.use('/api/categories', categoryRoutes);
 app.use('/api/roles', roleRoutes);
+app.use('/api/genres', GenreRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/slider-ebooks', sliderEbookRoutes); // NEW: Mount slider ebook routes
 

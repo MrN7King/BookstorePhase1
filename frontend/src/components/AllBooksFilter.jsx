@@ -17,10 +17,9 @@ const BOOK_CATEGORIES = [
 ];
 const BOOK_FORMATS = ['E-Book', 'Audiobook'];
 
-const ACCOUNT_PLATFORMS = ['Windows', 'macOS', 'Linux', 'Android', 'iOS', 'Web'];
+
 const ACCOUNT_DURATIONS = ['1 Month', '3 Months', '6 Months', '1 Year', 'Lifetime'];
 const ACCOUNT_LICENSE_TYPES = ['Activation Key', 'Account Login', 'Serial Number'];
-const ACCOUNT_DELIVERY_FORMATS = ['Digital Download', 'Email Delivery', 'Physical Card'];
 const ACCOUNT_TAGS = ['Software', 'Subscription', 'License', 'Premium', 'Account', 'Special Products'];
 
 
@@ -329,12 +328,10 @@ export const PremiumAccountFilter = ({ onClose, onApplyFilters }) => {
 
   // Default open state for filter sections
   const [isPriceOpen, setIsPriceOpen] = useState(true);
-  const [isPlatformOpen, setIsPlatformOpen] = useState(true);
   const [isDurationOpen, setIsDurationOpen] = useState(true);
   const [isLicenseTypeOpen, setIsLicenseTypeOpen] = useState(true);
-  const [isDeliveryFormatOpen, setIsDeliveryFormatOpen] = useState(true);
   const [isTagsOpen, setIsTagsOpen] = useState(false); // Tags often start closed
-  const [isStatusOpen, setIsStatusOpen] = useState(true);
+
 
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
@@ -361,10 +358,8 @@ export const PremiumAccountFilter = ({ onClose, onApplyFilters }) => {
   const resetFilters = () => {
     setSearchQuery('');
     setPriceRange([MIN_ACCOUNT_PRICE, MAX_ACCOUNT_PRICE]);
-    setSelectedPlatforms([]);
     setSelectedDurations([]);
     setSelectedLicenseTypes([]);
-    setSelectedDeliveryFormats([]);
     setSelectedTags([]);
     setStatus(null);
     if (onApplyFilters) {
@@ -521,35 +516,6 @@ export const PremiumAccountFilter = ({ onClose, onApplyFilters }) => {
       <div className="mb-6 border-b border-gray-200 pb-4">
         <button
           className="flex items-center justify-between w-full text-lg font-semibold text-gray-800 focus:outline-none"
-          onClick={() => toggleSection(setIsPlatformOpen)}
-          aria-expanded={isPlatformOpen}
-          aria-controls="platform-section-accounts"
-        >
-          Platform
-          <svg className={`w-5 h-5 text-gray-600 transform transition-transform duration-200 ${isPlatformOpen ? 'rotate-90' : 'rotate-0'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
-          </svg>
-        </button>
-        {isPlatformOpen && (
-          <div id="platform-section-accounts" className="mt-4 space-y-3">
-            {ACCOUNT_PLATFORMS.map((platform) => (
-              <label key={platform} className="flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  className="form-checkbox h-5 w-5 text-blue-600 rounded-md focus:ring-blue-500"
-                  checked={selectedPlatforms.includes(platform)}
-                  onChange={() => handleCheckboxChange(platform, setSelectedPlatforms, selectedPlatforms)}
-                />
-                <span className="ml-3 text-base text-gray-700">{platform}</span>
-              </label>
-            ))}
-          </div>
-        )}
-      </div>
-
-      <div className="mb-6 border-b border-gray-200 pb-4">
-        <button
-          className="flex items-center justify-between w-full text-lg font-semibold text-gray-800 focus:outline-none"
           onClick={() => toggleSection(setIsDurationOpen)}
           aria-expanded={isDurationOpen}
           aria-controls="duration-section-accounts"
@@ -599,35 +565,6 @@ export const PremiumAccountFilter = ({ onClose, onApplyFilters }) => {
                   onChange={() => handleCheckboxChange(type, setSelectedLicenseTypes, selectedLicenseTypes)}
                 />
                 <span className="ml-3 text-base text-gray-700">{type}</span>
-              </label>
-            ))}
-          </div>
-        )}
-      </div>
-
-      <div className="mb-6 border-b border-gray-200 pb-4">
-        <button
-          className="flex items-center justify-between w-full text-lg font-semibold text-gray-800 focus:outline-none"
-          onClick={() => toggleSection(setIsDeliveryFormatOpen)}
-          aria-expanded={isDeliveryFormatOpen}
-          aria-controls="delivery-format-section-accounts"
-        >
-          Delivery Format
-          <svg className={`w-5 h-5 text-gray-600 transform transition-transform duration-200 ${isDeliveryFormatOpen ? 'rotate-90' : 'rotate-0'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
-          </svg>
-        </button>
-        {isDeliveryFormatOpen && (
-          <div id="delivery-format-section-accounts" className="mt-4 space-y-3">
-            {ACCOUNT_DELIVERY_FORMATS.map((format) => (
-              <label key={format} className="flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  className="form-checkbox h-5 w-5 text-blue-600 rounded-md focus:ring-blue-500"
-                  checked={selectedDeliveryFormats.includes(format)}
-                  onChange={() => handleCheckboxChange(format, setSelectedDeliveryFormats, selectedDeliveryFormats)}
-                />
-                <span className="ml-3 text-base text-gray-700">{format}</span>
               </label>
             ))}
           </div>

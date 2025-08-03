@@ -51,14 +51,14 @@ export default function PremiumAccountsBody() {
       // Adjust URL to your premium product API endpoint
       const response = await axios.get(`${API_BASE_URL}/api/premium`, { params });
 
-      // Assuming your backend response for /api/premium is structured similarly to ebooks
-      // e.g., { premiumAccounts: [], page: X, limit: Y, totalResults: Z }
-      setPremiumAccounts(response.data.premiumAccounts || []); // Adjust property name if different (e.g., response.data.products)
+      // --- CRUCIAL CHANGE HERE ---
+      // Access the 'products' array from the response data
+      setPremiumAccounts(response.data.products || []); // Corrected property name from .premiumAccounts to .products
       setPagination({
         page: response.data.page,
-        limit: response.data.limit,
-        totalResults: response.data.totalResults,
-        totalPages: Math.ceil(response.data.totalResults / response.data.limit),
+        limit: pagination.limit, // Keep original limit from state or response if provided
+        totalResults: response.data.total, // Corrected property name from .totalResults to .total
+        totalPages: response.data.totalPages, // Corrected property name from .totalPages to .totalPages
       });
     } catch (err) {
       console.error("Error fetching premium accounts:", err);
@@ -66,7 +66,7 @@ export default function PremiumAccountsBody() {
     } finally {
       setLoading(false);
     }
-  }, [pagination.limit]); // Dependency: only re-create if pagination.limit changes
+  }, [pagination.limit]);
 
   // Handler for applying filters from the PremiumAccountFilter component
   const handleApplyFilters = (filters) => {
@@ -78,7 +78,7 @@ export default function PremiumAccountsBody() {
   // Effect hook to fetch premium accounts whenever activeFilters or page changes
   useEffect(() => {
     fetchPremiumAccounts(activeFilters, pagination.page);
-  }, [activeFilters, pagination.page, fetchPremiumAccounts]); // Include fetchPremiumAccounts in dependencies
+  }, [activeFilters, pagination.page, fetchPremiumAccounts]);
 
   // Removed handleNextPage and handlePreviousPage as PremiumAccountsDisplay uses infinite scroll
 
@@ -105,7 +105,6 @@ export default function PremiumAccountsBody() {
 
         {/* Main Content - Premium Accounts Display */}
         <main className="flex-1 p-4 lg:p-8">
-          {/* We'll let PremiumAccountsDisplay handle its own loading/error/no results states now */}
           <PremiumAccountsDisplay
             premiumAccounts={premiumAccounts} // Pass fetched premium accounts
             loading={loading}
