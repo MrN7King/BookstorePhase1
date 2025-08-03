@@ -24,7 +24,7 @@ const App = () => {
     <Routes>
       <Route path={"/"} element={<Home />} />
       <Route path="*" element={<PageNotFound/>} />
-      <Route path='/P2' element={<MainBooks/>} />    {/* Add more routes here as needed */}
+      <Route path='/Books' element={<MainBooks/>} />    {/* Add more routes here as needed */}
       <Route path='/AllBooks' element={<AllBooks/>} />
       <Route path='/ProductInfo' element={<ProductPage/>}/>
       <Route path='/GenreSpecific' element={<GenreSpecificPage/>}/>

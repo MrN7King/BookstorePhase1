@@ -1,4 +1,15 @@
 import { Typography } from "@material-tailwind/react";
+import { Link } from 'react-router-dom';
+
+const gotoContactUs = () => {
+  navigate('/contactus');
+  closePanel();
+};
+
+const gotoAboutUs = () => {
+  navigate('/aboutus');
+  closePanel();
+};
 
 // Directly define the content for each section based on the image
 const footerContent = {
@@ -8,7 +19,9 @@ const footerContent = {
   },
   quickLinks: {
     title: "Quick Links",
-    links: ["Home", "About Us", "Contact"],
+    links: [{ name: "Home", path: "/" },
+    { name: "About Us", path: "/aboutus" },
+    { name: "Contact", path: "/contactus" },],
   },
   contact: {
     title: "Contact",
@@ -52,12 +65,12 @@ export function FooterWithSitemap() {
           <ul className="space-y-1">
             {footerContent.quickLinks.links.map((link, linkIdx) => (
               <li key={linkIdx}>
-                <a
-                  href="#"
-                  className="text-white font-normal inline-block"
+                <Link
+                  to={link.path} // Use `to` prop with the path
+                  className="text-white font-normal inline-block hover:text-blue-500 transition-colors"
                 >
-                  {link}
-                </a>
+                  {link.name}
+                </Link>
               </li>
             ))}
           </ul>
