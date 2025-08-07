@@ -5,15 +5,19 @@ const genreSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
-    unique: true, // Genre names should be unique
+    unique: true,
     trim: true,
   },
-  bannerImageUrl: {
+  bannerImageUrl: { // This is for the large banner at the top of the page
     type: String,
-    default: '', // Store the Cloudinary URL here. Can be empty if no banner.
+    default: '',
+  },
+  cardImageUrl: { // This is for the small, circular image in the slider
+    type: String,
+    default: '',
   },
 }, {
-  timestamps: true, // Adds createdAt and updatedAt fields
+  timestamps: true,
 });
 
 export default mongoose.model('Genre', genreSchema);
