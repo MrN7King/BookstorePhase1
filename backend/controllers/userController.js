@@ -1,10 +1,10 @@
 // backend/controllers/userController.js
 
-import bcrypt from 'bcryptjs'; // <--- Make sure this line is present and correct
+import bcrypt from 'bcryptjs';
 import dotenv from 'dotenv';
 import jwt from 'jsonwebtoken';
 import UserModel from '../models/User.js';
-import transporter from '../utils/email.js'; // Assuming this path is correct
+import transporter from '../utils/email.js';
 
 dotenv.config();
 
@@ -292,7 +292,6 @@ export const logout = (req, res) => {
   }
 };
 
-
 // Update User Profile
 export const updateProfile = async (req, res) => {
     try {
@@ -373,9 +372,9 @@ export const changePassword = async (req, res) => {
         }
 
         // ✅ Explicitly hash new password here before saving
-        const salt = await bcrypt.genSalt(12); // Use 12 salt rounds for consistency
-        user.password = await bcrypt.hash(newPassword, salt); // Store the hashed password
-        await user.save({ validateBeforeSave: true }); // This save will NOT hash again
+        const salt = await bcrypt.genSalt(12);
+        user.password = await bcrypt.hash(newPassword, salt);
+        await user.save({ validateBeforeSave: true });
 
         res.cookie('token', 'loggedout', {
             httpOnly: true,
@@ -486,20 +485,20 @@ export const updateUser = async (req, res) => {
 
 // NEW: Admin-only function to delete a user
 export const deleteUser = async (req, res) => {
-    try {
-        const { id } = req.params;
+    try {
+        const { id } = req.params;
 
-        const user = await UserModel.findByIdAndDelete(id);
+        const user = await UserModel.findByIdAndDelete(id);
 
-        if (!user) {
-            return res.status(404).json({ success: false, message: 'User not found' });
-        }
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
 
-        res.status(200).json({ success: true, message: 'User deleted successfully' });
-    } catch (error) {
-        console.error("❌ Delete User Error:", error);
-        res.status(500).json({ success: false, message: 'Failed to delete user' });
-    }
+        res.status(200).json({ success: true, message: 'User deleted successfully' });
+    } catch (error) {
+        console.error("❌ Delete User Error:", error);
+        res.status(500).json({ success: false, message: 'Failed to delete user' });
+    }
 };
 
 // NEW: Admin-only function to grant admin access
@@ -527,3 +526,5 @@ export const grantAdminAccess = async (req, res) => {
     res.status(500).json({ success: false, message: 'Failed to grant admin access' });
   }
 };
+
+

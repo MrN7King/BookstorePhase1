@@ -3,7 +3,6 @@
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express from 'express';
-import './cron/AccountCleanup.js';
 import analyticsRoutes from './routes/analyticsRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import ebookProductRoutes from './routes/ebookProductRoutes.js';

@@ -1,39 +1,63 @@
 import express from 'express';
 import {
+    changePassword,
+    deleteAccount,
     deleteUser,
-    getAllUsers, // New
-    getSingleUser, // New
+    getAllUsers, // NEW: Import the new controller
+    getSingleUser,
     grantAdminAccess,
     login,
     logout,
     register,
     resetPassword,
     sendInitialVerifyOtp,
-    sendResetOtp, // New
+    sendResetOtp,
+    updateProfile,
     updateUser,
-    verifyEmailSignup,
+    verifyEmailSignup
 } from '../controllers/userController.js';
+
+// Assuming you have these middleware files for authentication and role-based access control
+import adminMiddleware from '../middleware/adminMiddleware.js';
+import userAuth from '../middleware/authMiddleware.js';
 
 const userRouter = express.Router();
 
 // ------------------------------
 // ✅ Public Routes
 // ------------------------------
-userRouter.post('/register', register); // Register user
-userRouter.post('/login', login); // Login user
-userRouter.post('/logout', logout); // Logout user
+userRouter.post('/register', register);
+userRouter.post('/login', login);
+userRouter.post('/logout', logout);
 
-userRouter.post('/verify-email-signup', verifyEmailSignup); // Email verification with OTP
-userRouter.post('/send-initial-verify-otp', sendInitialVerifyOtp); // Resend email verification OTP
+userRouter.post('/verify-email-signup', verifyEmailSignup);
+userRouter.post('/send-initial-verify-otp', sendInitialVerifyOtp);
 
-userRouter.post('/send-reset-otp', sendResetOtp); // Send password reset OTP
-userRouter.post('/reset-password', resetPassword); // Reset password using OTP
+userRouter.post('/send-reset-otp', sendResetOtp);
+userRouter.post('/reset-password', resetPassword);
 
-userRouter.get('/all-users', getAllUsers);
-userRouter.route('/:id')
-    .get(getSingleUser)
-    .put(updateUser)
-    .delete(deleteUser);
-userRouter.post('/grant-admin/:id', grantAdminAccess);
+// ------------------------------
+// ✅ User Protected Routes
+// These routes are for a logged-in user to manage their own account
+// ------------------------------
+// NEW: Route to get the current user's data
+
+
+userRouter.put('/update-profile', userAuth, updateProfile); 
+userRouter.put('/change-password', userAuth, changePassword); 
+userRouter.delete('/delete-account', userAuth, deleteAccount); 
+
+// ------------------------------
+// ✅ Admin Protected Routes
+// These routes are for an admin to manage other users
+// ------------------------------
+userRouter.get('/all-users', userAuth, adminMiddleware, getAllUsers);
+userRouter.post('/grant-admin/:id', userAuth, adminMiddleware, grantAdminAccess);
+
+userRouter
+    .route('/:id')
+    .get(userAuth, adminMiddleware, getSingleUser)
+    .put(userAuth, adminMiddleware, updateUser)
+    .delete(userAuth, adminMiddleware, deleteUser);
 
 export default userRouter;

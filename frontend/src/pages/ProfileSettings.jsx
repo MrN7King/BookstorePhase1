@@ -161,55 +161,54 @@ const ProfilePictureSection = ({ profileImage, handleProfileImageChange, userEma
 
 // PersonalInfoSection - UPDATED to accept and pass errors
 const PersonalInfoSection = ({ personalInfo, handlePersonalInfoChange, personalInfoErrors }) => (
-  <div className=" pb-6">
-    <h2 className="text-xl md:text-2xl font-semibold text-gray-800 mb-4">Personal Information</h2>
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <InputField
-        label="First Name"
-        type="text"
-        id="firstName"
-        value={personalInfo.firstName}
-        onChange={handlePersonalInfoChange}
-        placeholder="John"
-        isRequired={true}
-        errorMessage={personalInfoErrors.firstName}
-      />
-      <InputField
-        label="Last Name"
-        type="text"
-        id="lastName"
-        value={personalInfo.lastName}
-        onChange={handlePersonalInfoChange}
-        placeholder="Doe"
-        isRequired={false}
-        errorMessage={personalInfoErrors.lastName}
-      />
-      <InputField
-        label="Email Address"
-        type="email"
-        id="email"
-        value={personalInfo.email}
-        onChange={handlePersonalInfoChange}
-        placeholder="john.doe@example.com"
-        isRequired={true}
-        readOnly={true} // Email is read-only as it's the primary identifier
-        errorMessage={personalInfoErrors.email}
-      />
-      <InputField
-        label="Phone Number"
-        type="tel"
-        id="phone"
-        value={personalInfo.phone}
-        onChange={handlePersonalInfoChange}
-        placeholder="+94 77 777 7777"
-        isRequired={false}
-        errorMessage={personalInfoErrors.phone}
-      />
+    <div className="pb-6">
+        <h2 className="text-xl md:text-2xl font-semibold text-gray-800 mb-4">Personal Information</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <InputField
+                label="First Name"
+                type="text"
+                id="firstName"
+                value={personalInfo.firstName || ''}
+                onChange={handlePersonalInfoChange}
+                // NEW: Set the placeholder to "John"
+                placeholder="John"
+                isRequired={true}
+                errorMessage={personalInfoErrors.firstName}
+            />
+            <InputField
+                label="Last Name"
+                type="text"
+                id="lastName"
+                value={personalInfo.lastName || ''}
+                onChange={handlePersonalInfoChange}
+                // NEW: Set the placeholder to "Doe"
+                placeholder="Doe"
+                isRequired={false}
+                errorMessage={personalInfoErrors.lastName}
+            />
+            <InputField
+                label="Email Address"
+                type="email"
+                id="email"
+                value={personalInfo.email}
+                onChange={handlePersonalInfoChange}
+                placeholder="john.doe@example.com"
+                isRequired={true}
+                readOnly={true}
+                errorMessage={personalInfoErrors.email}
+            />
+            <InputField
+                label="Phone Number"
+                type="tel"
+                id="phone"
+                value={personalInfo.phone}
+                onChange={handlePersonalInfoChange}
+                placeholder="+94 77 777 7777"
+                isRequired={false}
+                errorMessage={personalInfoErrors.phone}
+            />
+        </div>
     </div>
-    <div className="mb-4">
-   
-    </div>
-  </div>
 );
 
 // PasswordSecuritySection - UPDATED to accept and pass errors
@@ -738,6 +737,7 @@ const ProfileSettingsPage = () => {
   const [mainStatusMessage, setMainStatusMessage] = useState('');
   const [mainIsSuccess, setMainIsSuccess] = useState(false);
   const [mainIsSubmitting, setMainIsSubmitting] = useState(false);
+  const [isDataLoaded, setIsDataLoaded] = useState(false); // NEW: State to track if data has been loaded
 
   // State for deactivation confirmation
   const [showDeactivationConfirm, setShowDeactivationConfirm] = useState(false);
@@ -747,6 +747,7 @@ const ProfileSettingsPage = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       setMainIsSubmitting(true); // Indicate loading state for the page
+      setIsDataLoaded(false);    // Ensure data is marked as not loaded
       setMainStatusMessage('');
       try {
         const response = await axios.get(`${AUTH_API_BASE_URL}/data`, {
@@ -770,11 +771,12 @@ const ProfileSettingsPage = () => {
 
           // You would also fetch payment methods, books, premium accounts from backend here
           // For now, keeping dummy data for these sections
+          setIsDataLoaded(true); // NEW: Mark data as successfully loaded
         } else {
           setMainStatusMessage(response.data.message || 'Failed to fetch user data. Please log in again.');
           setMainIsSuccess(false);
           // Redirect to login if data fetch fails (e.g., unauthorized)
-          navigate('/login');
+          navigate('/');
         }
       } catch (error) {
         console.error("Error fetching user data for profile:", error.response?.data || error.message);
@@ -782,7 +784,7 @@ const ProfileSettingsPage = () => {
         setMainIsSuccess(false);
         // Redirect to login if unauthorized
         if (error.response?.status === 401) {
-          navigate('/login');
+          navigate('/');
         }
       } finally {
         setMainIsSubmitting(false); // End loading state
@@ -1066,7 +1068,7 @@ const ProfileSettingsPage = () => {
         setPasswordInfo({ currentPassword: '', newPassword: '', confirmNewPassword: '' });
         // Redirect to login after a short delay to allow cookie to clear
         setTimeout(() => {
-          navigate('/login');
+          navigate('/');
         }, 2000);
       } else {
         // Backend error messages for password change are quite specific, map them
@@ -1107,108 +1109,105 @@ const ProfileSettingsPage = () => {
   };
 
 
-  // Render loading state for initial data fetch
-  if (mainIsSubmitting && mainStatusMessage === '') { // Only show loading if no error message yet
-    return (
-      <>
-        <Navigation />
-        <div className="min-h-screen flex items-center justify-center bg-gray-100">
-          <p className="text-gray-700">Loading profile data...</p>
-        </div>
-        <FooterWithSitemap />
-      </>
-    );
-  }
-
-  // The full-screen error rendering block has been removed.
-  // Errors from initial fetch will now be displayed by the mainStatusMessage logic below.
-
+  // --- MAIN RENDER LOGIC ---
   return (
     <>
       <Navigation />
-      <div className="min-h-screen bg-gray-50 pt-16 pb-12">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Page Title with Hamburger and User Icon */}
-          <div className="flex justify-between items-center mb-8">
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 leading-tight">
-              My Account Settings
-            </h1>
-            {/* Hamburger Icon for mobile only */}
-            <button
-              onClick={toggleMobileNav}
-              className="md:hidden text-gray-600 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              aria-label="Open menu"
-            >
-              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16m-7 6h7"></path>
-              </svg>
-            </button>
-          </div>
+      {/* Conditionally render the main content or a loading message */}
+      {isDataLoaded ? (
+        <div className="min-h-screen bg-gray-50 pt-16 pb-12">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            {/* Page Title with Hamburger and User Icon */}
+            <div className="flex justify-between items-center mb-8">
+              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 leading-tight">
+                My Account Settings
+              </h1>
+              {/* Hamburger Icon for mobile only */}
+              <button
+                onClick={toggleMobileNav}
+                className="md:hidden text-gray-600 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                aria-label="Open menu"
+              >
+                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+                </svg>
+              </button>
+            </div>
 
-          <div className="flex flex-col md:flex-row gap-6">
-            <ProfileSidebar
-              activeSection={activeSection}
-              setActiveSection={setActiveSection}
-              isMobileNavOpen={isMobileNavOpen}
-              onMobileNavLinkClick={toggleMobileNav} // Pass the toggle function
-            />
-            {/* The form now wraps only the content area that needs to be submitted */}
-            <div className="flex-grow"> {/* This div replaces the form for layout purposes */}
-              <ProfileContentArea
+            <div className="flex flex-col md:flex-row gap-6">
+              <ProfileSidebar
                 activeSection={activeSection}
-                personalInfo={personalInfo}
-                handlePersonalInfoChange={handlePersonalInfoChange}
-                personalInfoErrors={personalInfoErrors} // Pass personalInfoErrors
-                passwordInfo={passwordInfo}
-                handlePasswordInfoChange={handlePasswordInfoChange}
-                passwordErrors={passwordErrors} // Pass passwordErrors
-                profileImage={profileImage}
-                handleProfileImageChange={handleProfileImageChange}
-                userEmail={personalInfo.email} // Pass user's email for avatar generation
-                notificationSettings={notificationSettings}
-                handleNotificationChange={handleNotificationChange}
-                paymentMethods={paymentMethods}
-                handleEditPaymentMethod={handleEditPaymentMethod}
-                handleRemovePaymentMethod={handleRemovePaymentMethod}
-                handleAddPaymentMethod={handleAddPaymentMethod}
-                digitalProducts={digitalProducts}
-                handleDeactivateAccount={handleDeactivateAccount}
-                handleViewBookDetails={handleViewBookDetails}
-                handleViewPremiumDetails={handleViewPremiumDetails}
-                showDeactivationConfirm={showDeactivationConfirm}
-                confirmDeactivation={confirmDeactivation}
-                cancelDeactivation={cancelDeactivation}
+                setActiveSection={setActiveSection}
+                isMobileNavOpen={isMobileNavOpen}
+                onMobileNavLinkClick={toggleMobileNav} // Pass the toggle function
               />
+              {/* The form now wraps only the content area that needs to be submitted */}
+              <div className="flex-grow"> {/* This div replaces the form for layout purposes */}
+                <ProfileContentArea
+                  activeSection={activeSection}
+                  personalInfo={personalInfo}
+                  handlePersonalInfoChange={handlePersonalInfoChange}
+                  personalInfoErrors={personalInfoErrors} // Pass personalInfoErrors
+                  passwordInfo={passwordInfo}
+                  handlePasswordInfoChange={handlePasswordInfoChange}
+                  passwordErrors={passwordErrors} // Pass passwordErrors
+                  profileImage={profileImage}
+                  handleProfileImageChange={handleProfileImageChange}
+                  userEmail={personalInfo.email} // Pass user's email for avatar generation
+                  notificationSettings={notificationSettings}
+                  handleNotificationChange={handleNotificationChange}
+                  paymentMethods={paymentMethods}
+                  handleEditPaymentMethod={handleEditPaymentMethod}
+                  handleRemovePaymentMethod={handleRemovePaymentMethod}
+                  handleAddPaymentMethod={handleAddPaymentMethod}
+                  digitalProducts={digitalProducts}
+                  handleDeactivateAccount={handleDeactivateAccount}
+                  handleViewBookDetails={handleViewBookDetails}
+                  handleViewPremiumDetails={handleViewPremiumDetails}
+                  showDeactivationConfirm={showDeactivationConfirm}
+                  confirmDeactivation={confirmDeactivation}
+                  cancelDeactivation={cancelDeactivation}
+                />
 
-              {/* Display mainStatusMessage here, as a smaller alert */}
-              {mainStatusMessage && (
-                (mainIsSuccess || // Always show success messages
-                 (activeSection === 'security' && Object.values(passwordErrors).every(err => !err)) || // Show error if security section and no specific password errors
-                 (activeSection === 'personal-info' && Object.values(personalInfoErrors).every(err => !err)) || // Show error if personal info section and no specific personal info errors
-                 (activeSection !== 'security' && activeSection !== 'personal-info') // Show error for other sections (e.g., initial fetch, account management)
-                ) &&
-                <div className={`mt-6 p-3 rounded-lg text-center text-sm font-medium ${mainIsSuccess ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                  {mainStatusMessage}
-                </div>
-              )}
-              
-              {/* Only show "Save Changes" button for sections that modify profile data */}
-              {(activeSection === 'personal-info' || activeSection === 'security' || activeSection === 'account-management') && (
-                <div className="mt-8 pt-6 border-t border-gray-200 flex justify-end">
-                  <button
-                    type="button" // Changed to type="button" as the form is now split
-                    onClick={activeSection === 'security' ? handleChangePasswordSubmit : handleSaveChanges}
-                    className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-6 rounded-lg shadow-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed text-base"
-                    disabled={mainIsSubmitting}
-                  >
-                    {mainIsSubmitting ? 'Saving...' : 'Save Changes'}
-                  </button>
-                </div>
-              )}
+                {/* Display mainStatusMessage here, as a smaller alert */}
+                {mainStatusMessage && (
+                  (mainIsSuccess || // Always show success messages
+                   (activeSection === 'security' && Object.values(passwordErrors).every(err => !err)) || // Show error if security section and no specific password errors
+                   (activeSection === 'personal-info' && Object.values(personalInfoErrors).every(err => !err)) || // Show error if personal info section and no specific personal info errors
+                   (activeSection !== 'security' && activeSection !== 'personal-info') // Show error for other sections (e.g., initial fetch, account management)
+                  ) &&
+                  <div className={`mt-6 p-3 rounded-lg text-center text-sm font-medium ${mainIsSuccess ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                    {mainStatusMessage}
+                  </div>
+                )}
+                
+                {/* Only show "Save Changes" button for sections that modify profile data */}
+                {(activeSection === 'personal-info' || activeSection === 'security' || activeSection === 'account-management') && (
+                  <div className="mt-8 pt-6 border-t border-gray-200 flex justify-end">
+                    <button
+                      type="button" // Changed to type="button" as the form is now split
+                      onClick={activeSection === 'security' ? handleChangePasswordSubmit : handleSaveChanges}
+                      className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-6 rounded-lg shadow-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed text-base"
+                      disabled={mainIsSubmitting}
+                    >
+                      {mainIsSubmitting ? 'Saving...' : 'Save Changes'}
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      ) : (
+        // NEW: Show a loading message with a spinner while data is being fetched
+        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+            <svg className="animate-spin -ml-1 mr-3 h-10 w-10 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <p className="text-gray-600 text-lg">Loading your profile...</p>
+        </div>
+      )}
       <FooterWithSitemap />
 
       {/* Render Overlays conditionally */}
@@ -1223,3 +1222,5 @@ const ProfileSettingsPage = () => {
 };
 
 export default ProfileSettingsPage;
+
+
