@@ -17,7 +17,6 @@ const Alert: React.FC<AlertProps> = ({
   linkHref = "#",
   linkText = "Learn more",
 }) => {
-  // Tailwind classes for each variant
   const variantClasses = {
     success: {
       container:
@@ -41,7 +40,6 @@ const Alert: React.FC<AlertProps> = ({
     },
   };
 
-  // Icon for each variant
   const icons = {
     success: (
       <svg

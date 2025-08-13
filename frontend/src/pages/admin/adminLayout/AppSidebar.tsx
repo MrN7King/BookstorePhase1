@@ -1,8 +1,6 @@
 //file: frontend/src/pages/admin/adminLayout/AppSidebar.tsx
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom"; // Use react-router-dom for Link and useLocation
-import dashboard from "../adminPages/Dashboard"; // Adjust the import path as necessary
-import Label from "../adminForm/FormElements/Label";
 
 // Assume useSidebar and SidebarWidget are correctly imported
 import { useSidebar } from "../adminUI/SidebarContext";
@@ -23,9 +21,9 @@ const navItems: NavItem[] = [
     path: "/admin",
   },
   {
-    iconName: "account_circle", // Google Fonts icon name for user profile
-    name: "User Profile",
-    path: "/profile",
+    iconName: "edit", // Changed icon to 'edit' to better represent "Edit Profile"
+    name: "Edit User Profile", // Changed name
+     path: "/admin/manage-users",
   },
   {
     name: "Manage Products",
@@ -38,48 +36,48 @@ const navItems: NavItem[] = [
     ],
   },
   // {
-  //   name: "Tables",
-  //   iconName: "table_chart", // Google Fonts icon name for tables
-  //   subItems: [{ name: "Basic Tables", path: "/basic-tables", pro: false }],
+  //   name: "Tables",
+  //   iconName: "table_chart", // Google Fonts icon name for tables
+  //   subItems: [{ name: "Basic Tables", path: "/basic-tables", pro: false }],
   // },
   // {
-  //   name: "Pages",
-  //   iconName: "article", // Google Fonts icon name for pages
-  //   subItems: [
-  //     { name: "Blank Page", path: "/blank", pro: false },
-  //     { name: "404 Error", path: "/error-404", pro: false },
-  //   ],
+  //   name: "Pages",
+  //   iconName: "article", // Google Fonts icon name for pages
+  //   subItems: [
+  //     { name: "Blank Page", path: "/blank", pro: false },
+  //     { name: "404 Error", path: "/error-404", pro: false },
+  //   ],
   // },
 ];
 
 const othersItems: NavItem[] = [
   // {
-  //   iconName: "pie_chart", // Google Fonts icon name for charts
-  //   name: "Charts",
-  //   subItems: [
-  //     { name: "Line Chart", path: "/line-chart", pro: false },
-  //     { name: "Bar Chart", path: "/bar-chart", pro: false },
-  //   ],
+  //   iconName: "pie_chart", // Google Fonts icon name for charts
+  //   name: "Charts",
+  //   subItems: [
+  //     { name: "Line Chart", path: "/line-chart", pro: false },
+  //     { name: "Bar Chart", path: "/bar-chart", pro: false },
+  //   ],
   // },
   // {
-  //   iconName: "widgets", // Google Fonts icon name for UI elements (like a box cube)
-  //   name: "UI Elements",
-  //   subItems: [
-  //     { name: "Alerts", path: "/alerts", pro: false },
-  //     { name: "Avatar", path: "/avatars", pro: false },
-  //     { name: "Badge", path: "/badge", pro: false },
-  //     { name: "Buttons", path: "/buttons", pro: false },
-  //     { name: "Images", path: "/images", pro: false },
-  //     { name: "Videos", path: "/videos", pro: false },
-  //   ],
+  //   iconName: "widgets", // Google Fonts icon name for UI elements (like a box cube)
+  //   name: "UI Elements",
+  //   subItems: [
+  //     { name: "Alerts", path: "/alerts", pro: false },
+  //     { name: "Avatar", path: "/avatars", pro: false },
+  //     { name: "Badge", path: "/badge", pro: false },
+  //     { name: "Buttons", path: "/buttons", pro: false },
+  //     { name: "Images", path: "/images", pro: false },
+  //     { name: "Videos", path: "/videos", pro: false },
+  //   ],
   // },
   // {
-  //   iconName: "vpn_key", // Google Fonts icon name for authentication (like a plug-in)
-  //   name: "Authentication",
-  //   subItems: [
-  //     { name: "Sign In", path: "/signin", pro: false },
-  //     { name: "Sign Up", path: "/signup", pro: false },
-  //   ],
+  //   iconName: "vpn_key", // Google Fonts icon name for authentication (like a plug-in)
+  //   name: "Authentication",
+  //   subItems: [
+  //     { name: "Sign In", path: "/signin", pro: false },
+  //     { name: "Sign Up", path: "/signup", pro: false },
+  //   ],
   // },
 ];
 

@@ -1,20 +1,23 @@
+import type { FC } from "react";
 import { ReactNode } from "react";
 
 interface ButtonProps {
   children: ReactNode; // Button text or content
-  size?:"xs" | "sm" | "md" ; // Button size
+  size?: "xs" | "sm" | "md"; // Button size
   variant?: "primary" | "outline" | "destruction" | "lightDestruction"; // Button variant
+  type?: "button" | "submit" | "reset"; // Add this line
   startIcon?: ReactNode; // Icon before the text
   endIcon?: ReactNode; // Icon after the text
   onClick?: () => void; // Click handler
   disabled?: boolean; // Disabled state
-  className?: string; // Disabled state
+  className?: string; // Additional classes for styling
 }
 
-const Button: React.FC<ButtonProps> = ({
+const Button: FC<ButtonProps> = ({
   children,
   size = "md",
   variant = "primary",
+  type = "button",
   startIcon,
   endIcon,
   onClick,
@@ -23,9 +26,9 @@ const Button: React.FC<ButtonProps> = ({
 }) => {
   // Size Classes
   const sizeClasses = {
-    xs: "px-2.5 py-0.5 font-medium",
-    sm: "px-4 py-3 text-sm",
-    md: "px-5 py-3.5 text-sm",
+    xs: "px-2.5 py-0.5 text-xs font-medium",
+    sm: "px-3 py-2 text-sm",
+    md: "px-4 py-2.5 text-sm md:px-5 md:py-3.5",
   };
 
   // Variant Classes
@@ -37,12 +40,13 @@ const Button: React.FC<ButtonProps> = ({
     destruction:
       "focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 rounded-lg dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900",
     lightDestruction:
-      "focus:outline-none bg-error-50 hover:bg-red-600 hover:text-white text-error-600 dark:bg-error-500/15 dark:text-error-500",     
+      "focus:outline-none bg-error-50 hover:bg-red-600 hover:text-white text-error-600 dark:bg-error-500/15 dark:text-error-500",
   };
 
   return (
     <button
-      className={`inline-flex items-center justify-center gap-2 rounded-lg transition ${className} ${
+      type={type}
+      className={`inline-flex items-center gap-2 rounded-lg transition ${className} ${
         sizeClasses[size]
       } ${variantClasses[variant]} ${
         disabled ? "cursor-not-allowed opacity-50" : ""
@@ -50,9 +54,9 @@ const Button: React.FC<ButtonProps> = ({
       onClick={onClick}
       disabled={disabled}
     >
-      {startIcon && <span className="flex items-center">{startIcon}</span>}
+      {startIcon}
       {children}
-      {endIcon && <span className="flex items-center">{endIcon}</span>}
+      {endIcon}
     </button>
   );
 };

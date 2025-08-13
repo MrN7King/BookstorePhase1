@@ -51,6 +51,10 @@ const userSchema = new mongoose.Schema({
     resetOtpExpireAt: { // For password reset (corrected typo)
         type: Number,
         default: null
+    }, role: { // NEW FIELD: User role
+        type: String,
+        enum: ['customer', 'employee', 'owner', 'guest'],
+        default: 'customer'
     },
     
     //Something Dilaksan added idk why

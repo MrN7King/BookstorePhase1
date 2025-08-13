@@ -421,3 +421,109 @@ export const deleteAccount = async (req, res) => {
         res.status(500).json({ success: false, message: error.message || 'Failed to delete account.' });
     }
 };
+
+// NEW: Admin-only function to get all users
+export const getAllUsers = async (req, res) => {
+  try {
+    const users = await UserModel.find().select('-password');
+    res.status(200).json({
+      success: true,
+      message: 'Users retrieved successfully',
+      users,
+    });
+  } catch (error) {
+    console.error("❌ Get Users Error:", error);
+    res.status(500).json({ success: false, message: 'Failed to retrieve users' });
+  }
+};
+
+// NEW: Admin-only function to get a single user
+export const getSingleUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await UserModel.findById(id).select('-password');
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+    res.status(200).json({
+      success: true,
+      message: 'User retrieved successfully',
+      user,
+    });
+  } catch (error) {
+    console.error("❌ Get Single User Error:", error);
+    res.status(500).json({ success: false, message: 'Failed to retrieve user' });
+  }
+};
+
+// NEW: Admin-only function to update a user
+export const updateUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { firstName, lastName, email, phone, role, isAccountVerified } = req.body;
+
+    const user = await UserModel.findById(id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    user.firstName = firstName ?? user.firstName;
+    user.lastName = lastName ?? user.lastName;
+    user.email = email ?? user.email;
+    user.phone = phone ?? user.phone;
+    user.role = role ?? user.role;
+    user.isAccountVerified = isAccountVerified ?? user.isAccountVerified;
+
+    await user.save({ validateBeforeSave: true });
+
+    res.status(200).json({ success: true, message: 'User updated successfully', user });
+  } catch (error) {
+    console.error("❌ Update User Error:", error);
+    res.status(500).json({ success: false, message: 'Failed to update user' });
+  }
+};
+
+// NEW: Admin-only function to delete a user
+export const deleteUser = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const user = await UserModel.findByIdAndDelete(id);
+
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+
+        res.status(200).json({ success: true, message: 'User deleted successfully' });
+    } catch (error) {
+        console.error("❌ Delete User Error:", error);
+        res.status(500).json({ success: false, message: 'Failed to delete user' });
+    }
+};
+
+// NEW: Admin-only function to grant admin access
+export const grantAdminAccess = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await UserModel.findById(id);
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    // A user with 'owner' role can't be demoted
+    if (user.role === 'owner') {
+      return res.status(403).json({ success: false, message: 'Cannot demote an owner' });
+    }
+
+    // Promote the user to employee
+    user.role = 'employee';
+    await user.save();
+
+    res.status(200).json({ success: true, message: 'User promoted to employee successfully', user });
+  } catch (error) {
+    console.error("❌ Grant Admin Access Error:", error);
+    res.status(500).json({ success: false, message: 'Failed to grant admin access' });
+  }
+};

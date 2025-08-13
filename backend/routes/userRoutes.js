@@ -1,12 +1,17 @@
 import express from 'express';
 import {
+    deleteUser,
+    getAllUsers, // New
+    getSingleUser, // New
+    grantAdminAccess,
     login,
     logout,
     register,
     resetPassword,
     sendInitialVerifyOtp,
-    sendResetOtp,
-    verifyEmailSignup
+    sendResetOtp, // New
+    updateUser,
+    verifyEmailSignup,
 } from '../controllers/userController.js';
 
 const userRouter = express.Router();
@@ -24,5 +29,11 @@ userRouter.post('/send-initial-verify-otp', sendInitialVerifyOtp); // Resend ema
 userRouter.post('/send-reset-otp', sendResetOtp); // Send password reset OTP
 userRouter.post('/reset-password', resetPassword); // Reset password using OTP
 
+userRouter.get('/all-users', getAllUsers);
+userRouter.route('/:id')
+    .get(getSingleUser)
+    .put(updateUser)
+    .delete(deleteUser);
+userRouter.post('/grant-admin/:id', grantAdminAccess);
 
 export default userRouter;
