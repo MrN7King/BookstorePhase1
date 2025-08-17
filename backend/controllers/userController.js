@@ -43,7 +43,7 @@ export const generateAndSendVerificationOtp = async (user) => {
   user.verifyOtpExpireAt = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
   await user.save();
 
-  console.log("✅ Verification OTP generated:", otp);
+  
 
   await sendEmail(
     user.email,
@@ -51,7 +51,6 @@ export const generateAndSendVerificationOtp = async (user) => {
     `<p>Your OTP for email verification is <strong>${otp}</strong>. It is valid for 24 hours.</p>`
   );
 
-  console.log(`📨 Verification OTP sent to ${user.email}`);
 };
 
 /**
@@ -63,7 +62,7 @@ export const generateAndSendPasswordResetOtp = async (user) => {
   user.resetOtpExpireAt = Date.now() + 15 * 60 * 1000; // 15 minutes
   await user.save();
 
-  console.log("✅ Password Reset OTP generated:", otp);
+
 
   await sendEmail(
     user.email,
@@ -71,7 +70,6 @@ export const generateAndSendPasswordResetOtp = async (user) => {
     `<p>Your OTP for password reset is <strong>${otp}</strong>. It is valid for 15 minutes.</p>`
   );
 
-  console.log(`📨 Password reset OTP sent to ${user.email}`);
 };
 
 // =====================

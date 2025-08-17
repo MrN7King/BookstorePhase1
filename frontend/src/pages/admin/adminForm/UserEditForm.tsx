@@ -7,14 +7,7 @@ import { DropdownItem } from '../adminUI/DropdownItem.tsx';
 import Label from './FormElements/Label.tsx';
 import InputField from './input/InputField.tsx';
 
-interface User {
-  _id: string;
-  name: string;
-  email: string;
-  role: 'customer' | 'employee' | 'owner' | 'guest';
-  status: 'active' | 'inactive';
-  lastLogin?: string;
-}
+import { User } from '../adminPages/AdminUserEditPage.tsx';
 
 interface UserEditFormProps {
   user: User;
@@ -35,16 +28,12 @@ const UserEditForm: React.FC<UserEditFormProps> = ({
     ...user,
   });
   const [isRoleDropdownOpen, setIsRoleDropdownOpen] = useState(false);
-  const isGuestUser = user.role === 'guest';
 
   useEffect(() => {
     setFormData(user);
   }, [user]);
 
-  // Dynamically set roles based on user's current role
-  // This logic is crucial to prevent role changes for guest users and
-  // to ensure other roles cannot become guests.
-  const roles = isGuestUser ? ['guest'] : ['customer', 'employee', 'owner'];
+  const roles = ['customer', 'employee', 'owner'];
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -55,8 +44,6 @@ const UserEditForm: React.FC<UserEditFormProps> = ({
   };
 
   const handleStatusToggle = () => {
-    // A guest user cannot have their status toggled
-    if (isGuestUser) return;
     setFormData((prevData) => ({
       ...prevData,
       status: prevData.status === 'active' ? 'inactive' : 'active',
@@ -64,8 +51,6 @@ const UserEditForm: React.FC<UserEditFormProps> = ({
   };
 
   const handleRoleSelect = (role: User['role']) => {
-    // A guest user cannot have their role changed
-    if (isGuestUser) return;
     setFormData(prevData => ({ ...prevData, role }));
     setIsRoleDropdownOpen(false);
   };
@@ -112,7 +97,6 @@ const UserEditForm: React.FC<UserEditFormProps> = ({
           onClick={() => setIsRoleDropdownOpen(!isRoleDropdownOpen)}
           className="w-full justify-between"
           endIcon={<ChevronDownIcon className="h-5 w-5" />}
-          disabled={isGuestUser}
         >
           <div className="flex-grow text-left">
             {formData.role.charAt(0).toUpperCase() + formData.role.slice(1)}
@@ -141,7 +125,6 @@ const UserEditForm: React.FC<UserEditFormProps> = ({
           className={`${
             formData.status === 'active' ? 'bg-blue-600' : 'bg-gray-200'
           } relative inline-flex h-6 w-11 items-center rounded-full`}
-          disabled={isGuestUser}
         >
           <span
             className={`${
