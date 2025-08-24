@@ -1,15 +1,7 @@
 import React from 'react';
+import { User } from '../adminPages/AdminUserEditPage.tsx';
 import Badge from '../adminUI/Badge';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '../adminUI/Table';
-
-interface User {
-  _id: string;
-  name: string;
-  email: string;
-  role: 'customer' | 'employee' | 'owner' | 'guest';
-  status: 'active' | 'inactive';
-  lastLogin?: string;
-}
 
 interface UserTableProps {
   users: User[];
@@ -52,7 +44,16 @@ export const UserTable: React.FC<UserTableProps> = ({ users, onSelect, selectedU
                     {user.email}
                   </TableCell>
                   <TableCell className="px-6 py-4 text-start">
-                    {user.role}
+                    <Badge
+                      size="sm"
+                      color={
+                        user.role === 'owner' ? 'purple' :
+                        user.role === 'employee' ? 'info' :
+                        'primary'
+                      }
+                    >
+                      {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                    </Badge>
                   </TableCell>
                   <TableCell className="px-6 py-4 text-start">
                     <Badge

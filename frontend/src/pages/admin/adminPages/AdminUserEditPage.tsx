@@ -9,11 +9,11 @@ import Alert from '../adminUI/Alert.tsx';
 const API_URL = 'http://localhost:5000/api/user';
 const config = { withCredentials: true };
 
-interface User {
+export interface User {
   _id: string;
   name: string;
   email: string;
-  role: 'customer' | 'employee' | 'owner' | 'guest';
+  role: 'customer' | 'employee' | 'owner';
   status: 'active' | 'inactive';
   lastLogin?: string;
 }
@@ -32,7 +32,11 @@ const AdminUserEditPage: React.FC = () => {
     setError(null);
     try {
       const response = await axios.get(`${API_URL}/all-users`, config);
-      const fetchedUsers: User[] = response.data.users.map((user: any) => ({
+
+      // Filter out unverified accounts before mapping
+      const verifiedUsers = response.data.users.filter((user: any) => user.isAccountVerified);
+
+      const fetchedUsers: User[] = verifiedUsers.map((user: any) => ({
         _id: user._id,
         name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'N/A',
         email: user.email,
@@ -56,26 +60,13 @@ const AdminUserEditPage: React.FC = () => {
   const handleSave = async (updatedUser: User) => {
     if (!selectedUser) return;
 
-    // Prevent non-guest users from becoming 'guest'
-    if (selectedUser.role !== 'guest' && updatedUser.role === 'guest') {
-      setAlert({ variant: 'error', title: 'Error!', message: 'A non-guest user cannot be assigned the "guest" role.' });
-      return;
-    }
-
-    // Prevent 'guest' users from becoming 'active'
-    if (selectedUser.role === 'guest' && updatedUser.status === 'active') {
-      setAlert({ variant: 'error', title: 'Error!', message: 'A guest user cannot be made active.' });
-      return;
+    // Check if a non-guest user is being deactivated
+    if (updatedUser.status === 'inactive' && selectedUser.status === 'active') {
+      console.log(`User ${updatedUser._id} is now inactive. Logging them out...`);
+      // await axios.post(`${API_URL}/logout/${updatedUser._id}`, {}, config);
     }
 
     try {
-      // Check if a non-guest user is being deactivated
-      if (selectedUser.role !== 'guest' && updatedUser.status === 'inactive' && selectedUser.status === 'active') {
-        // Log out the user. The API for this is not provided, so this is a placeholder.
-        console.log(`User ${updatedUser._id} is now inactive. Logging them out...`);
-        // await axios.post(`${API_URL}/logout/${updatedUser._id}`, {}, config);
-      }
-
       const [firstName, ...lastNameParts] = updatedUser.name.split(' ');
       const lastName = lastNameParts.join(' ');
 
@@ -190,11 +181,27 @@ const AdminUserEditPage: React.FC = () => {
       </div>
 
       {isDeleteConfirmationOpen && (
-        <div className="fixed inset-0 z-40 bg-black/5 flex items-center justify-center">
-          <div className="relative z-50 w-96 rounded-xl bg-white p-6 text-center shadow-2xl border border-red-500">
-          
+        <div className="fixed inset-0 z-40 bg-black/40 flex items-center justify-center">
+          <div className="relative z-50 w-96 rounded-xl bg-white p-6 text-center shadow-2xl border border-yellow-300">
+            {/* Warning Icon */}
+            <div className="flex justify-center mb-4">
+              <svg
+                className="w-12 h-12 text-yellow-500"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 9v3m0 4h.01M21 21H3l9-18 9 18z"
+                />
+              </svg>
+            </div>
+
             {/* Title */}
-            <h3 className="mb-2 text-2xl font-bold text-red-600">Warning!</h3>
+            <h3 className="mb-2 text-2xl font-bold text-yellow-600">Warning!</h3>
 
             {/* Message */}
             <p className="mb-6 text-gray-700">
@@ -211,7 +218,7 @@ const AdminUserEditPage: React.FC = () => {
               </button>
               <button
                 onClick={handleConfirmDelete}
-                className="rounded-md bg-red-500 px-4 py-2 text-white font-medium transition-colors hover:bg-red-600"
+                className="rounded-md bg-yellow-500 px-4 py-2 text-white font-medium transition-colors hover:bg-yellow-600"
               >
                 Yes, Delete
               </button>

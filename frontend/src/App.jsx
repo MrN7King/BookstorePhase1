@@ -2,6 +2,7 @@
 import { Route, Routes } from 'react-router-dom';
 import ScrollToTop from './components/ScrollToTop.jsx';
 import AboutUs from './pages/AboutUs';
+import AdminMainPage from './pages/admin/adminPages/AdminMainPage.tsx'; // Importing the AdminDashboard component
 import AllBooks from './pages/AllBooks';
 import AllPremiumAccounts from './pages/AllPremiumAccounts'; // Importing the AllPremiumAccounts component
 import CartPage from './pages/CartPage'; // Importing the ShoppingPage component
@@ -15,7 +16,7 @@ import PaymentPage from './pages/PaymentPage'; // Importing the PaymentPage comp
 import PremiumProductPage from './pages/PremiumProductPage'; // Importing the PremiumProductPage component
 import ProductPage from './pages/ProductPage';
 import ProfileSettings from './pages/ProfileSettings';
-import AdminMainPage from './pages/admin/adminPages/AdminMainPage.tsx'; // Importing the AdminDashboard component
+import ThankYouPage from './pages/ThankYouPage.jsx';
 
 const App = () => {
   return (
@@ -32,6 +33,7 @@ const App = () => {
       <Route path="/cart" element={<CartPage/>} />
         <Route path="/checkout" element={<CheckoutDetailsPage />} />
         <Route path="/payment" element={<PaymentPage />} />
+        <Route path="/thank-you" element={<ThankYouPage/>} />
       {/* Add more routes here as needed */}
       <Route path='/contactus' element={<ContactUs/>}/>
       <Route path='/aboutus' element={<AboutUs/>} />

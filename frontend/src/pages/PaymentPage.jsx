@@ -1,7 +1,6 @@
 // src/pages/PaymentPage.jsx
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import Navigation from '@/sections/Navigation';
+import { useNavigate } from 'react-router-dom';
 import { FooterWithSitemap } from '../sections/Footer';
 
 function PaymentPage() {
@@ -43,12 +42,20 @@ function PaymentPage() {
             This is where the payment gateway integration would go.
             You can select your payment method and complete your purchase here.
           </p>
-          <button
-            onClick={() => alert('Proceeding to final order complete!')}
-            className="w-full bg-green-500 text-white py-3 rounded-lg font-semibold text-lg hover:bg-green-600 transition-colors duration-200 shadow-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
-          >
-            Complete Order
-          </button>
+          <div className="flex flex-col space-y-4">
+            <button
+              onClick={() => navigate('/thank-you')}
+              className="w-full bg-green-500 text-white py-3 rounded-lg font-semibold text-lg hover:bg-green-600 transition-colors duration-200 shadow-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+            >
+              Payment Success
+            </button>
+            <button
+              onClick={() => navigate('/cart')}
+              className="w-full bg-red-500 text-white py-3 rounded-lg font-semibold text-lg hover:bg-red-600 transition-colors duration-200 shadow-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+            >
+              Payment Failed
+            </button>
+          </div>
         </div>
       </div>
       <FooterWithSitemap />
