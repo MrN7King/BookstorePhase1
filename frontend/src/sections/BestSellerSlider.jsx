@@ -6,6 +6,7 @@ import axios from 'axios'; // Import axios
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate
 import Cards from '../components/Cards';
+import useCart from '../hooks/useCart';
 
 // --- BestSellerSlider Component (4 Cards Scroll + All Cards In Color) ---
 
@@ -13,6 +14,7 @@ import Cards from '../components/Cards';
 const BestSellerSlider = ({ headingText = "Best Sellers", fetchType = "random" }) => {
   const sliderRef = useRef(null);
   const navigate = useNavigate(); // Initialize useNavigate
+  const { addOrUpdateItem } = useCart();
   const [books, setBooks] = useState([]); // State to hold fetched books
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -226,10 +228,15 @@ const BestSellerSlider = ({ headingText = "Best Sellers", fetchType = "random" }
                     title: book.name,
                     author: book.author,
                     rating: book.rating || 0,
-                    price: `LKR ${book.price.toFixed(2)}`,
+                    price:book.price,
                     image: book.thumbnailUrl || 'https://placehold.co/300x400?text=No+Image',
                   }}
                   onCardClick={handleCardClick} // Pass the handleCardClick for redirection
+                  onAddToCart={(payload) => {
+              // productPayload comes from Card and includes id/_id
+              // pass the original/normalized product object to the hook
+              addOrUpdateItem(payload, 1);
+            }}
                 />
               </div>
             ))}

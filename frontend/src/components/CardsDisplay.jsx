@@ -1,5 +1,6 @@
+//frontend/src/components/CardsDisplay.jsx
 "use client";
-
+import useCart from '../hooks/useCart';
 import Cards from "@/components/Cards";
 import { Spinner } from "@material-tailwind/react";
 import { useEffect, useRef, useState } from "react";
@@ -8,7 +9,7 @@ import { useNavigate } from 'react-router-dom';
 // BooksDisplay now accepts 'books', 'loading', 'error' as props
 const BooksDisplay = ({ books, loading, error }) => {
   const navigate = useNavigate();
-
+ const { addOrUpdateItem } = useCart();
 
   const [visibleCount, setVisibleCount] = useState(12);
   const BOOKS_PER_LOAD = 12;
@@ -86,10 +87,15 @@ const BooksDisplay = ({ books, loading, error }) => {
               title: book.name,
               author: book.author,
               rating: book.rating || 0,
-              price: `LKR ${book.price.toFixed(2)}`,
+              price: book.price ?? 0,
               image: book.thumbnailUrl || 'https://placehold.co/300x400?text=No+Image',
             }}
             onCardClick={handleCardClick}
+            onAddToCart={(payload) => {
+              // productPayload comes from Card and includes id/_id
+              // pass the original/normalized product object to the hook
+              addOrUpdateItem(payload, 1);
+            }}
           />
         ))}
       </div>

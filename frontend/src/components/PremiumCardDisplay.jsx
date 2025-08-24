@@ -1,5 +1,7 @@
+//frontend/src/components/PremiumCardDisplay.jsx
 "use client";
 
+import useCart from '../hooks/useCart';
 import Card from "@/components/Cards"; // Assuming Cards.jsx is in components/Cards.jsx
 import { Spinner } from "@material-tailwind/react";
 import { useEffect, useRef, useState } from "react";
@@ -7,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 
 const PremiumAccountsDisplay = ({ premiumAccounts, loading, error, loadMore, hasMore }) => {
   const navigate = useNavigate();
+   const { addOrUpdateItem } = useCart();
   const observerRef = useRef();
 
   // State to track if the initial render with data has completed
@@ -87,11 +90,16 @@ const PremiumAccountsDisplay = ({ premiumAccounts, loading, error, loadMore, has
               title: account.name || "Untitled Account",
               author: account.platform || "N/A", // Re-using 'author' for platform if needed for display
               rating: account.rating || 0, // Assuming rating might be part of premium account
-              price: `LKR ${account.price ? account.price.toFixed(2) : '0.00'}`,
+              price: account.price ?? 0,
               image: account.thumbnailUrl || 'https://placehold.co/300x400?text=No+Image',
               genre: account.platform || "Platform", 
             }}
             onCardClick={handleCardClick}
+            onAddToCart={(payload) => {
+              // productPayload comes from Card and includes id/_id
+              // pass the original/normalized product object to the hook
+              addOrUpdateItem(payload, 1);
+            }}
           />
         ))}
       </div>

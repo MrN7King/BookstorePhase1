@@ -11,6 +11,15 @@ axios.defaults.withCredentials = true;
 const API_USER_URL = "http://localhost:5000/api/user";
 const API_BASE_URL = "http://localhost:5000/api/auth";
 
+const readGuestCart = () => {
+    try {
+        const raw = localStorage.getItem('guest_cart_v1');
+        return raw ? JSON.parse(raw) : [];
+    } catch {
+        return [];
+    }
+};
+
 // Reusable InputField component
 const InputField = ({ label, type, id, value, onChange, placeholder, className = "", formPrefix = "" }) => (
   <div className="mb-3">
@@ -118,6 +127,7 @@ const ForgotPasswordModal = ({ isOpen, onClose }) => {
       setLoading(false); // Reset loading state on open
     }
   }, [isOpen]);
+
 
   const handleRequestOtp = async (e) => {
     e.preventDefault();
@@ -412,6 +422,9 @@ const LoginForm = ({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    // Fetch the guest cart from local storage
+        const guestCart = readGuestCart();
+
     setLoading(true);
     setMessage("");
     setIsError(false);
@@ -420,10 +433,21 @@ const LoginForm = ({
       const response = await axios.post(`${API_USER_URL}/login`, {
         email,
         password,
+        guestCart
       }, { withCredentials: true });
 
       setMessage(response.data.message || "Login Successful!");
       setIsError(false);
+      if (response.data.success) {
+                // Login was successful, so the backend has merged the cart.
+                // Clear the local cart now.
+                localStorage.removeItem('guest_cart_v1');
+
+                // Dispatch a custom event to tell the useCart hook to refresh
+                window.dispatchEvent(new Event('authChanged'));
+
+                navigate('/'); // Redirect to home or another page
+            }
       setTimeout(onLoginSuccess, 1500);
     } catch (err) {
       console.error("Login error:", err.response?.data || err.message);
@@ -580,6 +604,8 @@ const VerifySignupOtpModal = ({
       if (response.data.token) {
         axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
       }
+
+      window.dispatchEvent(new Event('authChanged'));
 
       setTimeout(() => {
         onVerificationSuccess();
@@ -864,6 +890,13 @@ const LoginPage = ({ isOpen, onClose }) => {
     useState(false);
   const [signupEmailForOtp, setSignupEmailForOtp] = useState("");
 
+  const handleLoginSuccess = () => {
+  // Dispatch authChanged event to refresh cart
+  window.dispatchEvent(new Event('authChanged'));
+  onClose();
+};
+
+
   useEffect(() => {
     const style = document.createElement("style");
     style.innerHTML = `
@@ -953,7 +986,7 @@ const LoginPage = ({ isOpen, onClose }) => {
           <div className="w-1/2 flex-shrink-0 flex items-center justify-center p-6 bg-white z-10">
             <LoginForm
               onSwitchToSignup={() => setIsLoginActive(false)}
-              onLoginSuccess={onClose}
+              onLoginSuccess={handleLoginSuccess}
               onForgotPassword={handleOpenForgotPassword}
               onOpenVerifyOtpModal={handleOpenVerifySignupOtpModal}
               formPrefix="desktop-login-"
@@ -1029,7 +1062,7 @@ const LoginPage = ({ isOpen, onClose }) => {
             <div className="absolute w-full h-full backface-hidden bg-white rounded-lg shadow-xl flex flex-col items-center justify-center p-4">
               <LoginForm
                 onSwitchToSignup={() => setIsLoginActive(false)}
-                onLoginSuccess={onClose}
+                onLoginSuccess={handleLoginSuccess}
                 onForgotPassword={handleOpenForgotPassword}
                 onOpenVerifyOtpModal={handleOpenVerifySignupOtpModal}
                 formPrefix="mobile-login-"

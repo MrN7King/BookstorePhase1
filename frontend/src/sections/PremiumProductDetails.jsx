@@ -6,10 +6,25 @@ import { Spinner } from "@material-tailwind/react";
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import useCart from '../hooks/useCart';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL; // Your API base URL
 
+
 const PremiumProductDetails = () => {
+  
+  const { addOrUpdateItem } = useCart();
+  const handleAddToCart = () => {
+    if (!product) return;
+    
+    addOrUpdateItem({
+      _id: product._id,
+      name: product.name,
+      price: product.price,
+      thumbnailUrl: product.thumbnailUrl,
+      type: 'premium_account'
+    }, 1);
+  };
   const { id } = useParams(); // Gets the 'id' parameter from the URL
   const navigate = useNavigate();
 
@@ -160,8 +175,11 @@ const PremiumProductDetails = () => {
             {renderStars(product.rating)}
             <span className="text-xs sm:text-sm text-gray-600 ml-2">({(product.rating || 0).toFixed(1)}/5 Stars)</span>
           </div> */}
-          <button className="flex items-center justify-center bg-gray-900 text-white border-none rounded-md py-2 sm:py-3 px-4 sm:px-6 text-sm sm:text-base cursor-pointer mt-2 w-full max-w-[250px] hover:bg-gray-700 transition-colors duration-200">
-            <span className="material-icons mr-2 text-lg sm:text-xl">shopping_cart</span>
+          <button
+            onClick={handleAddToCart} 
+            className="flex items-center justify-center bg-gray-900 text-white rounded-md py-2  sm:py-3 px-4 sm:px-6 text-sm sm:text-base cursor-pointer mt-3 w-full max-w-[250px] hover:bg-gray-700 transition-colors duration-200"
+          >
+            <span className="material-icons mr-2">shopping_cart</span>
             Add To Cart
           </button>
           <button className="flex items-center justify-center bg-blue-600 text-white border border-gray-300 rounded-md py-2 sm:py-3 px-4 sm:px-6 text-sm sm:text-base cursor-pointer mt-3 w-full max-w-[250px] hover:bg-blue-700 transition-colors duration-200">
@@ -182,8 +200,8 @@ const PremiumProductDetails = () => {
           <div className="flex justify-between border-b border-gray-200 mb-4 sm:mb-5">
             <button
               className={`flex-1 text-center py-2 px-1 text-xs sm:text-sm md:text-base cursor-pointer outline-none border-b-2 transition-all duration-300 ${activeTab === 'description'
-                  ? 'text-gray-900 border-gray-900 font-semibold'
-                  : 'text-gray-600 border-transparent hover:text-blue-600 hover:border-blue-600'
+                ? 'text-gray-900 border-gray-900 font-semibold'
+                : 'text-gray-600 border-transparent hover:text-blue-600 hover:border-blue-600'
                 }`}
               onClick={() => setActiveTab('description')}
             >
@@ -191,8 +209,8 @@ const PremiumProductDetails = () => {
             </button>
             <button
               className={`flex-1 text-center py-2 px-1 text-xs sm:text-sm md:text-base cursor-pointer outline-none border-b-2 transition-all duration-300 ${activeTab === 'reviews'
-                  ? 'text-gray-900 border-gray-900 font-semibold'
-                  : 'text-gray-600 border-transparent hover:text-blue-600 hover:border-blue-600'
+                ? 'text-gray-900 border-gray-900 font-semibold'
+                : 'text-gray-600 border-transparent hover:text-blue-600 hover:border-blue-600'
                 }`}
               onClick={() => setActiveTab('reviews')}
             >
@@ -200,8 +218,8 @@ const PremiumProductDetails = () => {
             </button>
             <button
               className={`flex-1 text-center py-2 px-1 text-xs sm:text-sm md:text-base cursor-pointer outline-none border-b-2 transition-all duration-300 ${activeTab === 'productDetails'
-                  ? 'text-gray-900 border-gray-900 font-semibold'
-                  : 'text-gray-600 border-transparent hover:text-blue-600 hover:border-blue-600'
+                ? 'text-gray-900 border-gray-900 font-semibold'
+                : 'text-gray-600 border-transparent hover:text-blue-600 hover:border-blue-600'
                 }`}
               onClick={() => setActiveTab('productDetails')}
             >
@@ -209,8 +227,8 @@ const PremiumProductDetails = () => {
             </button>
             <button
               className={`flex-1 text-center py-2 px-1 text-xs sm:text-sm md:text-base cursor-pointer outline-none border-b-2 transition-all duration-300 ${activeTab === 'aboutTheAuthor'
-                  ? 'text-gray-900 border-gray-900 font-semibold'
-                  : 'text-gray-600 border-transparent hover:text-blue-600 hover:border-blue-600'
+                ? 'text-gray-900 border-gray-900 font-semibold'
+                : 'text-gray-600 border-transparent hover:text-blue-600 hover:border-blue-600'
                 }`}
               onClick={() => setActiveTab('aboutTheAuthor')}
             >

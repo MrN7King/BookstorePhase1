@@ -4,18 +4,29 @@ import { Spinner } from "@material-tailwind/react";
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import useCart from '../hooks/useCart';
 
 // Define your API base URL here (from .env file)
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-const ProductDetails = ({ bookId, bookSlug }) => { 
-  
+const ProductDetails = ({ bookId, bookSlug }) => {
+
   const navigate = useNavigate();
+  const { addOrUpdateItem } = useCart(); 
 
   const [book, setBook] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('description');
+
+  const handleAddToCart = () => {
+  addOrUpdateItem({
+    _id: book._id,  // Ensure MongoDB _id is used
+    name: book.name,
+    price: book.price,
+    thumbnailUrl: book.thumbnailUrl
+  }, 1);
+};
 
   useEffect(() => {
     const fetchBookDetails = async () => {
@@ -43,20 +54,20 @@ const ProductDetails = ({ bookId, bookSlug }) => {
   }, [bookId]);
 
 
-useEffect(() => {
-  // This logic should only run if the book data has been successfully fetched
-  if (book && book.slug) {
-    // Use the slug directly from the fetched book object
-    const correctSlug = book.slug;
+  useEffect(() => {
+    // This logic should only run if the book data has been successfully fetched
+    if (book && book.slug) {
+      // Use the slug directly from the fetched book object
+      const correctSlug = book.slug;
 
-    // If the current URL slug is missing or doesn't match the correct slug, update the URL
-    if (bookSlug !== correctSlug) {
-      // Using `Maps` with `replace: true` to prevent a new history entry
-       navigate(`/product/${bookId}/${correctSlug}`, { replace: true });
-      
+      // If the current URL slug is missing or doesn't match the correct slug, update the URL
+      if (bookSlug !== correctSlug) {
+        // Using `Maps` with `replace: true` to prevent a new history entry
+        navigate(`/product/${bookId}/${correctSlug}`, { replace: true });
+
+      }
     }
-  }
-}, [book, bookId, bookSlug, navigate]);  
+  }, [book, bookId, bookSlug, navigate]);
 
   const renderStars = (rating) => {
     const stars = [];
@@ -172,10 +183,14 @@ useEffect(() => {
             {renderStars(book.rating)}
             <span className="text-xs sm:text-sm text-gray-600 ml-2">({(book.rating || 0).toFixed(1)}/5 Stars)</span>
           </div>
-          <button className="flex items-center justify-center bg-gray-900 text-white border-none rounded-md py-2 sm:py-3 px-4 sm:px-6 text-sm sm:text-base cursor-pointer mt-2 w-full max-w-[250px] hover:bg-gray-700 transition-colors duration-200">
-            <span className="material-icons mr-2 text-lg sm:text-xl">shopping_cart</span>
+          <button
+            onClick={handleAddToCart}
+            className="flex items-center justify-center bg-gray-900 text-white rounded-md py-2  sm:py-3 px-4 sm:px-6 text-sm sm:text-base cursor-pointer mt-3 w-full max-w-[250px] hover:bg-gray-700 transition-colors duration-200"
+          >
+            <span className="material-icons mr-2">shopping_cart</span>
             Add To Cart
           </button>
+
           <button className="flex items-center justify-center bg-blue-600 text-white border border-gray-300 rounded-md py-2 sm:py-3 px-4 sm:px-6 text-sm sm:text-base cursor-pointer mt-3 w-full max-w-[250px] hover:bg-blue-700 transition-colors duration-200">
             <span className="material-icons mr-2 text-lg sm:text-xl">favorite_border</span>
             Add to Favourites
@@ -194,8 +209,8 @@ useEffect(() => {
 
             <button
               className={`flex-1 text-center py-2 px-1 text-xs sm:text-sm md:text-base cursor-pointer outline-none border-b-2 transition-all duration-300 ${activeTab === 'description'
-                  ? 'text-gray-900 border-gray-900 font-semibold'
-                  : 'text-gray-600 border-transparent hover:text-blue-600 hover:border-blue-600'
+                ? 'text-gray-900 border-gray-900 font-semibold'
+                : 'text-gray-600 border-transparent hover:text-blue-600 hover:border-blue-600'
                 }`}
               onClick={() => setActiveTab('description')}
             >
@@ -203,8 +218,8 @@ useEffect(() => {
             </button>
             <button
               className={`flex-1 text-center py-2 px-1 text-xs sm:text-sm md:text-base cursor-pointer outline-none border-b-2 transition-all duration-300 ${activeTab === 'reviews'
-                  ? 'text-gray-900 border-gray-900 font-semibold'
-                  : 'text-gray-600 border-transparent hover:text-blue-600 hover:border-blue-600'
+                ? 'text-gray-900 border-gray-900 font-semibold'
+                : 'text-gray-600 border-transparent hover:text-blue-600 hover:border-blue-600'
                 }`}
               onClick={() => setActiveTab('reviews')}
             >
@@ -212,8 +227,8 @@ useEffect(() => {
             </button>
             <button
               className={`flex-1 text-center py-2 px-1 text-xs sm:text-sm md:text-base cursor-pointer outline-none border-b-2 transition-all duration-300 ${activeTab === 'productDetails'
-                  ? 'text-gray-900 border-gray-900 font-semibold'
-                  : 'text-gray-600 border-transparent hover:text-blue-600 hover:border-blue-600'
+                ? 'text-gray-900 border-gray-900 font-semibold'
+                : 'text-gray-600 border-transparent hover:text-blue-600 hover:border-blue-600'
                 }`}
               onClick={() => setActiveTab('productDetails')}
             >
@@ -221,8 +236,8 @@ useEffect(() => {
             </button>
             <button
               className={`flex-1 text-center py-2 px-1 text-xs sm:text-sm md:text-base cursor-pointer outline-none border-b-2 transition-all duration-300 ${activeTab === 'aboutTheAuthor'
-                  ? 'text-gray-900 border-gray-900 font-semibold'
-                  : 'text-gray-600 border-transparent hover:text-blue-600 hover:border-blue-600'
+                ? 'text-gray-900 border-gray-900 font-semibold'
+                : 'text-gray-600 border-transparent hover:text-blue-600 hover:border-blue-600'
                 }`}
               onClick={() => setActiveTab('aboutTheAuthor')}
             >

@@ -6,6 +6,7 @@ import axios from 'axios'; // Assuming axios is installed: npm install axios or 
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom'; // For navigation
 import Cards from '../components/Cards'; // Assuming Cards.jsx is in ../components
+import useCart from '../hooks/useCart';
 
 // Your API base URL from environment variables
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -17,6 +18,7 @@ const BestSellerSlider = ({ headingText = "Best Sellers" }) => {
   const [loading, setLoading] = useState(true); // State for loading status
   const [error, setError] = useState(null); // State for error messages
   const navigate = useNavigate(); // Initialize navigate hook
+  const { addOrUpdateItem } = useCart();
 
   // --- Data Fetching Effect ---
   useEffect(() => {
@@ -195,13 +197,18 @@ const BestSellerSlider = ({ headingText = "Best Sellers" }) => {
                       title: product.name || "Untitled Account",
                       author: product.platform || "N/A", // Display platform as 'author'
                       rating: product.rating || 0, // Assuming a rating field for premium products or default to 0
-                      price: `LKR ${product.price ? product.price.toFixed(2) : '0.00'}`,
+                      price: product.price ?? 0,
                       image: product.thumbnailUrl || 'https://placehold.co/300x400?text=No+Image',
                       genre: product.platform || "Platform", // Original 'genre' for book compatibility
                       slug: product.slug, // Pass slug for navigation
                     }}
                     topRightPillText={product.platform} // Use platform for the pill text
                     onCardClick={handleCardClick} // Use the modified handleCardClick for navigation
+                    onAddToCart={(payload) => {
+                      // productPayload comes from Card and includes id/_id
+                      // pass the original/normalized product object to the hook
+                      addOrUpdateItem(payload, 1);
+                    }}
                   />
                 </div>
               ))}

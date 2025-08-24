@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import jwt from 'jsonwebtoken';
 import UserModel from '../models/User.js';
 import transporter from '../utils/email.js';
+import mongoose from 'mongoose';
 
 dotenv.config();
 
@@ -133,7 +134,7 @@ export const register = async (req, res) => {
 
 // Login user
 export const login = async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, guestCart } = req.body;
 
   if (!email || !password)
     return res.status(400).json({ success: false, message: 'Email and password are required' });
@@ -159,6 +160,52 @@ export const login = async (req, res) => {
       });
     }
 
+    // Cart Merging Logic ---
+if (Array.isArray(guestCart) && guestCart.length > 0) {
+  // Normalize incoming guest cart -> [{ productId: ObjectId, quantity: number }]
+  const normalizedGuestCart = guestCart
+    .map(i => {
+      const qty = Math.max(1, Number(i?.quantity) || 1);
+      const pid = i?.productId;
+      if (!pid || !mongoose.Types.ObjectId.isValid(pid)) return null;
+      return {
+        productId: new mongoose.Types.ObjectId(pid),
+        quantity: qty,
+      };
+    })
+    .filter(Boolean);
+
+  // Build a map productId(string) -> quantity from guest cart
+  const guestCartMap = new Map();
+  for (const item of normalizedGuestCart) {
+    const key = item.productId.toString();
+    // if same product appears multiple times in guest cart, sum it
+    guestCartMap.set(key, (guestCartMap.get(key) || 0) + item.quantity);
+  }
+
+  // Merge with user's existing cart (sum quantities when overlapping)
+  if (!Array.isArray(user.cart)) user.cart = [];
+  for (const item of user.cart) {
+    const key = item.productId?.toString?.();
+    if (!key) continue;
+    if (guestCartMap.has(key)) {
+      item.quantity = Math.max(1, Number(item.quantity) || 1) + guestCartMap.get(key);
+      guestCartMap.delete(key);
+    }
+  }
+
+  // Add remaining guest items not already in the user's cart
+  for (const [productIdStr, quantity] of guestCartMap.entries()) {
+    user.cart.push({
+      productId: new mongoose.Types.ObjectId(productIdStr),
+      quantity: Math.max(1, Number(quantity) || 1),
+    });
+  }
+
+  await user.save();
+}
+
+
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
 
     res.cookie('token', token, {
@@ -168,7 +215,7 @@ export const login = async (req, res) => {
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    res.json({ success: true, message: 'Logged in successfully' });
+    res.json({ success: true, message: 'Logged in successfully', token });
   } catch (error) {
     console.error("❌ Login Error:", error);
     res.status(500).json({ success: false, message: 'Login failed' });
@@ -294,131 +341,131 @@ export const logout = (req, res) => {
 
 // Update User Profile
 export const updateProfile = async (req, res) => {
-    try {
-        const userID = req.user;
-        const { firstName, lastName, email, phone } = req.body;
+  try {
+    const userID = req.user;
+    const { firstName, lastName, email, phone } = req.body;
 
-        if (!userID) {
-            return res.status(401).json({ success: false, message: 'Unauthorized: User ID not found.' });
-        }
-
-        const user = await UserModel.findById(userID).select('+password');
-
-        if (!user) {
-            return res.status(404).json({ success: false, message: 'User not found.' });
-        }
-
-        if (email && email !== user.email) {
-            const existingUserWithEmail = await UserModel.findOne({ email });
-            if (existingUserWithEmail) {
-                return res.status(409).json({ success: false, message: 'This email is already registered.' });
-            }
-            user.email = email;
-        }
-
-        user.firstName = firstName || user.firstName;
-        user.lastName = lastName || user.lastName;
-        user.phone = phone || user.phone;
-
-        await user.save({ validateBeforeSave: true });
-
-        res.status(200).json({
-            success: true,
-            message: 'Profile updated successfully!',
-            user: {
-                id: user._id,
-                email: user.email,
-                firstName: user.firstName,
-                lastName: user.lastName,
-                phone: user.phone,
-                isAccountVerified: user.isAccountVerified,
-            }
-        });
-
-    } catch (error) {
-        console.error("❌ Error updating profile:", error);
-        res.status(500).json({ success: false, message: error.message || 'Failed to update profile.' });
+    if (!userID) {
+      return res.status(401).json({ success: false, message: 'Unauthorized: User ID not found.' });
     }
+
+    const user = await UserModel.findById(userID).select('+password');
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found.' });
+    }
+
+    if (email && email !== user.email) {
+      const existingUserWithEmail = await UserModel.findOne({ email });
+      if (existingUserWithEmail) {
+        return res.status(409).json({ success: false, message: 'This email is already registered.' });
+      }
+      user.email = email;
+    }
+
+    user.firstName = firstName || user.firstName;
+    user.lastName = lastName || user.lastName;
+    user.phone = phone || user.phone;
+
+    await user.save({ validateBeforeSave: true });
+
+    res.status(200).json({
+      success: true,
+      message: 'Profile updated successfully!',
+      user: {
+        id: user._id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        phone: user.phone,
+        isAccountVerified: user.isAccountVerified,
+      }
+    });
+
+  } catch (error) {
+    console.error("❌ Error updating profile:", error);
+    res.status(500).json({ success: false, message: error.message || 'Failed to update profile.' });
+  }
 };
 
 // Change User Password
 export const changePassword = async (req, res) => {
-    try {
-        const userID = req.user;
-        const { currentPassword, newPassword, confirmNewPassword } = req.body;
+  try {
+    const userID = req.user;
+    const { currentPassword, newPassword, confirmNewPassword } = req.body;
 
-        if (!userID) {
-            return res.status(401).json({ success: false, message: 'Unauthorized: User ID not found.' });
-        }
-
-        const user = await UserModel.findById(userID).select('+password');
-
-        if (!user) {
-            return res.status(404).json({ success: false, message: 'User not found.' });
-        }
-
-        if (!currentPassword || !(await user.correctPassword(currentPassword, user.password))) {
-            return res.status(401).json({ success: false, message: 'Incorrect current password.' });
-        }
-
-        if (!newPassword || newPassword.length < 8) {
-            return res.status(400).json({ success: false, message: 'New password must be at least 8 characters long.' });
-        }
-        if (newPassword !== confirmNewPassword) {
-            return res.status(400).json({ success: false, message: 'New password and confirmation do not match.' });
-        }
-        if (newPassword === currentPassword) {
-            return res.status(400).json({ success: false, message: 'New password cannot be the same as the current password.' });
-        }
-
-        // ✅ Explicitly hash new password here before saving
-        const salt = await bcrypt.genSalt(12);
-        user.password = await bcrypt.hash(newPassword, salt);
-        await user.save({ validateBeforeSave: true });
-
-        res.cookie('token', 'loggedout', {
-            httpOnly: true,
-            expires: new Date(Date.now() + 10 * 1000),
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
-        });
-
-        res.status(200).json({ success: true, message: 'Password changed successfully! Please log in with your new password.' });
-
-    } catch (error) {
-        console.error("❌ Error changing password:", error);
-        res.status(500).json({ success: false, message: error.message || 'Failed to change password.' });
+    if (!userID) {
+      return res.status(401).json({ success: false, message: 'Unauthorized: User ID not found.' });
     }
+
+    const user = await UserModel.findById(userID).select('+password');
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found.' });
+    }
+
+    if (!currentPassword || !(await user.correctPassword(currentPassword, user.password))) {
+      return res.status(401).json({ success: false, message: 'Incorrect current password.' });
+    }
+
+    if (!newPassword || newPassword.length < 8) {
+      return res.status(400).json({ success: false, message: 'New password must be at least 8 characters long.' });
+    }
+    if (newPassword !== confirmNewPassword) {
+      return res.status(400).json({ success: false, message: 'New password and confirmation do not match.' });
+    }
+    if (newPassword === currentPassword) {
+      return res.status(400).json({ success: false, message: 'New password cannot be the same as the current password.' });
+    }
+
+    // ✅ Explicitly hash new password here before saving
+    const salt = await bcrypt.genSalt(12);
+    user.password = await bcrypt.hash(newPassword, salt);
+    await user.save({ validateBeforeSave: true });
+
+    res.cookie('token', 'loggedout', {
+      httpOnly: true,
+      expires: new Date(Date.now() + 10 * 1000),
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+    });
+
+    res.status(200).json({ success: true, message: 'Password changed successfully! Please log in with your new password.' });
+
+  } catch (error) {
+    console.error("❌ Error changing password:", error);
+    res.status(500).json({ success: false, message: error.message || 'Failed to change password.' });
+  }
 };
 
 // NEW: Delete User Account
 export const deleteAccount = async (req, res) => {
-    try {
-        const userID = req.user; // User ID from authMiddleware
+  try {
+    const userID = req.user; // User ID from authMiddleware
 
-        if (!userID) {
-            return res.status(401).json({ success: false, message: 'Unauthorized: User ID not found.' });
-        }
-
-        const user = await UserModel.findByIdAndDelete(userID);
-
-        if (!user) {
-            return res.status(404).json({ success: false, message: 'User not found.' });
-        }
-
-        // Clear the authentication cookie upon successful deletion
-        res.clearCookie('token', {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
-        });
-
-        res.status(200).json({ success: true, message: 'Account deleted successfully.' });
-
-    } catch (error) {
-        console.error("❌ Error deleting account:", error);
-        res.status(500).json({ success: false, message: error.message || 'Failed to delete account.' });
+    if (!userID) {
+      return res.status(401).json({ success: false, message: 'Unauthorized: User ID not found.' });
     }
+
+    const user = await UserModel.findByIdAndDelete(userID);
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found.' });
+    }
+
+    // Clear the authentication cookie upon successful deletion
+    res.clearCookie('token', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+    });
+
+    res.status(200).json({ success: true, message: 'Account deleted successfully.' });
+
+  } catch (error) {
+    console.error("❌ Error deleting account:", error);
+    res.status(500).json({ success: false, message: error.message || 'Failed to delete account.' });
+  }
 };
 
 // NEW: Admin-only function to get all users
@@ -485,20 +532,20 @@ export const updateUser = async (req, res) => {
 
 // NEW: Admin-only function to delete a user
 export const deleteUser = async (req, res) => {
-    try {
-        const { id } = req.params;
+  try {
+    const { id } = req.params;
 
-        const user = await UserModel.findByIdAndDelete(id);
+    const user = await UserModel.findByIdAndDelete(id);
 
-        if (!user) {
-            return res.status(404).json({ success: false, message: 'User not found' });
-        }
-
-        res.status(200).json({ success: true, message: 'User deleted successfully' });
-    } catch (error) {
-        console.error("❌ Delete User Error:", error);
-        res.status(500).json({ success: false, message: 'Failed to delete user' });
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
     }
+
+    res.status(200).json({ success: true, message: 'User deleted successfully' });
+  } catch (error) {
+    console.error("❌ Delete User Error:", error);
+    res.status(500).json({ success: false, message: 'Failed to delete user' });
+  }
 };
 
 // NEW: Admin-only function to grant admin access

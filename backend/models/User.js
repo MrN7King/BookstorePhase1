@@ -17,7 +17,7 @@ const userSchema = new mongoose.Schema({
         minlength: 8,
         select: false // Don't send password back in query results by default
     },
-     firstName: {
+    firstName: {
         type: String,
         trim: true,
         default: ''
@@ -56,26 +56,24 @@ const userSchema = new mongoose.Schema({
         enum: ['customer', 'employee', 'owner', 'guest'],
         default: 'customer'
     },
-    
-    //Something Dilaksan added idk why
-    cart: [
-        {
-            bookId: {
-                type: mongoose.Schema.ObjectId,
-                ref: 'Book', // Assuming you'll have a Book model
-                required: true
-            },
-            quantity: {
-                type: Number,
-                default: 1
-            }
-        }
-    ]
+
+    cart: [{
+    productId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Product',
+      required: true
+    },
+    quantity: {
+      type: Number,
+      required: true,
+      min: 1
+    }
+  }]
 });
 
 
 
-userSchema.methods.correctPassword = async function(candidatePassword, userPassword) {
+userSchema.methods.correctPassword = async function (candidatePassword, userPassword) {
     return await bcrypt.compare(candidatePassword, userPassword);
 };
 const UserModel = mongoose.models.User || mongoose.model('User', userSchema); // Changed 'user' to 'User' for consistency

@@ -18,6 +18,8 @@ import cloudinary from 'cloudinary';
 import ebookUploadRoutes from './routes/ebookUploadRoutes.js';
 import premiumCodeRoutes from './routes/premiumCodesRoutes.js';
 import premiumProductRoutes from './routes/PremiumProductRoutes.js'; // Import premium product routes
+import cartRoutes from './routes/cartRoutes.js';
+
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -62,5 +64,7 @@ app.use('/api/roles', roleRoutes);
 app.use('/api/genres', GenreRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/slider-ebooks', sliderEbookRoutes); // NEW: Mount slider ebook routes
+
+app.use('/api/cart', cartRoutes);
 
 export default app;
