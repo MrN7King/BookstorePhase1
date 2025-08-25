@@ -149,43 +149,7 @@ const BestSellerSlider = ({ headingText = "Best Sellers", fetchType = "random" }
                 </a>
             </div>
 
-            {/* Slider + Arrows */}
-            <div className="relative flex items-center justify-center px-4 md:px-8 lg:px-16 group">
-                {/* Left Arrow */}
-                <button
-                    onClick={(e) => { e.stopPropagation(); scroll('left'); }}
-                    className="absolute left-0 lg:left-4 z-30 p-4 rounded-full bg-white border border-gray-200 shadow-md text-gray-700 hover:text-blue-600 hover:bg-gray-50 transition-all duration-300 transform hover:-translate-x-1 hover:scale-110 opacity-0 group-hover:opacity-100 hidden sm:block"
-                    aria-label="Previous books"
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-                    </svg>
-                </button>
-            </div>
-            {/* Scrollable Cards */}
-            <div className="relative w-full max-w-7xl mx-auto overflow-hidden">
-                <div
-                    ref={sliderRef}
-                    className="flex overflow-x-auto overflow-y-hidden px-2 sm:px-4 md:px-6 lg:px-8 py-4 space-x-4 sm:space-x-6 md:space-x-8 scrollbar-hide"
-                    style={{ scrollSnapType: 'x mandatory', scrollBehavior: 'smooth' }}
-                >
-                    {books.map((book) => (
-                        <div key={book._id} className="scroll-snap-align-center flex-shrink-0 w-36 sm:w-40 md:w-44 lg:w-52">
-                            <Cards
-                                book={{
-                                    id: book._id,
-                                    title: book.name,
-                                    author: book.author,
-                                    rating: book.rating || 0,
-                                    price: `LKR ${book.price.toFixed(2)}`,
-                                    image: book.thumbnailUrl || 'https://placehold.co/300x400?text=No+Image',
-                                }}
-                                onCardClick={handleCardClick}
-                            />
-                        </div>
-                    ))}
-                </div>
-            </div>
+            
 
 
             {/* Slider Area: Controls and Scrollable Content */}
@@ -213,8 +177,8 @@ const BestSellerSlider = ({ headingText = "Best Sellers", fetchType = "random" }
                         style={{ scrollSnapType: 'x mandatory', scrollBehavior: 'smooth' }}
                     >
                         {books.map((book, index) => (
-                            <div key={book._id} className="scroll-snap-align-center flex-shrink-0 w-[260px]"> {/* Added fixed width here */}
-                                <Cards
+                            <div key={book._id} className="scroll-snap-align-center flex-shrink-0 w-36 sm:w-40 md:w-44 lg:w-52">
+                             <Cards
                                     book={{
                                         id: book._id, // Pass _id as id
                                         title: book.name,

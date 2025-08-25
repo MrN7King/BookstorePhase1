@@ -3,7 +3,7 @@
 import axios from "axios";
 import { AnimatePresence, motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { useEffect, useState } from "react"; // Corrected import: useEffect and useState from 'react'
-
+import { useNavigate } from 'react-router-dom';
 // Configure axios to send cookies with requests
 axios.defaults.withCredentials = true;
 
@@ -419,7 +419,7 @@ const LoginForm = ({
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [isError, setIsError] = useState(false);
-
+  const navigate = useNavigate(); 
   const handleSubmit = async (e) => {
     e.preventDefault();
     // Fetch the guest cart from local storage
@@ -446,7 +446,7 @@ const LoginForm = ({
                 // Dispatch a custom event to tell the useCart hook to refresh
                 window.dispatchEvent(new Event('authChanged'));
 
-                navigate('/'); // Redirect to home or another page
+                 navigate('/');// Redirect to home or another page
             }
       setTimeout(onLoginSuccess, 1500);
     } catch (err) {
