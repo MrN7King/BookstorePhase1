@@ -1,29 +1,34 @@
 // frontend/src/hooks/useCart.js
-import { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
+import { useCallback, useEffect, useState } from 'react';
+
 axios.defaults.withCredentials = true;
 const GUEST_CART_KEY = 'guest_cart_v1';
 
-// helper to read local guest cart
+// Helper to read local guest cart
 const readGuestCart = () => {
-  try {
-    const raw = localStorage.getItem(GUEST_CART_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
+    try {
+        const raw = localStorage.getItem(GUEST_CART_KEY);
+        return raw ? JSON.parse(raw) : [];
+    } catch (e) {
+        console.error("Failed to parse guest cart from localStorage:", e);
+        return [];
+    }
 };
 
 const writeGuestCart = (items) => {
-  localStorage.setItem(GUEST_CART_KEY, JSON.stringify(items));
+    localStorage.setItem(GUEST_CART_KEY, JSON.stringify(items));
 };
 
-// get current auth user (customize to your auth system)
+// Get current auth user
 const fetchCurrentUser = async () => {
     try {
-        const res = await axios.get('/api/user');
+       
+        const res = await axios.get('http://localhost:5000/api/auth/data');
+       
         return res.data.user || null;
-    } catch {
+    } catch (e) {
+        console.error('Failed to fetch user:', e);
         return null;
     }
 };
@@ -33,108 +38,82 @@ export default function useCart() {
     const [cart, setCart] = useState([]);
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
-    const syncingRef = useRef(false);
 
-
-    // extracted init logic so we can re-run it later
-    const init = async () => {
+    // The core cart loading logic
+    const init = useCallback(async (currentUser) => {
         setLoading(true);
-        const currentUser = await fetchCurrentUser();
-        setUser(currentUser);
-
-        if (!currentUser) {
-            const guestCart = readGuestCart().map(item => ({
-                id: item.productId,
-                product: {
-                    _id: item.productId,
-                    name: item.name,
-                    price: Number(item.price ?? 0),
-                    thumbnailUrl: item.thumbnailUrl
-                },
-                quantity: item.quantity
-            }));
-            setCart(guestCart);
-            setLoading(false);
-            return;
-        }
+    
 
         try {
-            const res = await axios.get('/api/cart');
-            if (res.data.success) {
-                const serverCart = res.data.cart.map(c => ({
-                    id: c.productId._id || c.productId,
-                    product: c.productId,
-                    quantity: c.quantity
-                }));
-                setCart(serverCart);
-
-                // Merge guest cart after setting initial server cart
-                const guest = readGuestCart();
-                if (guest.length) {
-                    try {
-                        await axios.post('/api/cart/merge', {
-                            items: guest.map(g => ({
-                                productId: g.productId, // Send just the ID
-                                quantity: g.quantity
-                            }))
-                        });
-
-                        // Refresh cart after merge
-                        const res2 = await axios.get('/api/cart');
-                        if (res2.data.success) {
-                            setCart(res2.data.cart.map(c => ({
-                                id: c.productId._id || c.productId,
-                                product: c.productId,
-                                quantity: c.quantity
-                            })));
-                        }
-                        localStorage.removeItem(GUEST_CART_KEY);
-                    } catch (err) {
-                        console.error('Cart merge failed', err);
-                    }
+            if (currentUser) {
+              
+                const res = await axios.get('http://localhost:5000/api/cart');
+          
+                // ✅ The fix is here: we're no longer checking for `res.data.success`
+                if (Array.isArray(res.data.cart)) {
+                    const serverCart = res.data.cart.map(item => ({
+                        id: item.product._id,
+                        product: item.product,
+                        quantity: item.quantity
+                    }));
+                    setCart(serverCart);
+                  
+                } else {
+                    console.error('init: API call failed or returned invalid data. Response:', res.data);
+                    setCart([]);
                 }
+            } else {
+               
+                const guestCart = readGuestCart().map(item => ({
+                    id: item.productId,
+                    product: {
+                        _id: item.productId,
+                        name: item.name,
+                        price: Number(item.price ?? 0),
+                        thumbnailUrl: item.thumbnailUrl
+                    },
+                    quantity: item.quantity
+                }));
+                setCart(guestCart);
+             
             }
         } catch (err) {
-            console.error('Fetch server cart error', err);
+            console.error('init: Failed to initialize cart. Check network and CORS issues.', err);
+            setCart([]);
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
 
-    // init: discover auth, then load appropriate cart
+    // Effect hook to synchronize authentication and cart loading
     useEffect(() => {
+        const syncCart = async () => {
+            const currentUser = await fetchCurrentUser();
+            setUser(currentUser);
+            init(currentUser);
+        };
+        syncCart();
 
-        // run once on mount
-        init();
-
-        // listen for custom event 'authChanged' to re-run initialization (e.g. after login)
         const onAuthChanged = () => {
-            init();
+        
+            syncCart();
         };
         window.addEventListener('authChanged', onAuthChanged);
-
-
         return () => {
             window.removeEventListener('authChanged', onAuthChanged);
         };
-    }, []);
-
-
-    // helper: find item index
-    const findIndex = (items, productId) => items.findIndex(i => i.id === productId);
+    }, [init]);
 
     // add/update item (handles guest vs auth)
-    const addOrUpdateItem = async (product, quantity = 1) => {
+    const addOrUpdateItem = useCallback(async (product, quantity = 1) => {
         if (!product || !product._id && !product.id) {
             console.warn('Invalid product passed to addOrUpdateItem');
             return;
         }
         const productId = product._id || product.id;
-
         if (!user) {
             const existing = readGuestCart();
             const idx = existing.findIndex(i => i.productId === productId);
-
             if (idx > -1) {
                 existing[idx].quantity += quantity;
             } else {
@@ -146,7 +125,6 @@ export default function useCart() {
                     quantity
                 });
             }
-
             writeGuestCart(existing);
             setCart(existing.map(i => ({
                 id: i.productId,
@@ -160,15 +138,12 @@ export default function useCart() {
             })));
             return;
         }
-
         // logged-in: call API to add/update
         try {
-            const res = await axios.post('/api/cart', { productId, quantity });
+            const res = await axios.post('http://localhost:5000/api/cart', { productId, quantity });
             if (res.data.success) {
                 setCart(res.data.cart.map(c => {
-                    // Handle both populated and unpopulated responses
                     const product = c.product || c.productId;
-
                     return {
                         id: product?._id || c.productId,
                         product: product,
@@ -179,10 +154,10 @@ export default function useCart() {
         } catch (err) {
             console.error('addOrUpdateItem API error', err);
         }
-    };
+    }, [user]);
 
     // decrease or set quantity
-    const setItemQuantity = async (productId, quantity) => {
+    const setItemQuantity = useCallback(async (productId, quantity) => {
         if (!user) {
             const existing = readGuestCart();
             const idx = existing.findIndex(i => i.productId === productId);
@@ -202,20 +177,15 @@ export default function useCart() {
             }
             return;
         }
-
-        // server replace entire cart (simple way). Could be optimized to a single PUT item endpoint.
         try {
-            // Build new cart from current server cart and requested change, then PUT /api/cart
-            const serverCart = (await axios.get('/api/cart')).data.cart || [];
-            const newCart = serverCart.map(c => ({ productId: c.productId._id || c.productId, quantity: c.quantity }));
+            const serverCart = (await axios.get('http://localhost:5000/api/cart')).data.cart || [];
+            const newCart = serverCart.map(c => ({ productId: c.product._id || c.productId, quantity: c.quantity }));
             const idx = newCart.findIndex(n => n.productId === productId);
             if (idx > -1) newCart[idx].quantity = Math.max(1, quantity);
-            await axios.put('/api/cart', { items: newCart });
-            const res = await axios.get('/api/cart');
+            await axios.put('http://localhost:5000/api/cart', { items: newCart });
+            const res = await axios.get('http://localhost:5000/api/cart');
             setCart(res.data.cart.map(c => {
-                // Handle both populated and unpopulated responses
                 const product = c.product || c.productId;
-
                 return {
                     id: product?._id || c.productId,
                     product: product,
@@ -225,10 +195,10 @@ export default function useCart() {
         } catch (err) {
             console.error('setItemQuantity error', err);
         }
-    };
+    }, [user]);
 
     // remove item
-    const removeItem = async (productId) => {
+    const removeItem = useCallback(async (productId) => {
         if (!user) {
             const existing = readGuestCart().filter(i => i.productId !== productId);
             writeGuestCart(existing);
@@ -245,12 +215,10 @@ export default function useCart() {
             return;
         }
         try {
-            const res = await axios.delete(`/api/cart/${productId}`);
+            const res = await axios.delete(`http://localhost:5000/api/cart/${productId}`);
             if (res.data.success) {
                 setCart(res.data.cart.map(c => {
-                    // Handle both populated and unpopulated responses
                     const product = c.product || c.productId;
-
                     return {
                         id: product?._id || c.productId,
                         product: product,
@@ -261,9 +229,8 @@ export default function useCart() {
         } catch (err) {
             console.error('remove item error', err);
         }
-    };
+    }, [user]);
 
-    // expose API
     return {
         cart,
         setCart,
@@ -272,6 +239,6 @@ export default function useCart() {
         addOrUpdateItem,
         setItemQuantity,
         removeItem,
-        refresh: init
+        refresh: () => init(user)
     };
 }

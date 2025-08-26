@@ -1,5 +1,5 @@
 // src/sections/CartComponent.jsx
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useCart from '../hooks/useCart';
 
@@ -114,7 +114,7 @@ const cartItems = cart.map(it => ({
   if (loading) {
     return <div className="p-8 text-center">Loading cart…</div>;
   }
-console.log(cart.map(it => it.product?.price));
+
   return (
     <div className="container mx-auto p-4 sm:p-6 lg:p-8">
       {/* Progress Bar/Header */}
@@ -262,20 +262,7 @@ console.log(cart.map(it => it.product?.price));
           {/* Coupon Section */}
           <div className="mt-8 pt-6 border-t border-gray-200">
             <h3 className="flex items-center text-gray-700 font-semibold mb-4">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5 mr-2"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 0 014-4z"
-                />
-              </svg>
+              
               Coupon
             </h3>
             <input
