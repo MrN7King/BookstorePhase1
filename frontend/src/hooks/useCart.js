@@ -104,6 +104,29 @@ export default function useCart() {
         };
     }, [init]);
 
+    // Clear cart function
+    const clearCart = useCallback(async () => {
+        console.log("Clearing cart...");
+        
+        if (!user) {
+            // Clear guest cart
+            writeGuestCart([]);
+            setCart([]);
+            console.log("Guest cart cleared");
+        } else {
+            // Clear server cart for logged-in users
+            try {
+                await axios.put('http://localhost:5000/api/cart', { items: [] });
+                setCart([]);
+                console.log("Server cart cleared for logged-in user");
+            } catch (err) {
+                console.error('Failed to clear server cart:', err);
+                // Still clear local state even if server fails
+                setCart([]);
+            }
+        }
+    }, [user]);
+
     // add/update item (handles guest vs auth)
     const addOrUpdateItem = useCallback(async (product, quantity = 1) => {
         if (!product || !product._id && !product.id) {
@@ -239,6 +262,7 @@ export default function useCart() {
         addOrUpdateItem,
         setItemQuantity,
         removeItem,
+        clearCart,
         refresh: () => init(user)
     };
 }

@@ -8,7 +8,6 @@ import authRoutes from './routes/authRoutes.js';
 import ebookProductRoutes from './routes/ebookProductRoutes.js';
 import GenreRoutes from './routes/GenreRoutes.js';
 import miscRoutes from './routes/miscRoutes.js';
-import orderRoutes from './routes/orderRoutes.js';
 import roleRoutes from './routes/roleRoutes.js';
 import sliderEbookRoutes from './routes/sliderEbooksRoutes.js'; // Import slider ebook routes
 import uploadRoutes from './routes/uploadRoutes.js';
@@ -19,7 +18,9 @@ import ebookUploadRoutes from './routes/ebookUploadRoutes.js';
 import premiumCodeRoutes from './routes/premiumCodesRoutes.js';
 import premiumProductRoutes from './routes/PremiumProductRoutes.js'; // Import premium product routes
 import cartRoutes from './routes/cartRoutes.js';
-
+import checkoutRoutes from './routes/checkoutRoutes.js';
+import paymentRoutes from './routes/paymentRoutes.js';
+import downloadRoutes from './routes/downloadRoutes.js';
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -50,6 +51,7 @@ app.get('/', (req, res) => {
 
 
 // Routes
+app.use('/api/download', downloadRoutes);
 
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
@@ -59,12 +61,13 @@ app.use('/api/ebook-upload', ebookUploadRoutes); // Route for ebook file upload 
 app.use('/api/upload', uploadRoutes);// Route for thumbnail image upload
 app.use('/api/premium', premiumProductRoutes); // Route for premium products
 app.use('/api/premium/codes', premiumCodeRoutes); // Route for premium codes
-app.use('/api/orders', orderRoutes);
 app.use('/api/roles', roleRoutes);
 app.use('/api/genres', GenreRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/slider-ebooks', sliderEbookRoutes); // NEW: Mount slider ebook routes
 
 app.use('/api/cart', cartRoutes);
+app.use('/api/orders', checkoutRoutes);
+app.use('/api/payment', paymentRoutes);
 
 export default app;

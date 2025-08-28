@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FooterWithSitemap } from '../sections/Footer';
+import { useCheckout } from '../context/CheckoutContext';
 
 axios.defaults.withCredentials = true;
 
@@ -330,6 +331,7 @@ const ForgotPasswordPopup = ({ isOpen, onClose }) => {
 
 
 function CheckoutDetailsPage() {
+    
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -342,6 +344,7 @@ function CheckoutDetailsPage() {
     const [loginIsError, setLoginIsError] = useState(false);
     const [showSignupPopup, setShowSignupPopup] = useState(false);
     const [showForgotPasswordPopup, setShowForgotPasswordPopup] = useState(false);
+    const { updateCheckoutData } = useCheckout();
 
     useEffect(() => {
         const checkLoginStatus = async () => {
@@ -399,6 +402,7 @@ function CheckoutDetailsPage() {
             return;
         }
 
+        updateCheckoutData({ email: emailToUse });
         console.log('Proceeding to payment. Email:', emailToUse);
         navigate('/payment');
     };

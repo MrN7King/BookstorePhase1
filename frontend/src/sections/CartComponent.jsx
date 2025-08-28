@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useCart from '../hooks/useCart';
+import { useCheckout } from '../context/CheckoutContext';
 
 // Main App component (or your main component where this CartPage will be rendered)
 export default function CartComponent() {
@@ -16,7 +17,7 @@ export default function CartComponent() {
 function CartPage() {
   const navigate = useNavigate();
   const { cart, setCart, loading, addOrUpdateItem, setItemQuantity, removeItem } = useCart();
-
+  const { updateCheckoutData } = useCheckout();
 
   // Sample cart items. In a real application, this would come from a global state or fetched from a database.
   // Each item includes a unique ID, image, title, author, price, and initial quantity.
@@ -108,6 +109,14 @@ const cartItems = cart.map(it => ({
 
   // Handler for "Proceed to Checkout" button
   const handleProceedToCheckout = () => {
+    updateCheckoutData({
+      items: cartItems.map(item => ({
+        productId: item.id,
+        quantity: item.quantity,
+        productName: item.title,
+        price: item.price
+      }))
+    });
     navigate('/checkout'); // Navigate to the Checkout Details page
   };
 

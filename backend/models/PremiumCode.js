@@ -6,6 +6,8 @@ const premiumCodeSchema = new mongoose.Schema({
   encryptedCode: { type: String, required: true },
   isAssigned: { type: Boolean, default: false },
   assignedToOrderId: { type: mongoose.Schema.Types.ObjectId, ref: 'Order', default: null },
+  assignedToEmail: { type: String, default: null },
+  assignedAt: { type: Date, default: null },
 }, { timestamps: true });
 
 export default mongoose.model('PremiumCode', premiumCodeSchema);

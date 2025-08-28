@@ -1,47 +1,59 @@
-import B2 from 'backblaze-b2';
-import dotenv from 'dotenv';
-
+// backend/utils/b2Utils.js
+import B2 from "backblaze-b2";
+import dotenv from "dotenv";
 dotenv.config();
 
 const b2 = new B2({
   applicationKeyId: process.env.B2_KEY_ID,
-  applicationKey: process.env.B2_APP_KEY
+  applicationKey: process.env.B2_APP_KEY,
 });
 
-export const generateDownloadUrl = async (fileInfo) => {
-  await b2.authorize();
-  
-  // Valid for 7 days (604800 seconds)
-  const expiresIn = 604800;
-  
-  return b2.getDownloadUrl({
-    bucketId: fileInfo.bucketId,
-    fileName: fileInfo.fileName,
-    responseHeaders: {
-      'Content-Disposition': `attachment; filename="${fileInfo.fileName.split('/').pop()}"`
-    },
-    validDurationInSeconds: expiresIn
+/**
+ * generateDownloadUrl
+ * @param {{ fileName: string, bucketId?: string }} fileInfo
+ * @param {number} validDurationInSeconds
+ * @returns {string} signed public URL (short-lived)
+ */
+export async function generateDownloadUrl(fileInfo, validDurationInSeconds = 60 * 60) {
+  if (!fileInfo || !fileInfo.fileName) {
+    throw new Error("fileInfo.fileName is required");
+  }
+
+  // Ensure we're authorized and get the downloadUrl from Backblaze
+  const authRes = await b2.authorize();
+  // SDK responses vary slightly; try common places
+  const downloadUrl =
+    authRes?.data?.downloadUrl ||
+    authRes?.downloadUrl ||
+    b2?.downloadUrl ||
+    process.env.B2_DOWNLOAD_URL ||
+    process.env.B2_PUBLIC_URL;
+
+  if (!downloadUrl) {
+    throw new Error("Could not determine Backblaze downloadUrl (call b2.authorize()).");
+  }
+
+  const bucketId = fileInfo.bucketId || process.env.B2_BUCKET_ID;
+  if (!bucketId) throw new Error("bucketId is required (fileInfo.bucketId or B2_BUCKET_ID)");
+
+  // Request a download authorization token scoped to the exact file (use fileNamePrefix)
+  const authTokenRes = await b2.getDownloadAuthorization({
+    bucketId,
+    fileNamePrefix: fileInfo.fileName,
+    validDurationInSeconds,
+    // optionally: responseHeaders: fileInfo.responseHeaders
   });
-};
 
+  const token = authTokenRes?.data?.authorizationToken || authTokenRes?.authorizationToken;
+  if (!token) throw new Error("Could not obtain download authorization token from B2");
 
-// javascript:backend/routes/downloadRoutes.js
-// import express from 'express';
-// import { generateDownloadUrl } from '../utils/b2Utils.js';
-// import Ebook from '../models/Ebook.js';
+  // Build URL with proper encoding of path segments
+  const segments = fileInfo.fileName.split("/").map(encodeURIComponent).join("/");
+  const bucketName = process.env.B2_BUCKET_NAME;
+  if (!bucketName) throw new Error("B2_BUCKET_NAME is required in env");
 
-// const router = express.Router();
+  // downloadUrl already includes protocol + host (eg https://f001.backblazeb2.com)
+  const url = `${downloadUrl.replace(/\/$/, "")}/file/${bucketName}/${segments}?Authorization=${token}`;
 
-// router.get('/:ebookId', async (req, res) => {
-//   try {
-//     const ebook = await Ebook.findById(req.params.ebookId);
-//     if (!ebook) return res.status(404).json({ error: 'Ebook not found' });
-    
-//     const downloadUrl = await generateDownloadUrl(ebook.fileInfo);
-//     res.redirect(downloadUrl);
-//   } catch (error) {
-//     res.status(500).json({ error: 'Could not generate download link' });
-//   }
-// });
-
-// export default router;
+  return url;
+}

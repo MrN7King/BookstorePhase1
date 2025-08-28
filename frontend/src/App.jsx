@@ -18,9 +18,12 @@ import ProductPage from './pages/ProductPage';
 import ProfileSettings from './pages/ProfileSettings';
 import ThankYouPage from './pages/ThankYouPage.jsx';
 
+import { CheckoutProvider } from './context/CheckoutContext';
+
 const App = () => {
   return (
     <>
+    <CheckoutProvider>
       <ScrollToTop /> {/* This will scroll to the top of the page on route change */}
     <Routes>
       <Route path={"/"} element={<Home />} />
@@ -49,6 +52,7 @@ const App = () => {
       <Route path='/AllPremiumAccounts' element={<AllPremiumAccounts />} />
       <Route path='/admin/*' element={<AdminMainPage />} />
     </Routes>
+    </CheckoutProvider>
     </>
   )
 }
