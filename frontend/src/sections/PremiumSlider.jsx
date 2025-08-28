@@ -1,40 +1,39 @@
-// src/sections/BestSellerSlider.jsx
+// src/sections/BestSellerSlider.jsx (Premium Version)
 "use client";
 
-import { Spinner } from '@material-tailwind/react'; // Assuming you have @material-tailwind/react for Spinner
-import axios from 'axios'; // Assuming axios is installed: npm install axios or yarn add axios
+import { Spinner } from '@material-tailwind/react';
+import axios from 'axios';
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // For navigation
-import Cards from '../components/Cards'; // Assuming Cards.jsx is in ../components
+import { useNavigate } from 'react-router-dom';
+import Cards from '../components/Cards';
 import useCart from '../hooks/useCart';
 
-// Your API base URL from environment variables
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const BestSellerSlider = ({ headingText = "Best Sellers" }) => {
   const sliderRef = useRef(null);
   const [activeCardIndex, setActiveCardIndex] = useState(0);
-  const [products, setProducts] = useState([]); // State to hold fetched premium products
-  const [loading, setLoading] = useState(true); // State for loading status
-  const [error, setError] = useState(null); // State for error messages
-  const navigate = useNavigate(); // Initialize navigate hook
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
   const { addOrUpdateItem } = useCart();
 
-  // --- Data Fetching Effect ---
+  // --- Data Fetching Effect - Updated to use active endpoint ---
   useEffect(() => {
     const fetchPremiumProducts = async () => {
       setLoading(true);
       setError(null);
       try {
-        // Fetch 8 premium accounts (you can add sorting or 'random' parameter if your backend supports it)
-        const response = await axios.get(`${API_BASE_URL}/premium?limit=8`);
+        // Fetch only active premium accounts for the slider
+        const response = await axios.get(`${API_BASE_URL}/premium/active?limit=8`);
         if (response.data && Array.isArray(response.data.products)) {
           setProducts(response.data.products);
         } else {
           setError("Unexpected data format from API.");
         }
       } catch (err) {
-        console.error("Error fetching premium products for slider:", err);
+        console.error("Error fetching active premium products for slider:", err);
         setError("Failed to load premium accounts. Please try again later.");
       } finally {
         setLoading(false);
@@ -42,22 +41,20 @@ const BestSellerSlider = ({ headingText = "Best Sellers" }) => {
     };
 
     fetchPremiumProducts();
-  }, []); // Empty dependency array means this runs once on mount
+  }, []);
 
-  // --- MODIFIED handleCardClick to navigate to the premium product details page ---
   const handleCardClick = (id, slug) => {
-    navigate(`/premium-product/${id}/${slug}`); // Navigate to the new detail page route
+    navigate(`/premium-product/${id}/${slug}`);
   };
 
-  // Smarter Scrolling Logic for arrows
   const scroll = (direction) => {
     if (sliderRef.current && products.length > 0) {
-      const cardsToMove = 4; // Scroll exactly 4 cards at once
+      const cardsToMove = 4;
 
       let targetIndex;
       if (direction === 'left') {
         targetIndex = Math.max(0, activeCardIndex - cardsToMove);
-      } else { // direction === 'right'
+      } else {
         targetIndex = Math.min(products.length - 1, activeCardIndex + cardsToMove);
       }
 
@@ -69,8 +66,7 @@ const BestSellerSlider = ({ headingText = "Best Sellers" }) => {
         }
       }
 
-      if (targetIndex !== activeCardIndex) { // Only scroll if the target is different
-        // Update active index for dot indicators/scroll position calculation
+      if (targetIndex !== activeCardIndex) {
         setActiveCardIndex(targetIndex);
         if (sliderRef.current) {
           const cardElements = Array.from(sliderRef.current.children);
@@ -87,8 +83,6 @@ const BestSellerSlider = ({ headingText = "Best Sellers" }) => {
     }
   };
 
-
-  // Effect to update activeCardIndex based on scroll position for dot indicators
   useEffect(() => {
     const slider = sliderRef.current;
     if (!slider) return;
@@ -125,13 +119,12 @@ const BestSellerSlider = ({ headingText = "Best Sellers" }) => {
     };
 
     slider.addEventListener('scroll', handleScroll);
-    handleScroll(); // Initial active state calculation on mount
+    handleScroll();
 
     return () => {
       slider.removeEventListener('scroll', handleScroll);
     };
-  }, [products.length, activeCardIndex]); // Re-run if number of products changes or active index changes
-
+  }, [products.length, activeCardIndex]);
 
   return (
     <section className="pt-10 px-4 md:px-8 lg:px-12">
@@ -140,7 +133,7 @@ const BestSellerSlider = ({ headingText = "Best Sellers" }) => {
           {headingText}
         </h2>
         <a
-          href="/premium-accounts" // --- MODIFIED: Link to your premium accounts page ---
+          href="/premium-accounts"
           className="flex items-center text-black hover:text-blue-600 transition-colors duration-200
                        font-semibold text-lg md:text-xl group"
         >
@@ -149,7 +142,6 @@ const BestSellerSlider = ({ headingText = "Best Sellers" }) => {
         </a>
       </div>
 
-      {/* Conditional rendering for loading, error, and no products */}
       {loading ? (
         <div className="flex justify-center items-center h-48">
           <Spinner className="h-10 w-10" />
@@ -165,10 +157,7 @@ const BestSellerSlider = ({ headingText = "Best Sellers" }) => {
           <p className="text-xl font-semibold">No best sellers found.</p>
         </div>
       ) : (
-        /* Slider Area: Controls and Scrollable Content */
         <div className="relative flex items-center justify-center px-4 md:px-8 lg:px-16 group">
-
-          {/* Left Arrow Button */}
           <button
             onClick={() => scroll('left')}
             className="absolute left-0 lg:left-4 z-30 p-4 rounded-full bg-white border border-gray-200 shadow-md
@@ -181,32 +170,28 @@ const BestSellerSlider = ({ headingText = "Best Sellers" }) => {
             </svg>
           </button>
 
-          {/* Scrollable Container Wrapper */}
           <div className="relative w-full max-w-7xl mx-auto overflow-hidden">
-            {/* Actual Scrollable Content */}
             <div
               ref={sliderRef}
-              className="flex overflow-x-auto overflow-y-hidden px-4 sm:px-8 py-4 space-x-10 scrollbar-hide" /* Added scrollbar-hide for Tailwind */
+              className="flex overflow-x-auto overflow-y-hidden px-4 sm:px-8 py-4 space-x-10 scrollbar-hide"
               style={{ scrollSnapType: 'x mandatory', scrollBehavior: 'smooth' }}
             >
-              {products.map((product, index) => (
-                <div key={product._id} className="scroll-snap-align-start flex-shrink-0 w-64"> {/* Added w-64 for fixed width */}
+              {products.map((product) => (
+                <div key={product._id} className="scroll-snap-align-start flex-shrink-0 w-64">
                   <Cards
                     book={{
-                      id: product._id, // Use _id for internal tracking
+                      id: product._id,
                       title: product.name || "Untitled Account",
-                      author: product.platform || "N/A", // Display platform as 'author'
-                      rating: product.rating || 0, // Assuming a rating field for premium products or default to 0
+                      author: product.platform || "N/A",
+                      rating: product.rating || 0,
                       price: product.price ?? 0,
                       image: product.thumbnailUrl || 'https://placehold.co/300x400?text=No+Image',
-                      genre: product.platform || "Platform", // Original 'genre' for book compatibility
-                      slug: product.slug, // Pass slug for navigation
+                      genre: product.platform || "Platform",
+                      slug: product.slug,
                     }}
-                    topRightPillText={product.platform} // Use platform for the pill text
-                    onCardClick={handleCardClick} // Use the modified handleCardClick for navigation
+                    topRightPillText={product.platform}
+                    onCardClick={handleCardClick}
                     onAddToCart={(payload) => {
-                      // productPayload comes from Card and includes id/_id
-                      // pass the original/normalized product object to the hook
                       addOrUpdateItem(payload, 1);
                     }}
                   />
@@ -215,7 +200,6 @@ const BestSellerSlider = ({ headingText = "Best Sellers" }) => {
             </div>
           </div>
 
-          {/* Right Arrow Button */}
           <button
             onClick={() => scroll('right')}
             className="absolute right-0 lg:right-4 z-30 p-4 rounded-full bg-white border border-gray-200 shadow-md

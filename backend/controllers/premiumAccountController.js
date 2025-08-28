@@ -2,7 +2,7 @@
 import { v2 as cloudinary } from 'cloudinary';
 import stream from 'stream';
 import { PremiumProduct } from '../models/PremiumProduct.js';
-import Product from '../models/Product.js'; // Assuming Product is a base model if PremiumProduct extends it, otherwise might not be needed here
+import Product from '../models/Product.js';
 
 const uploadToCloudinary = (buffer) => {
   return new Promise((resolve, reject) => {
@@ -37,15 +37,13 @@ export const createPremiumProduct = async (req, res) => {
       licenseType,
     } = req.body;
 
-      let tags = req.body.tags;
-    // Convert tags string to array if needed
+    let tags = req.body.tags;
     if (typeof tags === 'string') {
       tags = tags.split(',').filter(tag => tag.trim() !== '');
     } else if (!Array.isArray(tags)) {
       tags = [];
     }
 
-    // Validate required fields
     if (!name || !slug || !price || !platform || !duration || !licenseType) {
       return res.status(400).json({
         success: false,
@@ -53,8 +51,6 @@ export const createPremiumProduct = async (req, res) => {
       });
     }
 
-    // Check for duplicate slug
-    // Ensure Product model is relevant or remove if only using PremiumProduct for slug checks
     const existingProduct = await Product.findOne({ slug });
     if (existingProduct) {
       return res.status(409).json({
@@ -63,7 +59,6 @@ export const createPremiumProduct = async (req, res) => {
       });
     }
 
-    // Handle thumbnail upload
     let thumbnailUrl = '';
     let thumbnailPublicId = '';
 
@@ -81,7 +76,6 @@ export const createPremiumProduct = async (req, res) => {
       }
     }
 
-    // Create new premium product
     const premiumProduct = new PremiumProduct({
       name,
       slug,
@@ -109,7 +103,6 @@ export const createPremiumProduct = async (req, res) => {
   } catch (error) {
     console.error('Error creating premium product:', error);
 
-    // Handle validation errors
     if (error.name === 'ValidationError') {
       const errors = Object.values(error.errors).map(err => err.message);
       return res.status(400).json({
@@ -125,34 +118,40 @@ export const createPremiumProduct = async (req, res) => {
   }
 };
 
-
-// GET /api/premium - THIS IS THE CORRECTED VERSION YOU NEED TO REPLACE
+// Updated listPremiumProducts with status filtering for general listings
 export const listPremiumProducts = async (req, res) => {
   try {
     const {
       page = 1,
-      limit = 12, // Default to 12 as per frontend's default limit
+      limit = 12,
       searchQuery,
       minPrice,
       maxPrice,
       duration,
       licenseType,
       tags,
-      status, // 'active' or 'inactive'
+      status,
+      forSlider = false, // Add this parameter to distinguish slider calls
     } = req.query;
 
     const pageNum = parseInt(page);
     const limitNum = parseInt(limit);
     const skip = (pageNum - 1) * limitNum;
 
-    let query = {}; // Initialize an empty query object
+    let query = {};
 
-    // 1. Apply Search Query (case-insensitive regex for 'name' field)
+    // For general listings (not sliders), only show active products
+    // For sliders, this will be handled by a separate endpoint
+    if (!forSlider) {
+      query.status = 'active';
+    }
+
+    // Apply Search Query
     if (searchQuery) {
       query.name = { $regex: searchQuery, $options: 'i' };
     }
 
-    // 2. Apply Price Range Filter
+    // Apply Price Range Filter
     if (minPrice || maxPrice) {
       query.price = {};
       if (minPrice) {
@@ -163,40 +162,34 @@ export const listPremiumProducts = async (req, res) => {
       }
     }
 
-    // 3. Apply Duration Filter (expects comma-separated string, convert to array if multi-select)
+    // Apply Duration Filter
     if (duration) {
       const durationArray = duration.split(',').map(d => d.trim());
       query.duration = { $in: durationArray };
     }
 
-    // 4. Apply License Type Filter (expects comma-separated string, convert to array if multi-select)
+    // Apply License Type Filter
     if (licenseType) {
       const licenseTypeArray = licenseType.split(',').map(lt => lt.trim());
       query.licenseType = { $in: licenseTypeArray };
     }
 
-    // 5. Apply Tags Filter (expects comma-separated string, convert to array)
-    // Assuming 'tags' in your model is an array of strings
+    // Apply Tags Filter
     if (tags) {
       const tagsArray = tags.split(',').map(t => t.trim());
       query.tags = { $in: tagsArray };
     }
 
-    // 6. Apply Status Filter
+    // Apply Status Filter (only if explicitly provided)
     if (status) {
-      // Ensure the status in the query matches the case in your database
-      // Your createPremiumProduct converts it to lowercase, so 'active' or 'inactive'
       query.status = status.toLowerCase();
     }
 
-    // Add this console log for debugging!
     console.log("Constructed MongoDB Query:", query);
 
-    // Get total count of documents matching the filter (for pagination metadata)
-    const total = await PremiumProduct.countDocuments(query); // <-- PASS QUERY HERE
+    const total = await PremiumProduct.countDocuments(query);
 
-    // Fetch products matching the filter
-    const products = await PremiumProduct.find(query) // <-- PASS QUERY HERE
+    const products = await PremiumProduct.find(query)
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limitNum)
@@ -212,5 +205,30 @@ export const listPremiumProducts = async (req, res) => {
   } catch (err) {
     console.error('Error listing premium products:', err);
     return res.status(500).json({ error: 'Failed to fetch premium products' });
+  }
+};
+
+// Add a new function specifically for sliders (active products only)
+export const getActivePremiumProducts = async (req, res) => {
+  try {
+    const { limit = 8 } = req.query;
+    const limitNum = parseInt(limit);
+
+    // Only get active premium products for sliders
+    const products = await PremiumProduct.find({ 
+      status: 'active'
+    })
+      .sort({ createdAt: -1 })
+      .limit(limitNum)
+      .lean();
+
+    return res.status(200).json({
+      products,
+      total: products.length,
+    });
+
+  } catch (err) {
+    console.error('Error fetching active premium products:', err);
+    return res.status(500).json({ error: 'Failed to fetch active premium products' });
   }
 };

@@ -2,28 +2,24 @@
 import { v2 as cloudinary } from 'cloudinary';
 import { PremiumProduct } from '../models/PremiumProduct.js';
 
-
-// GET single premium product by ID
+// GET single premium product by ID - NO STATUS FILTERING for direct URL access
 export const getPremiumProduct = async (req, res) => {
   const { id } = req.params;
   try {
+    // Don't filter by status - allow direct URL access to inactive products
     const product = await PremiumProduct.findById(id).lean();
     if (!product) {
-      // Consistent error message structure
       return res.status(404).json({ success: false, message: 'Premium product not found' });
     }
-    // Consistent success response structure
     return res.status(200).json({ success: true, premiumProduct: product });
   } catch (err) {
     console.error('Error fetching premium product:', err);
-    // Add specific handling for invalid Mongoose IDs
     if (err.name === 'CastError') {
       return res.status(400).json({ success: false, message: 'Invalid product ID format' });
     }
     return res.status(500).json({ success: false, message: 'Internal server error' });
   }
 };
-
 
 // PUT update premium product
 export const updatePremiumAccount = async (req, res) => {
@@ -32,7 +28,6 @@ export const updatePremiumAccount = async (req, res) => {
     const premium = await PremiumProduct.findById(id);
     if (!premium) return res.status(404).json({ error: 'Premium account not found' });
     
-    // SAFETY: Handle undefined req.body
     const body = req.body || {};
 
     // Handle thumbnail upload from Multer
@@ -61,18 +56,16 @@ export const updatePremiumAccount = async (req, res) => {
           }
         );
 
-        // Use the buffer from Multer
         uploadStream.end(thumbFile.buffer);
       });
 
       premium.thumbnailUrl = thumbRes.secure_url;
       premium.thumbnailPublicId = thumbRes.public_id;
       
-      // Clear buffer memory after upload
       thumbFile.buffer = null;
     }
 
-    // Update other fields using the safe 'body' reference
+    // Update other fields
     const updateFields = [
       'name', 'slug', 'description', 'price', 'isAvailable',
       'status', 'tags', 'platform', 'duration', 'licenseType'
@@ -117,7 +110,6 @@ export const updatePremiumAccount = async (req, res) => {
   }
 };
 
-
 // DELETE premium product
 export const deletePremiumProduct = async (req, res) => {
   const { id } = req.params;
@@ -131,51 +123,12 @@ export const deletePremiumProduct = async (req, res) => {
   }
 };
 
-// Controller to create a premium product (assuming this exists)
-export const createPremiumProduct = async (req, res) => {
-  // ... (existing implementation for creating a premium product)
-  try {
-    const {
-      name, slug, description, price, isAvailable,
-      status, tags, thumbnailUrl, thumbnailPublicId, deliveryFormat,
-      platform, duration, licenseType
-    } = req.body;
-
-    const newPremiumProduct = new PremiumProduct({
-      name,
-      slug,
-      description,
-      price,
-      isAvailable: isAvailable === 'true', // Convert string to boolean
-      status,
-      tags: Array.isArray(tags) ? tags : (tags ? tags.split(',').map(tag => tag.trim()) : []),
-      thumbnailUrl,
-      thumbnailPublicId,
-      deliveryFormat,
-      platform,
-      duration,
-      licenseType,
-    });
-
-    const savedProduct = await newPremiumProduct.save();
-    res.status(201).json(savedProduct);
-  } catch (error) {
-    console.error('Error creating premium product:', error);
-    // Handle duplicate slug error specifically if needed
-    if (error.code === 11000 && error.keyPattern && error.keyPattern.slug) {
-      return res.status(409).json({ error: 'A product with this slug already exists.' });
-    }
-    res.status(500).json({ error: 'Failed to create premium product', details: error.message });
-  }
-};
-
-
-// Controller to list all premium products with filtering and pagination
+// LIST premium products with filtering - UPDATED with status filtering
 export const listPremiumProducts = async (req, res) => {
   try {
     const {
-      page = 1, // Default page to 1
-      limit = 12, // Default limit to 12
+      page = 1,
+      limit = 12,
       searchQuery,
       minPrice,
       maxPrice,
@@ -183,17 +136,21 @@ export const listPremiumProducts = async (req, res) => {
       duration,
       licenseType,
       tags,
-      status, // isAvailable filter (active/inactive)
+      status,
     } = req.query;
 
-    const query = { type: 'premium_account' }; // Ensure we only query premium products
+    // Base query - only show active products in listings
+    const query = { 
+      type: 'premium_account',
+      status: 'active'  // Only show active products in listings
+    };
 
     // Search Query
     if (searchQuery) {
       query.$or = [
         { name: { $regex: searchQuery, $options: 'i' } },
         { description: { $regex: searchQuery, $options: 'i' } },
-        { platform: { $regex: searchQuery, $options: 'i' } }, // Search in platform as well
+        { platform: { $regex: searchQuery, $options: 'i' } },
       ];
     }
 
@@ -204,41 +161,34 @@ export const listPremiumProducts = async (req, res) => {
       if (maxPrice) query.price.$lte = parseFloat(maxPrice);
     }
 
-    // Platform (can be a comma-separated string)
+    // Platform filter
     if (platform) {
       const platformsArray = platform.split(',').map(p => new RegExp(p.trim(), 'i'));
       query.platform = { $in: platformsArray };
     }
 
-    // Duration (can be a comma-separated string)
+    // Duration filter
     if (duration) {
       const durationsArray = duration.split(',').map(d => new RegExp(d.trim(), 'i'));
       query.duration = { $in: durationsArray };
     }
 
-    // License Type (can be a comma-separated string)
+    // License Type filter
     if (licenseType) {
       const licenseTypesArray = licenseType.split(',').map(lt => new RegExp(lt.trim(), 'i'));
       query.licenseType = { $in: licenseTypesArray };
     }
 
-    // Tags (can be a comma-separated string)
+    // Tags filter
     if (tags) {
       const tagsArray = tags.split(',').map(t => new RegExp(t.trim(), 'i'));
       query.tags = { $in: tagsArray };
     }
 
-    // Status (isAvailable is a boolean, status is 'active'/'inactive')
-    if (status) {
-      // Assuming 'status' filter on frontend maps to 'isAvailable' on backend
-      // Or if you want to filter by the 'status' field ('active', 'inactive')
-      // Let's assume frontend 'status' refers to 'isAvailable' for now, as that's
-      // a common user-facing filter (e.g., "Available items").
-      // If you intend to filter by the `status` enum ('active', 'inactive'),
-      // then adjust the frontend filter name and this logic accordingly.
-       query.status = status; // This directly uses the enum 'active'/'inactive'
+    // Override status filter if explicitly provided (for admin purposes)
+    if (status && status !== 'active') {
+      query.status = status.toLowerCase();
     }
-
 
     const pageNum = parseInt(page, 10);
     const limitNum = parseInt(limit, 10);
@@ -247,7 +197,7 @@ export const listPremiumProducts = async (req, res) => {
     const products = await PremiumProduct.find(query)
       .skip(skip)
       .limit(limitNum)
-      .lean(); // Use .lean() for faster query results if you don't need Mongoose Document methods
+      .lean();
 
     const totalResults = await PremiumProduct.countDocuments(query);
     const totalPages = Math.ceil(totalResults / limitNum);
@@ -265,4 +215,3 @@ export const listPremiumProducts = async (req, res) => {
     res.status(500).json({ error: 'Server error', details: err.message });
   }
 };
-

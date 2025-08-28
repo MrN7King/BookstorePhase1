@@ -1,18 +1,22 @@
 // backend/controllers/ebooksGetController.js
-import ProductModel from '../models/Product.js'; // Import the base Product model
+import ProductModel from '../models/Product.js';
 
 export const getAllEbooks = async (req, res) => {
   try {
-    const page = parseInt(req.query.page) || 1; // Current page
-    const limit = parseInt(req.query.limit) || 20; // Items per page
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
     const skip = (page - 1) * limit;
 
-    const query = { type: 'ebook' };
+    // Filter for active ebooks only in listings
+    const query = { 
+      type: 'ebook',
+      status: 'active'  // Only show active products
+    };
 
     const [totalItems, ebooks] = await Promise.all([
       ProductModel.countDocuments(query),
       ProductModel.find(query)
-        .sort({ createdAt: -1 }) // Sort by creation date, newest first
+        .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit),
     ]);
@@ -21,7 +25,7 @@ export const getAllEbooks = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      products: ebooks, // Renamed to 'products' for consistency with common API responses
+      products: ebooks,
       currentPage: page,
       totalPages,
       totalItems,
@@ -32,12 +36,13 @@ export const getAllEbooks = async (req, res) => {
   }
 };
 
-
 export const getEbookById = async (req, res) => {
   try {
+    // Direct URL access - don't filter by status, allow access to inactive products
     const ebook = await ProductModel.findOne({
       _id: req.params.id,
-      type: 'ebook', // Ensure it's an ebook
+      type: 'ebook',
+      // Removed status filter to allow direct URL access
     });
 
     if (!ebook) {
@@ -47,7 +52,6 @@ export const getEbookById = async (req, res) => {
     res.status(200).json({ success: true, ebook });
   } catch (error) {
     console.error('Error fetching ebook by ID:', error);
-    // Handle CastError for invalid MongoDB ID format
     if (error.name === 'CastError') {
       return res.status(400).json({ success: false, message: 'Invalid ebook ID format' });
     }
@@ -55,14 +59,13 @@ export const getEbookById = async (req, res) => {
   }
 };
 
-
 export const getFilteredAndSearchedEbooks = async (req, res) => {
   try {
     const {
       searchQuery,
       isAvailable,
       language,
-      format, // This is 'E-Book,Audiobook' from frontend
+      format,
       categories,
       minPrice,
       maxPrice,
@@ -73,13 +76,16 @@ export const getFilteredAndSearchedEbooks = async (req, res) => {
     } = req.query;
 
     const pipeline = [];
-    const matchStage = { type: 'ebook' }; // Always filter by type: 'ebook'
+    const matchStage = { 
+      type: 'ebook',
+      status: 'active'  // Only show active products in filtered results
+    };
 
-    // 1. Atlas Search Stage (if searchQuery is provided)
+    // Atlas Search Stage
     if (searchQuery) {
       pipeline.push({
         $search: {
-          index: 'SearchIndex', // <--- VERIFY THIS NAME! (e.g., 'default')
+          index: 'SearchIndex',
           text: {
             query: searchQuery,
             path: ['name', 'author', 'description', 'tags'],
@@ -88,37 +94,30 @@ export const getFilteredAndSearchedEbooks = async (req, res) => {
       });
     }
 
-    // 2. Filtering by isAvailable (if provided)
+    // Filtering by isAvailable
     if (isAvailable !== undefined) {
       matchStage.isAvailable = isAvailable === 'true';
     }
 
-    // 3. Filtering by Language (from UI, now correctly handles multiple selections)
+    // Filtering by Language
     if (language) {
       const languagesArray = language.split(',').map((lang) => lang.trim());
-      // If 'language' in your DB is a single string:
-      // This checks if the document's 'language' field is among the selected languages.
       matchStage.language = { $in: languagesArray };
-      // If 'language' in your DB is an array of strings:
-      // matchStage.language = { $in: languagesArray }; // Still correct for array field if any match
     }
 
-    // 4. Filtering by Format (from UI, mapping to 'deliveryFormat' in DB)
+    // Filtering by Format
     if (format) {
       const formatsArray = format.split(',').map((f) => f.trim());
-      // If 'deliveryFormat' in your DB is a single string:
-      matchStage.deliveryFormat = { $in: formatsArray }; // <--- CHANGED FROM .edition to .deliveryFormat
-      // If 'deliveryFormat' in your DB is an array of strings:
-      // matchStage.deliveryFormat = { $in: formatsArray }; // Still correct
+      matchStage.deliveryFormat = { $in: formatsArray };
     }
 
-    // 5. Filtering by Categories (from UI, mapping to 'tags' array field)
+    // Filtering by Categories
     if (categories) {
       const categoriesArray = categories.split(',').map((cat) => cat.trim());
       matchStage.tags = { $in: categoriesArray };
     }
 
-    // 6. Filtering by Price Range
+    // Filtering by Price Range
     const priceRange = {};
     const parsedMinPrice = parseFloat(minPrice);
     const parsedMaxPrice = parseFloat(maxPrice);
@@ -132,12 +131,10 @@ export const getFilteredAndSearchedEbooks = async (req, res) => {
       matchStage.price = priceRange;
     }
 
-    // Add the $match stage if there are any conditions
     if (Object.keys(matchStage).length > 0) {
       pipeline.push({ $match: matchStage });
     }
 
-    // --- Pagination and Sorting ---
     const skip = (parseInt(page) - 1) * parseInt(limit);
     const limitNum = parseInt(limit);
 
@@ -149,10 +146,9 @@ export const getFilteredAndSearchedEbooks = async (req, res) => {
     } else if (sortBy === 'author') {
       sortStage.author = sortOrder === 'desc' ? -1 : 1;
     } else {
-      sortStage._id = 1; // Default sort if no specific sortBy is provided
+      sortStage._id = 1;
     }
 
-    // --- Use $facet for efficient total count + paginated results ---
     pipeline.push({
       $facet: {
         metadata: [{ $count: 'totalResults' }],
@@ -172,20 +168,20 @@ export const getFilteredAndSearchedEbooks = async (req, res) => {
               quantityAvailable: 1,
               rating: 1,
               tags: 1,
-              language: 1, // Ensure this field exists in your DB documents!
-              deliveryFormat: 1, // <--- CHANGED FROM .edition to .deliveryFormat
+              language: 1,
+              deliveryFormat: 1,
               publisher: 1,
               ISBN: 1,
               publicationDate: 1,
               metadata: 1,
               type: 1,
+              status: 1,
             },
           },
         ],
       },
     });
 
-    // Execute the aggregation pipeline
     const [results] = await ProductModel.aggregate(pipeline);
 
     const ebooks = results.data || [];
@@ -209,12 +205,15 @@ export const getFilteredAndSearchedEbooks = async (req, res) => {
   }
 };
 
-
 export const getNewestEbooks = async (req, res) => {
   try {
-    const newestEbooks = await ProductModel.find({ type: 'ebook' })
-      .sort({ publicationDate: -1, createdAt: -1 }) // Sort by publicationDate (newest first), then createdAt
-      .limit(8); // Limit to 8 books
+    // Filter for active ebooks only in slider
+    const newestEbooks = await ProductModel.find({ 
+      type: 'ebook',
+      status: 'active'  // Only show active products
+    })
+      .sort({ publicationDate: -1, createdAt: -1 })
+      .limit(8);
 
     res.status(200).json({ success: true, ebooks: newestEbooks });
   } catch (error) {
@@ -223,13 +222,15 @@ export const getNewestEbooks = async (req, res) => {
   }
 };
 
-
 export const getRandomEbooks = async (req, res) => {
   try {
-    // Aggregation pipeline to get random documents
+    // Filter for active ebooks only in slider
     const randomEbooks = await ProductModel.aggregate([
-      { $match: { type: 'ebook' } }, // Match only ebook type documents
-      { $sample: { size: 8 } }, // Get 8 random samples
+      { $match: { 
+        type: 'ebook',
+        status: 'active'  // Only show active products
+      }},
+      { $sample: { size: 8 } },
     ]);
 
     res.status(200).json({ success: true, ebooks: randomEbooks });

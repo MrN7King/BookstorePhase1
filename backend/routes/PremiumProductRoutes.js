@@ -3,8 +3,9 @@ import multer from 'multer';
 import { premiumThumbnailUpload } from '../config/multerConfig.js';
 import {
   createPremiumProduct,
-  listPremiumProducts, // Ensure this is imported
-} from '../controllers/PremiumAccountController.js'; // Ensure correct path to your controller
+  getActivePremiumProducts,
+  listPremiumProducts,
+} from '../controllers/premiumAccountController.js';
 import {
   deletePremiumProduct,
   getPremiumProduct,
@@ -25,12 +26,14 @@ router.post('/',
   createPremiumProduct
 );
 
+// NEW: Route specifically for active premium products (for sliders)
+router.get('/active', getActivePremiumProducts);
+
 // List all premium products (for your table) - THIS IS THE ROUTE FOR FILTERS
-router.get('/', listPremiumProducts); // Ensure this route exists and points to listPremiumProducts
+router.get('/', listPremiumProducts);
 
-// Get Premium Product by ID
+// Get Premium Product by ID (no status filtering - allow direct URL access)
 router.get('/:id', getPremiumProduct);
-
 
 //Update Premium Product by ID
 router.put('/:id',
@@ -48,6 +51,5 @@ router.put('/:id',
 
 //Delete Premium Product by ID
 router.delete('/:id', deletePremiumProduct);
-
 
 export default router;
