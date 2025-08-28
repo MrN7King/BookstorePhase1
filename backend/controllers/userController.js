@@ -3,9 +3,9 @@
 import bcrypt from 'bcryptjs';
 import dotenv from 'dotenv';
 import jwt from 'jsonwebtoken';
+import mongoose from 'mongoose';
 import UserModel from '../models/User.js';
 import transporter from '../utils/email.js';
-import mongoose from 'mongoose';
 
 dotenv.config();
 

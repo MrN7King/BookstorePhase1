@@ -56,7 +56,12 @@ const userSchema = new mongoose.Schema({
         enum: ['customer', 'employee', 'owner', 'guest'],
         default: 'customer'
     },
-
+allowedPages: {
+        type: [String],
+        default: function() {
+            return this.role === 'employee' ? ['dashboard'] : [];
+        },
+    },
     cart: [{
     productId: {
       type: mongoose.Schema.Types.ObjectId,

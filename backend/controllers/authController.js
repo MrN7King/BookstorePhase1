@@ -36,6 +36,7 @@ export const getUserData= async (req, res) => {
                 lastName: user.lastName,
                 phone: user.phone,
                 role: user.role,
+                allowedPages: user.allowedPages,
             }
         });
 

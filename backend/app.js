@@ -8,19 +8,20 @@ import authRoutes from './routes/authRoutes.js';
 import ebookProductRoutes from './routes/ebookProductRoutes.js';
 import GenreRoutes from './routes/GenreRoutes.js';
 import miscRoutes from './routes/miscRoutes.js';
+import permissionRouter from './routes/permissionRoutes.js';
 import roleRoutes from './routes/roleRoutes.js';
 import sliderEbookRoutes from './routes/sliderEbooksRoutes.js'; // Import slider ebook routes
 import uploadRoutes from './routes/uploadRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 //to upload ebook to backblaze b2 bucket
 import cloudinary from 'cloudinary';
-import ebookUploadRoutes from './routes/ebookUploadRoutes.js';
-import premiumCodeRoutes from './routes/premiumCodesRoutes.js';
-import premiumProductRoutes from './routes/PremiumProductRoutes.js'; // Import premium product routes
 import cartRoutes from './routes/cartRoutes.js';
 import checkoutRoutes from './routes/checkoutRoutes.js';
-import paymentRoutes from './routes/paymentRoutes.js';
 import downloadRoutes from './routes/downloadRoutes.js';
+import ebookUploadRoutes from './routes/ebookUploadRoutes.js';
+import paymentRoutes from './routes/paymentRoutes.js';
+import premiumCodeRoutes from './routes/premiumCodesRoutes.js';
+import premiumProductRoutes from './routes/PremiumProductRoutes.js'; // Import premium product routes
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -65,7 +66,7 @@ app.use('/api/roles', roleRoutes);
 app.use('/api/genres', GenreRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/slider-ebooks', sliderEbookRoutes); // NEW: Mount slider ebook routes
-
+app.use('/api/permissions', permissionRouter);
 app.use('/api/cart', cartRoutes);
 app.use('/api/orders', checkoutRoutes);
 app.use('/api/payment', paymentRoutes);
