@@ -62,6 +62,14 @@ allowedPages: {
             return this.role === 'employee' ? ['dashboard'] : [];
         },
     },
+       profilePicture: {
+        type: String,
+        default: ''
+    },
+    profilePicturePublicId: {
+        type: String,
+        default: ''
+    },
     cart: [{
     productId: {
       type: mongoose.Schema.Types.ObjectId,

@@ -37,6 +37,7 @@ export const getUserData= async (req, res) => {
                 phone: user.phone,
                 role: user.role,
                 allowedPages: user.allowedPages,
+                profilePicture: user.profilePicture,
             }
         });
 

@@ -1,6 +1,5 @@
 //backend/config/multerConfig.js
 import multer from 'multer';
-import path from 'path';
 
 // Disk storage for Cloudinary thumbnails
 const thumbnailUpload = multer({
@@ -68,4 +67,20 @@ const premiumThumbnailUpload = multer({
   }
 }).single('thumbnail'); // 'thumbnail' matches the field name in your form
 
-export { thumbnailUpload, ebookUpload, uploadBothFiles, premiumThumbnailUpload };
+// In backend/config/multerConfig.js
+// Add this to your existing exports
+const profilePictureUpload = multer({
+  storage: multer.memoryStorage(), // Using memory storage for consistency
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Invalid file type. Only JPG, PNG, and GIF are allowed'), false);
+    }
+  }
+}).single('profileImage');
+
+// Update your export to include profilePictureUpload
+export { ebookUpload, premiumThumbnailUpload, profilePictureUpload, thumbnailUpload, uploadBothFiles };

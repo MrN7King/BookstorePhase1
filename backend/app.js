@@ -9,6 +9,8 @@ import ebookProductRoutes from './routes/ebookProductRoutes.js';
 import GenreRoutes from './routes/GenreRoutes.js';
 import miscRoutes from './routes/miscRoutes.js';
 import permissionRouter from './routes/permissionRoutes.js';
+import uploadProfileRoutes from './routes/profileUploadRoutes.js';
+import purchasesRoutes from './routes/purchasesRoutes.js';
 import roleRoutes from './routes/roleRoutes.js';
 import sliderEbookRoutes from './routes/sliderEbooksRoutes.js'; // Import slider ebook routes
 import uploadRoutes from './routes/uploadRoutes.js';
@@ -60,6 +62,7 @@ app.use('/api/misc', miscRoutes);
 app.use('/api/productEbook', ebookProductRoutes);// Route for ebook products
 app.use('/api/ebook-upload', ebookUploadRoutes); // Route for ebook file upload to backblaze b2 bucket
 app.use('/api/upload', uploadRoutes);// Route for thumbnail image upload
+app.use('/api/uploadProfile', uploadProfileRoutes);
 app.use('/api/premium', premiumProductRoutes); // Route for premium products
 app.use('/api/premium/codes', premiumCodeRoutes); // Route for premium codes
 app.use('/api/roles', roleRoutes);
@@ -67,6 +70,7 @@ app.use('/api/genres', GenreRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/slider-ebooks', sliderEbookRoutes); // NEW: Mount slider ebook routes
 app.use('/api/permissions', permissionRouter);
+app.use('/api/purchases', purchasesRoutes); // NEW: Mount the new purchases route
 app.use('/api/cart', cartRoutes);
 app.use('/api/orders', checkoutRoutes);
 app.use('/api/payment', paymentRoutes);

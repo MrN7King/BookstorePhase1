@@ -1,8 +1,8 @@
 "use client";
 import axios from "axios";
-import { useCallback, useEffect, useRef, useState } from "react"; // Import useEffect
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from 'react-router-dom';
-import LoginPage from '../sections/LoginPage'; // Corrected import path
+import LoginPage from '../sections/LoginPage';
 
 // Ensure axios sends cookies with requests
 axios.defaults.withCredentials = true;
@@ -14,6 +14,7 @@ const Navigation = () => {
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userEmail, setUserEmail] = useState(null);
+  const [userProfilePicture, setUserProfilePicture] = useState(null);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [showProfileOptions, setShowProfileOptions] = useState(false);
   const profileRef = useRef(null);
@@ -36,6 +37,21 @@ const Navigation = () => {
     return color;
   }, []);
 
+  // Listen for profile picture updates from other components
+  useEffect(() => {
+    const handleProfilePictureUpdate = (event) => {
+      if (event.detail && event.detail.profilePicture) {
+        setUserProfilePicture(event.detail.profilePicture);
+      }
+    };
+
+    window.addEventListener('profilePictureUpdated', handleProfilePictureUpdate);
+    
+    return () => {
+      window.removeEventListener('profilePictureUpdated', handleProfilePictureUpdate);
+    };
+  }, []);
+
   const checkLoginStatusAndFetchUserData = useCallback(async () => {
     try {
       // Step 1: Check authentication (cookie sent automatically)
@@ -53,28 +69,32 @@ const Navigation = () => {
           withCredentials: true,
         });
 
-        if (userResponse.data.success && userResponse.data.user?.email) {
-          setUserEmail(userResponse.data.user.email);
+        if (userResponse.data.success && userResponse.data.user) {
+          const user = userResponse.data.user;
+          setUserEmail(user.email);
+          setUserProfilePicture(user.profilePicture || null);
         } else {
           console.error("Failed to fetch user email or user data is incomplete.");
           setIsLoggedIn(false);
           setUserEmail(null);
+          setUserProfilePicture(null);
         }
       } else {
         setIsLoggedIn(false);
         setUserEmail(null);
+        setUserProfilePicture(null);
       }
     } catch (error) {
       console.error("Authentication check failed:", error.response?.data || error.message);
       setIsLoggedIn(false);
       setUserEmail(null);
+      setUserProfilePicture(null);
     }
-  }, []); // Dependencies are empty as we want it to run once on mount
+  }, []);
 
-  // NEW: Call checkLoginStatusAndFetchUserData on component mount
   useEffect(() => {
     checkLoginStatusAndFetchUserData();
-  }, [checkLoginStatusAndFetchUserData]); // Add checkLoginStatusAndFetchUserData to dependencies for useCallback stability
+  }, [checkLoginStatusAndFetchUserData]);
 
   const handleGoCart = () => {
     navigate('/Cart');
@@ -100,7 +120,7 @@ const Navigation = () => {
     }, 300);
   };
 
-   const handleMenuItemClick = (path) => {
+  const handleMenuItemClick = (path) => {
     navigate(path);
     closePanel();
   };
@@ -143,7 +163,6 @@ const Navigation = () => {
 
   const closeLoginModal = () => {
     setIsLoginModalOpen(false);
-    // This call is still correct for when the modal is closed after a manual login
     checkLoginStatusAndFetchUserData();
   };
 
@@ -153,6 +172,7 @@ const Navigation = () => {
       if (response.data.success) {
         setIsLoggedIn(false);
         setUserEmail(null);
+        setUserProfilePicture(null);
         closePanel();
         setShowProfileOptions(false);
         navigate('/');
@@ -187,40 +207,46 @@ const Navigation = () => {
           >
             E-Commerce
           </a>
-          {/* Added relative to this div to correctly position the absolute dropdown */}
           <div className="flex items-center gap-4 relative">
             {isLoggedIn && userEmail ? (
-              // Display avatar with first letter if logged in
-              <div
-                ref={profileRef} // Attach ref here
-                className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm cursor-pointer hover:opacity-80 transition-opacity"
-                style={{ backgroundColor: generateAvatarColor(userEmail) }}
-                onClick={handleProfileClick} // Use new handler
-                title={userEmail}
-              >
-                {userEmail.charAt(0).toUpperCase()}
-              </div>
+              userProfilePicture ? (
+                <img
+                  src={userProfilePicture}
+                  alt="Profile"
+                  className="w-8 h-8 rounded-full cursor-pointer hover:opacity-80 transition-opacity object-cover"
+                  onClick={handleProfileClick}
+                />
+              ) : (
+                <div
+                  ref={profileRef}
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm cursor-pointer hover:opacity-80 transition-opacity"
+                  style={{ backgroundColor: generateAvatarColor(userEmail) }}
+                  onClick={handleProfileClick}
+                  title={userEmail}
+                >
+                  {userEmail.charAt(0).toUpperCase()}
+                </div>
+              )
             ) : (
-              // Display default profile icon if not logged in
               <img
                 src="/icons/profile.svg"
                 alt="Profile"
                 className="w-6 h-6 cursor-pointer hover:opacity-75"
-                onClick={openLoginModal} // Open login modal on profile click
+                onClick={openLoginModal}
               />
             )}
 
             {showProfileOptions && isLoggedIn && (
-              <div className="mt-30 absolute right-0 w-48 bg-white rounded-md shadow-lg py-1 border border-gray-200 pointer-events-auto"> {/* Increased z-index, added border, ensured pointer-events-auto */}
+              <div className="mt-30 absolute right-0 w-48 bg-white rounded-md shadow-lg py-1 border border-gray-200 pointer-events-auto">
                 <button
                   onClick={handleProfileSettingsClick}
-                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer focus:outline-none" // Added cursor-pointer and focus:outline-none
+                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer focus:outline-none"
                 >
                   Profile Settings
                 </button>
                 <button
                   onClick={handleLogout}
-                  className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 cursor-pointer focus:outline-none" // Added cursor-pointer and focus:outline-none
+                  className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 cursor-pointer focus:outline-none"
                 >
                   Logout
                 </button>
@@ -284,13 +310,21 @@ const Navigation = () => {
                   <span className="text-base text-gray-800 font-semibold truncate cursor-pointer hover:text-sky-500" onClick={handleProfileSettingsClick}>
                     Profile Settings
                   </span>
-                  <div
-                    className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm"
-                    style={{ backgroundColor: generateAvatarColor(userEmail) }}
-                    title={userEmail}
-                  >
-                    {userEmail.charAt(0).toUpperCase()}
-                  </div>
+                  {userProfilePicture ? (
+                    <img
+                      src={userProfilePicture}
+                      alt="Profile"
+                      className="w-8 h-8 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div
+                      className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm"
+                      style={{ backgroundColor: generateAvatarColor(userEmail) }}
+                      title={userEmail}
+                    >
+                      {userEmail.charAt(0).toUpperCase()}
+                    </div>
+                  )}
                 </div>
                 <div className="py-3 px-4">
                   <button
@@ -376,7 +410,7 @@ const Navigation = () => {
                 NON-FICTION <span className="ml-2 text-2xl">{expandedCategory === 'non-fiction' ? '-' : '+'}</span>
               </button>
               {expandedCategory === 'non-fiction' && (
-                <ul className="ml-4 mt-2 space-y-1 text-md pl-4">
+                <ul className="ml-4 mt-2 space-y-7 text-md pl-4">
                   <li className="hover:text-sky-500 cursor-pointer" onClick={handleMenuItemClick}>Biography</li>
                   <li className="hover:text-sky-500 cursor-pointer" onClick={handleMenuItemClick}>History</li>
                   <li className="hover:text-sky-500 cursor-pointer" onClick={handleMenuItemClick}>Science</li>
@@ -415,7 +449,7 @@ const Navigation = () => {
         </div>
 
         {/* Subscription Sub-Menu Level Content Wrapper */}
-        <div className={`absolute inset-0 transition-transform duration-300 ${
+          <div className={`absolute inset-0 transition-transform duration-300 ${
           currentMenuLevel === 'subsriptions' ? 'translate-x-0' : 'translate-x-full'
         }`}>
           <div className="flex items-center justify-between p-4 sticky top-0 bg-white z-20">
@@ -433,7 +467,6 @@ const Navigation = () => {
             </li>
             <li className="py-2 px-4">
               <button
-              
                 onClick={() => toggleCategoryExpansion('Software')}
                 className="flex items-center justify-between w-full font-bold uppercase hover:text-sky-500"
               >
