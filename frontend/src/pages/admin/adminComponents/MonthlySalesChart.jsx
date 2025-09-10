@@ -1,9 +1,39 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import ReactApexChart from "react-apexcharts";
-import { Dropdown } from "../adminUI/Dropdown";
-import { DropdownItem } from "../adminUI/DropdownItem";
 
-export default function MonthlySalesChart() {
+export default function MonthlySalesChart({ data }) {
+  // Ensure we always have 12 months (fill missing with 0)
+  const monthNames = [
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+  ];
+
+  const now = new Date();
+  const last12Months = Array.from({ length: 12 }).map((_, i) => {
+    const d = new Date(now.getFullYear(), now.getMonth() - (11 - i), 1);
+    return {
+      key: `${d.getFullYear()}-${String(d.getMonth()).padStart(2, "0")}`,
+      label: `${monthNames[d.getMonth()]} '${d.getFullYear().toString().slice(2)}`
+    };
+  });
+
+  // Map backend data into lookup
+  const dataMap = {};
+  if (Array.isArray(data)) {
+    data.forEach(item => {
+      const date = new Date(item.date);
+      const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+      dataMap[key] = item.orders || 0;
+    });
+  }
+
+  // Build chart series with 12 months
+  const chartCategories = last12Months.map(m => m.label);
+  const chartValues = last12Months.map(m => dataMap[m.key] || 0);
+
+  // Calculate total orders
+  const totalOrders = chartValues.reduce((sum, val) => sum + val, 0);
+
   const options = {
     colors: ["#465fff"],
     chart: {
@@ -15,7 +45,7 @@ export default function MonthlySalesChart() {
     plotOptions: {
       bar: {
         horizontal: false,
-        columnWidth: "39%",
+        columnWidth: "45%",
         borderRadius: 5,
         borderRadiusApplication: "end",
       },
@@ -23,37 +53,37 @@ export default function MonthlySalesChart() {
     dataLabels: { enabled: false },
     stroke: { show: true, width: 4, colors: ["transparent"] },
     xaxis: {
-      categories: [
-        "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-      ],
+      categories: chartCategories,
       axisBorder: { show: false },
       axisTicks: { show: false },
+      labels: {
+        style: { fontSize: "11px" }
+      }
     },
-    legend: {
-      show: true,
-      position: "top",
-      horizontalAlign: "left",
-      fontFamily: "Outfit",
+    legend: { show: false },
+    yaxis: {
+      title: {
+        text: "Number of Orders",
+        style: { fontSize: "12px", color: "#465fff" }
+      },
+      labels: {
+        formatter: val => val.toFixed(0)
+      }
     },
-    yaxis: { title: { text: undefined } },
-    grid: { yaxis: { lines: { show: true } } },
+    grid: {
+      yaxis: { lines: { show: true } }
+    },
     fill: { opacity: 1 },
     tooltip: {
       x: { show: false },
       y: {
-        formatter: function (val) {
-          return "" + val;
-        },
+        formatter: val => val.toFixed(0),
       },
     },
   };
 
   const series = [
-    {
-      name: "Sales",
-      data: [168, 385, 201, 298, 187, 195, 291, 110, 215, 390, 280, 112],
-    },
+    { name: "Orders", data: chartValues }
   ];
 
   const [isOpen, setIsOpen] = useState(false);
@@ -61,7 +91,6 @@ export default function MonthlySalesChart() {
   function toggleDropdown() {
     setIsOpen(!isOpen);
   }
-
   function closeDropdown() {
     setIsOpen(false);
   }
@@ -69,30 +98,15 @@ export default function MonthlySalesChart() {
   return (
     <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white px-5 pt-5 dark:border-gray-800 dark:bg-white/[0.03] sm:px-6 sm:pt-6">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
-          Monthly Sales
-        </h3>
-        <div className="relative inline-block">
-          <button className="dropdown-toggle" onClick={toggleDropdown}>
-            <i className="material-icons text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 text-6">
-              more_vert
-            </i>
-          </button>
-          <Dropdown isOpen={isOpen} onClose={closeDropdown} className="w-40 p-2">
-            <DropdownItem
-              onItemClick={closeDropdown}
-              className="flex w-full font-normal text-left text-gray-500 rounded-lg hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
-            >
-              View More
-            </DropdownItem>
-            <DropdownItem
-              onItemClick={closeDropdown}
-              className="flex w-full font-normal text-left text-gray-500 rounded-lg hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
-            >
-              Delete
-            </DropdownItem>
-          </Dropdown>
+        <div>
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
+            Monthly Orders
+          </h3>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            Total Orders (12 months): {totalOrders.toLocaleString()}
+          </p>
         </div>
+      
       </div>
 
       <div className="max-w-full overflow-x-auto custom-scrollbar">

@@ -1,60 +1,81 @@
-import Badge from "../adminUI/Badge";
+export default function EcommerceMetrics({ data }) {
+  // Safely extract data with fallbacks
+  const overview = data?.overview || {
+    totalUsers: 0,
+    totalProducts: 0,
+    totalOrders: 0,
+    totalRevenue: 0
+  };
+  
+  const today = data?.today || {
+    orders: 0,
+    revenue: 0,
+    userGrowth: 0
+  };
+  
+  const monthly = data?.monthly || {
+    revenue: 0
+  };
 
-export default function EcommerceMetrics() {
+  const metrics = [
+    {
+      title: 'Total Verified Users',
+      value: overview.totalUsers.toLocaleString(),
+      change: today.userGrowth > 0 ? `+${today.userGrowth}%` : `${today.userGrowth}%`,
+      changeType: today.userGrowth > 0 ? 'success' : 'error',
+      icon: 'group'
+    },
+    {
+      title: 'Total Products',
+      value: overview.totalProducts.toLocaleString(),
+      icon: 'inventory_2'
+    },
+    {
+      title: 'Total Orders',
+      value: overview.totalOrders.toLocaleString(),
+    
+      changeType: today.orders > 0 ? 'success' : 'error',
+      icon: 'shopping_cart'
+    },
+    {
+      title: 'Total Revenue',
+      value: `$${overview.totalRevenue.toLocaleString()}`,
+      icon: 'attach_money'
+    }
+  ];
+
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-6">
-      {/* Customers */}
-      <div className="rounded-2xl border bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
-        <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
-          <span className="material-icons text-gray-800 dark:text-white/90">
-            group
-          </span>
-        </div>
-
-        <div className="flex items-end justify-between mt-5">
-          <div>
-            <span className="text-sm text-gray-500 dark:text-gray-400">
-              Customers
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4 md:gap-6">
+      {metrics.map((metric, index) => (
+        <div key={index} className="rounded-2xl border bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
+          <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
+            <span className="material-icons text-gray-800 dark:text-white/90">
+              {metric.icon}
             </span>
-            <h4 className="mt-2 font-bold text-gray-800 text-title-sm dark:text-white/90">
-              3,782
-            </h4>
           </div>
-          <Badge color="success">
-            <span className="material-icons text-green-600 align-middle">
-              arrow_upward
-            </span>
-            11.01%
-          </Badge>
-        </div>
-      </div>
 
-      {/* Orders */}
-      <div className="rounded-2xl border bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
-        <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
-          <span className="material-icons text-gray-800 dark:text-white/90">
-            inventory_2
-          </span>
-        </div>
-
-        <div className="flex items-end justify-between mt-5">
-          <div>
-            <span className="text-sm text-gray-500 dark:text-gray-400">
-              Orders
-            </span>
-            <h4 className="mt-2 font-bold text-gray-800 text-title-sm dark:text-white/90">
-              5,359
-            </h4>
+          <div className="flex items-end justify-between mt-5">
+            <div>
+              <span className="text-xs text-gray-500 dark:text-gray-400">
+                {metric.title}
+              </span>
+              <h4 className="mt-2 font-bold text-gray-800 text-xl dark:text-white/90">
+                {metric.value}
+              </h4>
+            </div>
+            
+            {metric.change && (
+              <span className={`text-sm font-medium ${
+                metric.changeType === 'success' 
+                  ? 'text-green-500' 
+                  : 'text-red-500'
+              }`}>
+                {metric.change}
+              </span>
+            )}
           </div>
-          <Badge color="error">
-            <span className="material-icons text-red-600 align-middle">
-              arrow_downward
-            </span>
-            9.05%
-          </Badge>
         </div>
-      </div>
+      ))}
     </div>
   );
 }
-// This component displays two cards: one for Customers and one for Orders.
