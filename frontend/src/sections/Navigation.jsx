@@ -3,6 +3,9 @@ import axios from "axios";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import LoginPage from '../sections/LoginPage';
+import CartIcon from '../components/CartIcon';
+import MiniCart from '../components/MiniCart';
+import { useMiniCart } from '../context/MiniCartContext';
 
 // Ensure axios sends cookies with requests
 axios.defaults.withCredentials = true;
@@ -22,6 +25,8 @@ const Navigation = () => {
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [currentMenuLevel, setCurrentMenuLevel] = useState('main');
   const [expandedCategory, setExpandedCategory] = useState(null);
+
+  const { isMiniCartOpen, closeMiniCart } = useMiniCart();
 
   const generateAvatarColor = useCallback((email) => {
     if (!email) return '#cccccc';
@@ -253,12 +258,8 @@ const Navigation = () => {
               </div>
             )}
 
-            <img
-              src="/icons/Vector.svg"
-              alt="Cart"
-              onClick={handleGoCart}
-              className="w-6 h-6 cursor-pointer hover:opacity-75"
-            />
+            <CartIcon />
+
             <button
               onClick={openPanel}
               className="flex cursor-pointer text-neutral-950 hover:text-black focus:outline-none"
@@ -546,6 +547,7 @@ const Navigation = () => {
 
       {/* LoginPage Modal */}
       <LoginPage isOpen={isLoginModalOpen} onClose={closeLoginModal} />
+      <MiniCart isOpen={isMiniCartOpen} onClose={closeMiniCart} />
     </div>
   );
 };
