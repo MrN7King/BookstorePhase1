@@ -18,7 +18,7 @@ export default function DemographicCard() {
       <div className="flex justify-between">
         <div>
           <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
-            Customers Demographic
+            Customers Demographic (Will be implemented after GTM)
           </h3>
           <p className="mt-1 text-gray-500 text-theme-sm dark:text-gray-400">
             Number of customer based on country
@@ -48,7 +48,7 @@ export default function DemographicCard() {
       <div className="px-4 py-6 my-6 overflow-hidden border border-gary-200 rounded-2xl dark:border-gray-800 sm:px-6">
         <div
           id="mapOne"
-          className="mapOne map-btn -mx-4 -my-6 h-[212px] w-[252px] 2xsm:w-[307px] xsm:w-[358px] sm:-mx-6 md:w-[668px] lg:w-[634px] xl:w-[393px] 2xl:w-[554px]"
+          className="mapOne map-btn -mx-4 -my-6 h-[212px] w-[252px] 2xsm:w-[307px] xsm:w-[358px] sm:-mx-6 md:w-[668px] lg:w-[900px] xl:w-[393px] 2xl:w-[554px]"
         >
           <CountryMap />
         </div>

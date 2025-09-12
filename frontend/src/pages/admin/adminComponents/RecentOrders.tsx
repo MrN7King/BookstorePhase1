@@ -1,169 +1,126 @@
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHeader,
-  TableRow,
-} from "../adminUI/Table";
-import Badge from "../adminUI/Badge";
+import React, { useState } from 'react';
+import Badge from '../adminUI/Badge';
+import { Table, TableBody, TableCell, TableHeader, TableRow } from '../adminUI/Table';
 
-// Define the TypeScript interface for the table rows
-interface Product {
-  id: number; // Unique identifier for each product
-  name: string; // Product name
-  variants: string; // Number of variants (e.g., "1 Variant", "2 Variants")
-  category: string; // Category of the product
-  price: string; // Price of the product (as a string with currency symbol)
-  // status: string; // Status of the product
-  image: string; // URL or path to the product image
-  status: "Delivered" | "Pending" | "Canceled"; // Status of the product
-}
+export default function RecentOrders({ data }) {
+  const [expandedOrder, setExpandedOrder] = useState(null);
 
-// Define the table data using the interface
-const tableData: Product[] = [
-  {
-    id: 1,
-    name: "MacBook Pro 13”",
-    variants: "2 Variants",
-    category: "Laptop",
-    price: "$2399.00",
-    status: "Delivered",
-    image: "/images/product/product-01.jpg", // Replace with actual image URL
-  },
-  {
-    id: 2,
-    name: "Apple Watch Ultra",
-    variants: "1 Variant",
-    category: "Watch",
-    price: "$879.00",
-    status: "Pending",
-    image: "/images/product/product-02.jpg", // Replace with actual image URL
-  },
-  {
-    id: 3,
-    name: "iPhone 15 Pro Max",
-    variants: "2 Variants",
-    category: "SmartPhone",
-    price: "$1869.00",
-    status: "Delivered",
-    image: "/images/product/product-03.jpg", // Replace with actual image URL
-  },
-  {
-    id: 4,
-    name: "iPad Pro 3rd Gen",
-    variants: "2 Variants",
-    category: "Electronics",
-    price: "$1699.00",
-    status: "Canceled",
-    image: "/images/product/product-04.jpg", // Replace with actual image URL
-  },
-  {
-    id: 5,
-    name: "AirPods Pro 2nd Gen",
-    variants: "1 Variant",
-    category: "Accessories",
-    price: "$240.00",
-    status: "Delivered",
-    image: "/images/product/product-05.jpg", // Replace with actual image URL
-  },
-];
+  const toggleExpand = (orderId) => {
+    setExpandedOrder(expandedOrder === orderId ? null : orderId);
+  };
 
-export default function RecentOrders() {
   return (
-    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white px-4 pb-3 pt-4 dark:border-gray-800 dark:bg-white/[0.03] sm:px-6">
-      <div className="flex flex-col gap-2 mb-4 sm:flex-row sm:items-center sm:justify-between">
+    <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
+      <div className="flex flex-col gap-2 p-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
             Recent Orders
           </h3>
         </div>
-
-        <div className="flex items-center gap-3">
-          <button className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-theme-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200">
-            See all
-          </button>
-        </div>
       </div>
+      
       <div className="max-w-full overflow-x-auto">
-        <Table>
-          {/* Table Header */}
-          <TableHeader className="border-gray-100 dark:border-gray-800 border-y">
-            <TableRow>
-              <TableCell
-                isHeader
-                className="py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-              >
-                Products
-              </TableCell>
-              <TableCell
-                isHeader
-                className="py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-              >
-                Category
-              </TableCell>
-              <TableCell
-                isHeader
-                className="py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-              >
-                Price
-              </TableCell>
-              <TableCell
-                isHeader
-                className="py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-              >
-                Status
-              </TableCell>
-            </TableRow>
-          </TableHeader>
-
-          {/* Table Body */}
-
-          <TableBody className="divide-y divide-gray-100 dark:divide-gray-800">
-            {tableData.map((product) => (
-              <TableRow key={product.id} className="">
-                <TableCell className="py-3">
-                  <div className="flex items-center gap-3">
-                    <div className="h-[50px] w-[50px] overflow-hidden rounded-md">
-                      <img
-                        src={product.image}
-                        className="h-[50px] w-[50px]"
-                        alt={product.name}
-                      />
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-800 text-theme-sm dark:text-white/90">
-                        {product.name}
-                      </p>
-                      <span className="text-gray-500 text-theme-xs dark:text-gray-400">
-                        {product.variants}
-                      </span>
-                    </div>
-                  </div>
-                </TableCell>
-                <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                  {product.price}
-                </TableCell>
-                <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                  {product.category}
-                </TableCell>
-                <TableCell className="py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-                  <Badge
-                    size="sm"
-                    color={
-                      product.status === "Delivered"
-                        ? "success"
-                        : product.status === "Pending"
-                        ? "warning"
-                        : "error"
-                    }
+        <div className="max-h-[400px] overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb]:bg-gray-300 dark:[&::-webkit-scrollbar-track]:bg-neutral-700 dark:[&::-webkit-scrollbar-thumb]:bg-neutral-500">
+          <Table className="min-w-full">
+            <TableHeader className="sticky top-0 z-10 bg-white dark:bg-white/[0.03] border-b border-gray-100 dark:border-white/[0.05]">
+              <TableRow>
+                {['Email', 'Items', 'Total', 'Status', 'Date', 'Actions'].map((hdr) => (
+                  <TableCell
+                    key={hdr}
+                    isHeader
+                    className="px-4 py-2 font-medium text-gray-500 text-start text-xs dark:text-gray-400"
                   >
-                    {product.status}
-                  </Badge>
-                </TableCell>
+                    {hdr}
+                  </TableCell>
+                ))}
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            
+            <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
+              {data.map((order) => (
+                <React.Fragment key={order._id}>
+                  <TableRow
+                    className={`cursor-pointer hover:bg-gray-50 dark:hover:bg-neutral-800 transition-colors ${
+                      expandedOrder === order._id ? 'bg-blue-50 dark:bg-blue-950' : ''
+                    }`}
+                  >
+                    <TableCell className="px-4 py-2 text-start text-sm">
+                      {/* Show email instead of name */}
+                      {order.userId?.email || order.email}
+                    </TableCell>
+                    <TableCell className="px-4 py-2 text-start text-sm">
+                      {order.items.length} item{order.items.length !== 1 ? 's' : ''}
+                    </TableCell>
+                    <TableCell className="px-4 py-2 text-start text-sm">
+                      ${order.payment?.amount?.toFixed(2) || '0.00'}
+                    </TableCell>
+                    <TableCell className="px-4 py-2 text-start">
+                      <Badge
+                        size="sm"
+                        color={
+                          order.status === "completed" || order.status === "delivered"
+                            ? "success"
+                            : order.status === "pending" || order.status === "paid"
+                              ? "warning"
+                              : "error"
+                        }
+                      >
+                        {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="px-4 py-2 text-start text-sm">
+                      {new Date(order.createdAt).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell className="px-4 py-2 text-start">
+                      <button
+                        onClick={() => toggleExpand(order._id)}
+                        className="text-blue-500 hover:text-blue-700 text-xs font-medium"
+                      >
+                        {expandedOrder === order._id ? 'Hide' : 'View'} Details
+                      </button>
+                    </TableCell>
+                  </TableRow>
+                  
+                  {expandedOrder === order._id && (
+                    <TableRow>
+                      <TableCell colSpan={6} className="p-0">
+                        <div className="px-4 py-2 bg-gray-50 dark:bg-neutral-900">
+                          <h4 className="font-semibold mb-2 text-sm text-gray-800 dark:text-white/90">Order Items:</h4>
+                          <div className="grid gap-2">
+                            {order.items.map((item, index) => (
+                              <div key={index} className="flex items-center justify-between p-2 border border-gray-200 dark:border-neutral-700 rounded-lg text-xs">
+                                <div>
+                                  <p className="font-medium text-gray-800 dark:text-white/90">{item.productSnapshot.name}</p>
+                                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                                    {item.productSnapshot.category}
+                                  </p>
+                                </div>
+                                <div className="text-right">
+                                  <p className="text-xs text-gray-600 dark:text-gray-300">
+                                    ${item.productSnapshot.price.toFixed(2)} x {item.quantity}
+                                  </p>
+                                  <p className="font-semibold text-gray-800 dark:text-white/90">
+                                    ${(item.productSnapshot.price * item.quantity).toFixed(2)}
+                                  </p>
+                                </div>
+                              </div>
+                            ))}
+                            <div className="flex justify-between items-center pt-2 border-t border-gray-200 dark:border-neutral-700 text-sm">
+                              <p className="font-semibold text-gray-800 dark:text-white/90">Order Total:</p>
+                              <p className="font-bold text-gray-800 dark:text-white/90">
+                                ${order.payment?.amount?.toFixed(2) || '0.00'}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </React.Fragment>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       </div>
     </div>
   );
