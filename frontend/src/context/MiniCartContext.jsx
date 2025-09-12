@@ -1,7 +1,9 @@
 // src/context/MiniCartContext.jsx
+
 import { createContext, useContext, useEffect, useRef, useState } from 'react';
 
 const MiniCartContext = createContext();
+
 
 export const useMiniCart = () => {
   const context = useContext(MiniCartContext);

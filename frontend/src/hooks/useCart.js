@@ -232,7 +232,7 @@ export default function useCart() {
         }
     }, [user, cart, showMiniCartWithItem, dispatchCartEvent]);
 
-    // Set item quantity with optimistic updates
+    // Set item quantity with optimistic updates - FIXED VERSION
     const setItemQuantity = useCallback(async (productId, newQuantity) => {
         const validQuantity = Math.max(1, newQuantity);
         const originalCart = [...cart];
@@ -256,17 +256,17 @@ export default function useCart() {
                     writeGuestCart(guestCart);
                 }
             } else {
-                // For server, we need to get current cart and update it
-                const currentServerCart = (await axios.get('http://localhost:5000/api/cart')).data.cart || [];
-                const updatedItems = currentServerCart.map(item => ({
-                    productId: item.product._id || item.productId,
-                    quantity: item.product._id === productId ? validQuantity : item.quantity
-                }));
+                // For server - use the simple POST approach like addOrUpdateItem
+                const res = await axios.post('http://localhost:5000/api/cart', {
+                    productId,
+                    quantity: validQuantity
+                });
                 
-                await axios.put('http://localhost:5000/api/cart', { items: updatedItems });
-                
-                // Refresh cart to ensure consistency
-                await init(user, true);
+                if (res.data.success && res.data.cart) {
+                    // Update with server response for consistency
+                    const serverCart = res.data.cart.map(normalizeCartItem);
+                    setCart(serverCart);
+                }
             }
         } catch (err) {
             console.error('Failed to update quantity:', err);
@@ -275,7 +275,7 @@ export default function useCart() {
         } finally {
             setIsUpdating(false);
         }
-    }, [user, cart, init, dispatchCartEvent]);
+    }, [user, cart, dispatchCartEvent]);
 
     // Remove item with optimistic updates
     const removeItem = useCallback(async (productId) => {

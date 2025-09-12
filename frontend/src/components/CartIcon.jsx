@@ -1,7 +1,8 @@
 // src/components/CartIcon.jsx
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
-import useCart from '../hooks/useCart';
+// import useCart from '../hooks/useCart';
+import { useCart } from '../context/CartContext';
 import { useMiniCart } from '../context/MiniCartContext';
 
 const CartIcon = ({ className = "" }) => {

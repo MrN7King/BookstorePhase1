@@ -17,18 +17,22 @@ import PremiumProductPage from './pages/PremiumProductPage'; // Importing the Pr
 import ProductPage from './pages/ProductPage';
 import ProfileSettings from './pages/ProfileSettings';
 import ThankYouPage from './pages/ThankYouPage.jsx';
-import { CheckoutProvider } from './context/CheckoutContext';
+
+import { CartProvider } from './context/CartContext';
 import { MiniCartProvider } from './context/MiniCartContext';
+import { CheckoutProvider } from './context/CheckoutContext';
 
 
 const App = () => {
   return (
     <>
       {/* Wrap your entire app with MiniCartProvider */}
-      <MiniCartProvider>
-        <CheckoutProvider>
-          <ScrollToTop /> {/* This will scroll to the top of the page on route change */}
-          <Routes>
+      <CartProvider>
+        <MiniCartProvider>
+          <CheckoutProvider>
+            <ScrollToTop />
+            <Routes>
+
             <Route path={"/"} element={<Home />} />
             <Route path="*" element={<PageNotFound />} />
             <Route path='/Books' element={<MainBooks />} />    {/* Add more routes here as needed */}
@@ -56,8 +60,9 @@ const App = () => {
             <Route path='/AllPremiumAccounts' element={<AllPremiumAccounts />} />
             <Route path='/admin/*' element={<AdminMainPage />} />
           </Routes>
-        </CheckoutProvider>
-      </MiniCartProvider>
+          </CheckoutProvider>
+        </MiniCartProvider>
+      </CartProvider>
     </>
   )
 }
