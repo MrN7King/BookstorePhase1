@@ -1,8 +1,8 @@
 // src/sections/CartComponent.jsx
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import useCart from '../hooks/useCart';
 import { useCheckout } from '../context/CheckoutContext';
+import useCart from '../hooks/useCart';
 
 // Main App component (or your main component where this CartPage will be rendered)
 export default function CartComponent() {
@@ -21,15 +21,15 @@ function CartPage() {
 
   // Sample cart items. In a real application, this would come from a global state or fetched from a database.
   // Each item includes a unique ID, image, title, author, price, and initial quantity.
-const cartItems = cart.map(it => ({
-  id: it.product?._id,  // always from product
-  image: it.product?.thumbnailUrl || 'https://placehold.co/80x120',
-  title: it.product?.name || 'Untitled',
-  author: it.product?.author || '',
-  price: Number(it.product?.price),
-  quantity: it.quantity,
-  raw: it
-}));
+  const cartItems = cart.map(it => ({
+    id: it.product?._id,  // always from product
+    image: it.product?.thumbnailUrl || 'https://placehold.co/80x120',
+    title: it.product?.name || 'Untitled',
+    author: it.product?.author || '',
+    price: Number(it.product?.price),
+    quantity: it.quantity,
+    raw: it
+  }));
 
   // State for coupon code input
   const [couponCode, setCouponCode] = useState('');
@@ -37,35 +37,35 @@ const cartItems = cart.map(it => ({
   const [message, setMessage] = useState('');
 
   // Calculate subtotal of all items in the cart
-
-  // subtotal
   const calculateSubtotal = () => cartItems.reduce((total, item) => total + item.price * item.quantity, 0);
   const subtotal = calculateSubtotal();
   const shippingCost = 0.00;
   const total = subtotal + shippingCost;
 
-
   // Optimistic increase
   const handleQuantityIncrease = async (id) => {
+    // Find the current item
+    const currentItem = cart.find(i => i.id === id);
+    if (!currentItem) return;
+    
     // optimistic UI
     setCart(prev => prev.map(i => i.id === id ? ({ ...i, quantity: i.quantity + 1 }) : i));
 
     // persist (hook handles guest vs auth)
     try {
-      await setItemQuantity(id, (cart.find(i => i.id === id)?.quantity || 0) + 1);
+      await setItemQuantity(id, currentItem.quantity + 1);
     } catch (err) {
-      // rollback on failure: re-fetch from hook or simple decrement
+      // rollback on failure
       console.error('increase qty failed', err);
-      // naive rollback:
-      setCart(prev => prev.map(i => i.id === id ? ({ ...i, quantity: Math.max(1, i.quantity - 1) }) : i));
+      setCart(prev => prev.map(i => i.id === id ? ({ ...i, quantity: currentItem.quantity }) : i));
     }
   };
 
   // Optimistic decrease
   const handleQuantityDecrease = async (id) => {
-    const current = cart.find(i => i.id === id);
-    if (!current) return;
-    const next = Math.max(1, current.quantity - 1);
+    const currentItem = cart.find(i => i.id === id);
+    if (!currentItem) return;
+    const next = Math.max(1, currentItem.quantity - 1);
 
     // optimistic UI
     setCart(prev => prev.map(i => i.id === id ? ({ ...i, quantity: next }) : i));
@@ -75,13 +75,13 @@ const cartItems = cart.map(it => ({
     } catch (err) {
       console.error('decrease qty failed', err);
       // rollback:
-      setCart(prev => prev.map(i => i.id === id ? ({ ...i, quantity: current.quantity }) : i));
+      setCart(prev => prev.map(i => i.id === id ? ({ ...i, quantity: currentItem.quantity }) : i));
     }
   };
 
   // Remove with optimistic UI
   const handleRemove = async (id) => {
-    const snapshot = cart; // keep snapshot for rollback
+    const snapshot = [...cart]; // keep snapshot for rollback
     // optimistic remove
     setCart(prev => prev.filter(i => i.id !== id));
 
@@ -165,7 +165,6 @@ const cartItems = cart.map(it => ({
           {cartItems.length === 0 ? (
             <p className="text-gray-500 py-8 text-center">Your cart is empty.</p>
           ) : (
-            // replace the mapped item block with this (inside cartItems.map(...))
             cartItems.map((item) => (
               <div key={item.id} className="grid grid-cols-1 md:grid-cols-7 gap-4 items-center py-4 border-b border-gray-100 last:border-b-0">
                 {/* Left: image + title/author */}
@@ -187,9 +186,27 @@ const cartItems = cart.map(it => ({
 
                 {/* Quantity controls */}
                 <div className="flex items-center justify-center md:justify-start">
-                  <button onClick={() => handleQuantityDecrease(item.id)} className="bg-gray-200 text-gray-700 w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-300">-</button>
+                  <button 
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleQuantityDecrease(item.id);
+                    }} 
+                    className="bg-gray-200 text-gray-700 w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-300"
+                  >
+                    -
+                  </button>
                   <span className="mx-3 text-lg font-medium text-gray-800">{item.quantity}</span>
-                  <button onClick={() => handleQuantityIncrease(item.id)} className="bg-gray-200 text-gray-700 w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-300">+</button>
+                  <button 
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleQuantityIncrease(item.id);
+                    }} 
+                    className="bg-gray-200 text-gray-700 w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-300"
+                  >
+                    +
+                  </button>
                 </div>
 
                 {/* Subtotal */}
@@ -200,7 +217,11 @@ const cartItems = cart.map(it => ({
                 {/* Remove button column (rightmost) */}
                 <div className="text-right">
                   <button
-                    onClick={(e) => { e.stopPropagation(); handleRemove(item.id); }}
+                    onClick={(e) => { 
+                      e.preventDefault();
+                      e.stopPropagation(); 
+                      handleRemove(item.id); 
+                    }}
                     aria-label={`Remove ${item.title}`}
                     className="inline-flex items-center justify-center text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 p-2 rounded-md transition"
                   >
@@ -211,8 +232,6 @@ const cartItems = cart.map(it => ({
                 </div>
               </div>
             ))
-
-
           )}
 
           {/* Continue Shopping Button */}
@@ -271,7 +290,6 @@ const cartItems = cart.map(it => ({
           {/* Coupon Section */}
           <div className="mt-8 pt-6 border-t border-gray-200">
             <h3 className="flex items-center text-gray-700 font-semibold mb-4">
-              
               Coupon
             </h3>
             <input

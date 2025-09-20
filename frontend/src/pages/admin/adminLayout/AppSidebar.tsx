@@ -265,7 +265,7 @@ const AppSidebar: React.FC = () => {
         <Link to="/">
           {(isExpanded || isHovered || isMobileOpen) ? (
             <span className="text-xl font-bold dark:text-white text-black">
-              Ecommerce
+              IBooj 
             </span>
           ) : (
             <span className="text-base font-semibold dark:text-white text-black">
@@ -299,11 +299,7 @@ const AppSidebar: React.FC = () => {
                     : "justify-start"
                   }`}
               >
-                {isExpanded || isHovered || isMobileOpen ? (
-                  "Others"
-                ) : (
-                  <span className="material-symbols-outlined">more_horiz</span>
-                )}
+               
               </h2>
               {loading ? null : renderMenuItems(othersItems, "others")}
             </div>

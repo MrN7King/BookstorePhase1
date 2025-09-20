@@ -23,9 +23,7 @@ const writeGuestCart = (items) => {
 // Get current auth user
 const fetchCurrentUser = async () => {
     try {
-       
         const res = await axios.get('http://localhost:5000/api/auth/data');
-       
         return res.data.user || null;
     } catch (e) {
         console.error('Failed to fetch user:', e);
@@ -42,28 +40,28 @@ export default function useCart() {
     // The core cart loading logic
     const init = useCallback(async (currentUser) => {
         setLoading(true);
-    
 
         try {
             if (currentUser) {
-              
                 const res = await axios.get('http://localhost:5000/api/cart');
-          
-                // ✅ The fix is here: we're no longer checking for `res.data.success`
-                if (Array.isArray(res.data.cart)) {
+                
+                if (res.data && Array.isArray(res.data.cart)) {
                     const serverCart = res.data.cart.map(item => ({
-                        id: item.product._id,
-                        product: item.product,
+                        id: item.productId || (item.product && item.product._id),
+                        product: item.product || {
+                            _id: item.productId,
+                            name: 'Unknown Product',
+                            price: 0,
+                            thumbnailUrl: ''
+                        },
                         quantity: item.quantity
                     }));
                     setCart(serverCart);
-                  
                 } else {
                     console.error('init: API call failed or returned invalid data. Response:', res.data);
                     setCart([]);
                 }
             } else {
-               
                 const guestCart = readGuestCart().map(item => ({
                     id: item.productId,
                     product: {
@@ -75,7 +73,6 @@ export default function useCart() {
                     quantity: item.quantity
                 }));
                 setCart(guestCart);
-             
             }
         } catch (err) {
             console.error('init: Failed to initialize cart. Check network and CORS issues.', err);
@@ -95,36 +92,37 @@ export default function useCart() {
         syncCart();
 
         const onAuthChanged = () => {
-        
             syncCart();
         };
+        
+        const onCartUpdated = () => {
+            syncCart();
+        };
+        
         window.addEventListener('authChanged', onAuthChanged);
+        window.addEventListener('cartUpdated', onCartUpdated);
+        
         return () => {
             window.removeEventListener('authChanged', onAuthChanged);
+            window.removeEventListener('cartUpdated', onCartUpdated);
         };
     }, [init]);
 
     // Clear cart function
     const clearCart = useCallback(async () => {
-        console.log("Clearing cart...");
-        
         if (!user) {
-            // Clear guest cart
             writeGuestCart([]);
             setCart([]);
-            console.log("Guest cart cleared");
         } else {
-            // Clear server cart for logged-in users
             try {
                 await axios.put('http://localhost:5000/api/cart', { items: [] });
                 setCart([]);
-                console.log("Server cart cleared for logged-in user");
             } catch (err) {
                 console.error('Failed to clear server cart:', err);
-                // Still clear local state even if server fails
                 setCart([]);
             }
         }
+        window.dispatchEvent(new Event('cartUpdated'));
     }, [user]);
 
     // add/update item (handles guest vs auth)
@@ -134,6 +132,7 @@ export default function useCart() {
             return;
         }
         const productId = product._id || product.id;
+        
         if (!user) {
             const existing = readGuestCart();
             const idx = existing.findIndex(i => i.productId === productId);
@@ -159,8 +158,10 @@ export default function useCart() {
                 },
                 quantity: i.quantity
             })));
+            window.dispatchEvent(new Event('cartUpdated'));
             return;
         }
+        
         // logged-in: call API to add/update
         try {
             const res = await axios.post('http://localhost:5000/api/cart', { productId, quantity });
@@ -173,6 +174,7 @@ export default function useCart() {
                         quantity: c.quantity
                     };
                 }));
+                window.dispatchEvent(new Event('cartUpdated'));
             }
         } catch (err) {
             console.error('addOrUpdateItem API error', err);
@@ -197,6 +199,7 @@ export default function useCart() {
                     },
                     quantity: i.quantity
                 })));
+                window.dispatchEvent(new Event('cartUpdated'));
             }
             return;
         }
@@ -215,6 +218,7 @@ export default function useCart() {
                     quantity: c.quantity
                 };
             }));
+            window.dispatchEvent(new Event('cartUpdated'));
         } catch (err) {
             console.error('setItemQuantity error', err);
         }
@@ -235,6 +239,7 @@ export default function useCart() {
                 },
                 quantity: i.quantity
             })));
+            window.dispatchEvent(new Event('cartUpdated'));
             return;
         }
         try {
@@ -248,6 +253,7 @@ export default function useCart() {
                         quantity: c.quantity
                     };
                 }));
+                window.dispatchEvent(new Event('cartUpdated'));
             }
         } catch (err) {
             console.error('remove item error', err);

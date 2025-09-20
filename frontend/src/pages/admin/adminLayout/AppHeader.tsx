@@ -1,14 +1,42 @@
-import { useEffect, useRef, useState } from "react";
-
-import { Link } from "react-router";
+import { useEffect, useState } from "react";
 import { useSidebar } from "../adminUI/SidebarContext";
-import NotificationDropdown from "../adminUI/NotificationDropdown";
-import UserDropdown from "../adminUI/UserDropdown";
 
 const AppHeader: React.FC = () => {
   const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
+  const [userRole, setUserRole] = useState<string | null>(null);
 
   const { isMobileOpen, toggleSidebar, toggleMobileSidebar } = useSidebar();
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        // Get token from cookies or localStorage
+        const token = document.cookie
+          .split('; ')
+          .find(row => row.startsWith('token='))
+          ?.split('=')[1] || localStorage.getItem('token');
+        
+        if (!token) return;
+
+        // Fetch user data from your API
+        const response = await fetch('/api/user/data', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (response.ok) {
+          const userData = await response.json();
+          setUserRole(userData.user.role);
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
+
+    fetchUserData();
+  }, []);
 
   const handleToggle = () => {
     if (window.innerWidth >= 1024) {
@@ -22,12 +50,30 @@ const AppHeader: React.FC = () => {
     setApplicationMenuOpen(!isApplicationMenuOpen);
   };
 
+  // Function to format the role for display
+  const formatRole = (role: string | null) => {
+    if (!role) return "";
+    
+    switch(role) {
+      case 'owner':
+        return 'Owner';
+      case 'employee':
+        return 'Employee';
+      case 'customer':
+        return 'Customer';
+      case 'guest':
+        return 'Guest';
+      default:
+        return role.charAt(0).toUpperCase() + role.slice(1);
+    }
+  };
+
   return (
-    <header className="sticky top-0 flex w-full bg-white border-gray-200 z-99999 dark:border-gray-800 dark:bg-gray-900 lg:border-b">
-      <div className="flex flex-col items-center justify-between grow lg:flex-row lg:px-6">
-        <div className="flex items-center justify-between w-full gap-2 px-3 py-3 border-b border-gray-200 dark:border-gray-800 sm:gap-4 lg:justify-normal lg:border-b-0 lg:px-0 lg:py-4">
+    <header className="sticky top-0 flex w-full bg-white border-b border-gray-200 z-50 dark:border-gray-800 dark:bg-gray-900">
+      <div className="flex flex-col w-full lg:flex-row lg:px-6">
+        <div className="flex items-center justify-between w-full gap-2 px-4 py-3 sm:gap-4 lg:justify-normal lg:px-0 lg:py-4">
           <button
-            className="items-center justify-center w-10 h-10 text-gray-500 border-gray-200 rounded-lg z-99999 dark:border-gray-800 lg:flex dark:text-gray-400 lg:h-11 lg:w-11 lg:border"
+            className="flex items-center justify-center w-10 h-10 text-gray-500 rounded-lg dark:text-gray-400 lg:h-11 lg:w-11"
             onClick={handleToggle}
             aria-label="Toggle Sidebar"
           >
@@ -62,25 +108,24 @@ const AppHeader: React.FC = () => {
                 />
               </svg>
             )}
-            {/* Cross Icon */}
           </button>
 
-          <Link to="/" className="lg:hidden">
-            <img
-              className="dark:hidden"
-              src="./images/logo/logo.svg"
-              alt="Logo"
-            />
-            <img
-              className="hidden dark:block"
-              src="./images/logo/logo-dark.svg"
-              alt="Logo"
-            />
-          </Link>
+         
+
+      <div className="relative flex items-center ml-2 ">
+  <div className="absolute inset-0 z-0 bg-blue-500 rounded-full blur-sm opacity-20 animate-pulse-slow"></div>
+  <div className="relative z-10 flex items-center px-3 py-1.5 rounded-full border border-blue-400 dark:border-blue-600 bg-white dark:bg-gray-900 transition-all duration-500 hover:scale-105">
+ <svg className="w-4 h-4 mr-2 text-blue-500 dark:text-blue-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+  <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"></path>
+</svg> <p className="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap lg:text-lg">
+      ADMIN PANEL
+    </p>
+  </div>
+</div>
 
           <button
             onClick={toggleApplicationMenu}
-            className="flex items-center justify-center w-10 h-10 text-gray-700 rounded-lg z-99999 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 lg:hidden"
+            className="flex items-center justify-center w-10 h-10 text-gray-700 rounded-lg hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 lg:hidden"
           >
             <svg
               width="24"
@@ -97,22 +142,14 @@ const AppHeader: React.FC = () => {
               />
             </svg>
           </button>
-
-          
         </div>
+        
         <div
           className={`${
             isApplicationMenuOpen ? "flex" : "hidden"
-          } items-center justify-between w-full gap-4 px-5 py-4 lg:flex shadow-theme-md lg:justify-end lg:px-0 lg:shadow-none`}
+          } items-center justify-between w-full gap-4 px-5 py-4 lg:flex lg:justify-end lg:px-0`}
         >
-          <div className="flex items-center gap-2 2xsm:gap-3">
-            
-            {/* <!-- Dark Mode Toggler --> */}
-            <NotificationDropdown />
-            {/* <!-- Notification Menu Area --> */}
-          </div>
-          {/* <!-- User Area --> */}
-          <UserDropdown />
+          {/* User Area */}
         </div>
       </div>
     </header>

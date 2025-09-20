@@ -2,6 +2,7 @@
 import axios from "axios";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from 'react-router-dom';
+import useCart from '../hooks/useCart';
 import LoginPage from '../sections/LoginPage';
 
 // Ensure axios sends cookies with requests
@@ -11,6 +12,7 @@ const USER_API_BASE_URL = "http://localhost:5000/api/auth";
 
 const Navigation = () => {
   const navigate = useNavigate();
+  const { cart } = useCart(); // Use the cart hook to get cart data
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userEmail, setUserEmail] = useState(null);
@@ -22,6 +24,9 @@ const Navigation = () => {
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [currentMenuLevel, setCurrentMenuLevel] = useState('main');
   const [expandedCategory, setExpandedCategory] = useState(null);
+
+  // Calculate total items in cart
+  const cartItemCount = cart.reduce((total, item) => total + item.quantity, 0);
 
   const generateAvatarColor = useCallback((email) => {
     if (!email) return '#cccccc';
@@ -95,6 +100,20 @@ const Navigation = () => {
   useEffect(() => {
     checkLoginStatusAndFetchUserData();
   }, [checkLoginStatusAndFetchUserData]);
+
+  // Listen for cart updates to refresh the cart count
+  useEffect(() => {
+    const handleCartUpdate = () => {
+      // This will trigger a re-render with updated cart count
+      // The cart count is already calculated from the useCart hook
+    };
+
+    window.addEventListener('cartUpdated', handleCartUpdate);
+    
+    return () => {
+      window.removeEventListener('cartUpdated', handleCartUpdate);
+    };
+  }, []);
 
   const handleGoCart = () => {
     navigate('/Cart');
@@ -175,6 +194,14 @@ const Navigation = () => {
         setUserProfilePicture(null);
         closePanel();
         setShowProfileOptions(false);
+        
+        // Clear guest cart on logout
+        localStorage.removeItem('guest_cart_v1');
+        
+        // Dispatch events to update all components
+        window.dispatchEvent(new Event('authChanged'));
+        window.dispatchEvent(new Event('cartUpdated'));
+        
         navigate('/');
       } else {
         console.error("Logout failed:", response.data.message);
@@ -253,12 +280,20 @@ const Navigation = () => {
               </div>
             )}
 
-            <img
-              src="/icons/Vector.svg"
-              alt="Cart"
-              onClick={handleGoCart}
-              className="w-6 h-6 cursor-pointer hover:opacity-75"
-            />
+            {/* Cart icon with item count */}
+            <div className="relative cursor-pointer" onClick={handleGoCart}>
+              <img
+                src="/icons/Vector.svg"
+                alt="Cart"
+                className="w-6 h-6 hover:opacity-75"
+              />
+              {cartItemCount > 0 && (
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                  {cartItemCount}
+                </span>
+              )}
+            </div>
+
             <button
               onClick={openPanel}
               className="flex cursor-pointer text-neutral-950 hover:text-black focus:outline-none"
@@ -380,9 +415,9 @@ const Navigation = () => {
               </button>
               {expandedCategory === 'featured' && (
                 <ul className="ml-4 mt-2 space-y-1 text-md pl-4">
-                  <li className="hover:text-sky-500 cursor-pointer" onClick={handleMenuItemClick}>New Releases</li>
-                  <li className="hover:text-sky-500 cursor-pointer" onClick={handleMenuItemClick}>Bestsellers</li>
-                  <li className="hover:text-sky-500 cursor-pointer" onClick={handleMenuItemClick}>Staff Picks</li>
+                  <li className="hover:text-sky-500 cursor-pointer" onClick={() => handleMenuItemClick('/new-releases')}>New Releases</li>
+                  <li className="hover:text-sky-500 cursor-pointer" onClick={() => handleMenuItemClick('/bestsellers')}>Bestsellers</li>
+                  <li className="hover:text-sky-500 cursor-pointer" onClick={() => handleMenuItemClick('/staff-picks')}>Staff Picks</li>
                 </ul>
               )}
             </li>
@@ -395,10 +430,10 @@ const Navigation = () => {
               </button>
               {expandedCategory === 'fiction' && (
                 <ul className="ml-4 mt-2 space-y-1 text-md pl-4">
-                  <li className="hover:text-sky-500 cursor-pointer" onClick={handleMenuItemClick}>Fantasy</li>
-                  <li className="hover:text-sky-500 cursor-pointer" onClick={handleMenuItemClick}>Sci-Fi</li>
-                  <li className="hover:text-sky-500 cursor-pointer" onClick={handleMenuItemClick}>Mystery</li>
-                  <li className="hover:text-sky-500 cursor-pointer" onClick={handleMenuItemClick}>Thriller</li>
+                  <li className="hover:text-sky-500 cursor-pointer" onClick={() => handleMenuItemClick('/fantasy')}>Fantasy</li>
+                  <li className="hover:text-sky-500 cursor-pointer" onClick={() => handleMenuItemClick('/sci-fi')}>Sci-Fi</li>
+                  <li className="hover:text-sky-500 cursor-pointer" onClick={() => handleMenuItemClick('/mystery')}>Mystery</li>
+                  <li className="hover:text-sky-500 cursor-pointer" onClick={() => handleMenuItemClick('/thriller')}>Thriller</li>
                 </ul>
               )}
             </li>
@@ -411,9 +446,9 @@ const Navigation = () => {
               </button>
               {expandedCategory === 'non-fiction' && (
                 <ul className="ml-4 mt-2 space-y-7 text-md pl-4">
-                  <li className="hover:text-sky-500 cursor-pointer" onClick={handleMenuItemClick}>Biography</li>
-                  <li className="hover:text-sky-500 cursor-pointer" onClick={handleMenuItemClick}>History</li>
-                  <li className="hover:text-sky-500 cursor-pointer" onClick={handleMenuItemClick}>Science</li>
+                  <li className="hover:text-sky-500 cursor-pointer" onClick={() => handleMenuItemClick('/biography')}>Biography</li>
+                  <li className="hover:text-sky-500 cursor-pointer" onClick={() => handleMenuItemClick('/history')}>History</li>
+                  <li className="hover:text-sky-500 cursor-pointer" onClick={() => handleMenuItemClick('/science')}>Science</li>
                 </ul>
               )}
             </li>
@@ -426,8 +461,8 @@ const Navigation = () => {
               </button>
               {expandedCategory === 'kids' && (
                 <ul className="ml-4 mt-2 space-y-1 text-md pl-4">
-                  <li className="hover:text-sky-500 cursor-pointer" onClick={handleMenuItemClick}>Picture Books</li>
-                  <li className="hover:text-sky-500 cursor-pointer" onClick={handleMenuItemClick}>Chapter Books</li>
+                  <li className="hover:text-sky-500 cursor-pointer" onClick={() => handleMenuItemClick('/picture-books')}>Picture Books</li>
+                  <li className="hover:text-sky-500 cursor-pointer" onClick={() => handleMenuItemClick('/chapter-books')}>Chapter Books</li>
                 </ul>
               )}
             </li>
@@ -440,8 +475,8 @@ const Navigation = () => {
               </button>
               {expandedCategory === 'young-adult' && (
                 <ul className="ml-4 mt-2 space-y-1 text-base pl-4">
-                  <li className="hover:text-sky-500 cursor-pointer" onClick={handleMenuItemClick}>Fantasy YA</li>
-                  <li className="hover:text-sky-500 cursor-pointer" onClick={handleMenuItemClick}>Contemporary YA</li>
+                  <li className="hover:text-sky-500 cursor-pointer" onClick={() => handleMenuItemClick('/fantasy-ya')}>Fantasy YA</li>
+                  <li className="hover:text-sky-500 cursor-pointer" onClick={() => handleMenuItemClick('/contemporary-ya')}>Contemporary YA</li>
                 </ul>
               )}
             </li>
@@ -474,9 +509,9 @@ const Navigation = () => {
               </button>
               {expandedCategory === 'Software' && (
                 <ul className="ml-4 mt-2 space-y-1 text-md pl-4">
-                  <li className="hover:text-sky-500 cursor-pointer" onClick={handleMenuItemClick}>New Releases</li>
-                  <li className="hover:text-sky-500 cursor-pointer" onClick={handleMenuItemClick}>Top Sellers</li>
-                  <li className="hover:text-sky-500 cursor-pointer" onClick={handleMenuItemClick}>Staff Picks</li>
+                  <li className="hover:text-sky-500 cursor-pointer" onClick={() => handleMenuItemClick('/software/new-releases')}>New Releases</li>
+                  <li className="hover:text-sky-500 cursor-pointer" onClick={() => handleMenuItemClick('/software/top-sellers')}>Top Sellers</li>
+                  <li className="hover:text-sky-500 cursor-pointer" onClick={() => handleMenuItemClick('/software/staff-picks')}>Staff Picks</li>
                 </ul>
               )}
             </li>
@@ -489,9 +524,9 @@ const Navigation = () => {
               </button>
               {expandedCategory === 'Subscription' && (
                 <ul className="ml-4 mt-2 space-y-1 text-md pl-4">
-                  <li className="hover:text-sky-500 cursor-pointer" onClick={handleMenuItemClick}>New Releases</li>
-                  <li className="hover:text-sky-500 cursor-pointer" onClick={handleMenuItemClick}>Top Sellers</li>
-                  <li className="hover:text-sky-500 cursor-pointer" onClick={handleMenuItemClick}>Staff Picks</li>
+                  <li className="hover:text-sky-500 cursor-pointer" onClick={() => handleMenuItemClick('/subscription/new-releases')}>New Releases</li>
+                  <li className="hover:text-sky-500 cursor-pointer" onClick={() => handleMenuItemClick('/subscription/top-sellers')}>Top Sellers</li>
+                  <li className="hover:text-sky-500 cursor-pointer" onClick={() => handleMenuItemClick('/subscription/staff-picks')}>Staff Picks</li>
                 </ul>
               )}
             </li>
@@ -504,9 +539,9 @@ const Navigation = () => {
               </button>
               {expandedCategory === 'License' && (
                 <ul className="ml-4 mt-2 space-y-1 text-md pl-4">
-                  <li className="hover:text-sky-500 cursor-pointer" onClick={handleMenuItemClick}>New Releases</li>
-                  <li className="hover:text-sky-500 cursor-pointer" onClick={handleMenuItemClick}>Top Sellers</li>
-                  <li className="hover:text-sky-500 cursor-pointer" onClick={handleMenuItemClick}>Staff Picks</li>
+                  <li className="hover:text-sky-500 cursor-pointer" onClick={() => handleMenuItemClick('/license/new-releases')}>New Releases</li>
+                  <li className="hover:text-sky-500 cursor-pointer" onClick={() => handleMenuItemClick('/license/top-sellers')}>Top Sellers</li>
+                  <li className="hover:text-sky-500 cursor-pointer" onClick={() => handleMenuItemClick('/license/staff-picks')}>Staff Picks</li>
                 </ul>
               )}
             </li>
@@ -519,9 +554,9 @@ const Navigation = () => {
               </button>
               {expandedCategory === 'Premium' && (
                 <ul className="ml-4 mt-2 space-y-1 text-md pl-4">
-                  <li className="hover:text-sky-500 cursor-pointer" onClick={handleMenuItemClick}>New Releases</li>
-                  <li className="hover:text-sky-500 cursor-pointer" onClick={handleMenuItemClick}>Top Sellers</li>
-                  <li className="hover:text-sky-500 cursor-pointer" onClick={handleMenuItemClick}>Staff Picks</li>
+                  <li className="hover:text-sky-500 cursor-pointer" onClick={() => handleMenuItemClick('/premium/new-releases')}>New Releases</li>
+                  <li className="hover:text-sky-500 cursor-pointer" onClick={() => handleMenuItemClick('/premium/top-sellers')}>Top Sellers</li>
+                  <li className="hover:text-sky-500 cursor-pointer" onClick={() => handleMenuItemClick('/premium/staff-picks')}>Staff Picks</li>
                 </ul>
               )}
             </li>
@@ -534,9 +569,9 @@ const Navigation = () => {
               </button>
               {expandedCategory === 'Account' && (
                 <ul className="ml-4 mt-2 space-y-1 text-md pl-4">
-                  <li className="hover:text-sky-500 cursor-pointer" onClick={handleMenuItemClick}>New Releases</li>
-                  <li className="hover:text-sky-500 cursor-pointer" onClick={handleMenuItemClick}>Top Sellers</li>
-                  <li className="hover:text-sky-500 cursor-pointer" onClick={handleMenuItemClick}>Staff Picks</li>
+                  <li className="hover:text-sky-500 cursor-pointer" onClick={() => handleMenuItemClick('/account/new-releases')}>New Releases</li>
+                  <li className="hover:text-sky-500 cursor-pointer" onClick={() => handleMenuItemClick('/account/top-sellers')}>Top Sellers</li>
+                  <li className="hover:text-sky-500 cursor-pointer" onClick={() => handleMenuItemClick('/account/staff-picks')}>Staff Picks</li>
                 </ul>
               )}
             </li>

@@ -1,9 +1,13 @@
-//frontend/src/components/Cards.jsx
 "use client";
+
+import { useState } from "react";
 
 const STAR_SVG_PATH = "M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.538 1.118l-2.8-2.034a1 1 0 00-1.176 0l-2.8 2.034c-.783.57-1.838-.197-1.538-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.462a1 1 0 00.95-.69l1.07-3.292z";
 
 const Card = ({ book, onCardClick, onAddToCart }) => {
+  const [addedToCart, setAddedToCart] = useState(false);
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
+
   if (!book) return null;
 
   const renderStars = (rating) => {
@@ -45,13 +49,95 @@ const Card = ({ book, onCardClick, onAddToCart }) => {
     return <div className="flex space-x-[2px]">{stars}</div>;
   };
 
+  const handleAddToCartClick = async (e) => {
+    e.stopPropagation();
+    if (isAddingToCart || addedToCart) return;
+
+    setIsAddingToCart(true);
+
+    try {
+      const payload = {
+        _id: book.id,
+        name: book.title,
+        price: Number(book.price) || 0,
+        thumbnailUrl: book.image,
+      };
+
+      await onAddToCart?.(payload);
+
+      setAddedToCart(true);
+      setTimeout(() => {
+        setAddedToCart(false);
+      }, 2000); // Revert back after 2 seconds
+
+    } catch (error) {
+      console.error("Failed to add to cart:", error);
+      // Optional: Show an error message to the user
+    } finally {
+      setIsAddingToCart(false);
+    }
+  };
+
+  const getButtonContent = () => {
+    if (addedToCart) {
+      return (
+        <>
+          <svg 
+            xmlns="http://www.w3.org/2000/svg" 
+            className="w-4 h-4 animate-checkmark" 
+            viewBox="0 0 24 24" 
+            fill="currentColor"
+          >
+            <path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" />
+          </svg>
+          <span className="animate-fadeIn">Added!</span>
+        </>
+      );
+    }
+    
+    if (isAddingToCart) {
+      return (
+        <div className="flex items-center justify-center">
+          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+          <span className="ml-2">Adding...</span>
+        </div>
+      );
+    }
+    
+    return (
+      <>
+        <svg 
+          xmlns="http://www.w3.org/2000/svg" 
+          className="w-4 h-4" 
+          fill="none" 
+          viewBox="0 0 24 24" 
+          stroke="currentColor" 
+          strokeWidth={2}
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+        </svg>
+        <span>Add to Cart</span>
+      </>
+    );
+  };
+
+  const getButtonStyles = () => {
+    const baseStyles = "w-full py-2 px-4 rounded-xl text-sm font-medium transition-all duration-300 flex items-center justify-center space-x-2 shadow-sm hover:shadow-md";
+    
+    if (addedToCart) {
+      return `${baseStyles} bg-green-600 hover:bg-green-700 text-white animate-pulse-once`;
+    }
+    
+    if (isAddingToCart) {
+      return `${baseStyles} bg-gray-600 text-white cursor-not-allowed`;
+    }
+    
+    return `${baseStyles} bg-gray-900 hover:bg-gray-800 text-white hover:scale-[1.02] active:scale-[0.98]`;
+  };
 
   return (
     <div
-      onClick={() => {
-        console.log("Card clicked, navigating with ID:", book.id);
-        onCardClick?.(book.id);
-      }}
+      onClick={() => onCardClick?.(book.id)}
       className="
         relative group flex flex-col w-full max-w-[250px]
         rounded-2xl shadow-md border border-white/10 overflow-hidden cursor-pointer
@@ -86,26 +172,53 @@ const Card = ({ book, onCardClick, onAddToCart }) => {
       {/* Add to Cart */}
       <div className="px-4 pb-4 mt-auto">
         <button
-          onClick={(e) => {
-            e.stopPropagation();             // <--- prevent outer click navigation
-            const payload = {
-              _id: book.id,  // Always use the consistent ID field
-              name: book.title,
-              price: Number(book.price) || 0,
-              thumbnailUrl: book.image,
-              // Add other required fields
-            };
-
-            onAddToCart?.(payload);         // <--- call parent handler
-          }}
-          className="w-full py-2 px-4 rounded-xl bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium transition-all duration-200 flex items-center justify-center space-x-2 shadow-sm hover:shadow-md active:scale-95"
+          onClick={handleAddToCartClick}
+          disabled={isAddingToCart || addedToCart}
+          className={getButtonStyles()}
         >
-          <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-          </svg>
-          <span>Add to Cart</span>
+          {getButtonContent()}
         </button>
       </div>
+
+      {/* Add these styles for the animations */}
+      <style jsx>{`
+        @keyframes checkmark {
+          0% {
+            transform: scale(0);
+            opacity: 0;
+          }
+          50% {
+            transform: scale(1.2);
+            opacity: 1;
+          }
+          100% {
+            transform: scale(1);
+          }
+        }
+        
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        
+        @keyframes pulse-once {
+          0% { transform: scale(1); }
+          50% { transform: scale(1.05); }
+          100% { transform: scale(1); }
+        }
+        
+        .animate-checkmark {
+          animation: checkmark 0.5s ease-out;
+        }
+        
+        .animate-fadeIn {
+          animation: fadeIn 0.3s ease-out;
+        }
+        
+        .animate-pulse-once {
+          animation: pulse-once 0.5s ease-in-out;
+        }
+      `}</style>
     </div>
   );
 };
