@@ -36,10 +36,10 @@ const navItems: NavItem[] = [
     name: "Manage Products",
     iconName: "assignment",
     subItems: [
-      { name: "Add E-books", path: "/admin/Add-ebooks", pro: false, permission: "addEbooks" },
-      { name: "Edit Ebooks", path: "/admin/edit-ebook", pro: false, permission: "editEbooks" },
-      { name: "Add Premium Accounts", path: "/admin/Add-premiumAccount", pro: false, permission: "addPremiumAccount" },
-      { name: "Add Premium Code & Edit Premium Accounts", path: "/admin/Add-premiumCodes", pro: false, permission: "addPremiumCodes" },
+      { name: "Add E-books", path: "/admin/addebooks", pro: false, permission: "addEbooks" },
+      { name: "Edit Ebooks", path: "/admin/editebooks", pro: false, permission: "editEbooks" },
+      { name: "Add Premium Accounts", path: "/admin/addPremiumAccount", pro: false, permission: "addPremiumAccount" },
+      { name: "Add Premium Code & Edit Premium Accounts", path: "/admin/addPremiumCodes", pro: false, permission: "addPremiumCodes" },
     ],
   },
 ];
