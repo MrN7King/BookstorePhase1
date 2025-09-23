@@ -48,16 +48,13 @@ const AboutUsAndFAQ = ({}) => {
     },
     {
       question: "Are the books you sell digital or physical?",
-      answer: "All books available on our platform are digital and physical. You'll receive a download link or access instructions immediately after purchase, allowing you to read them on your preferred device."
+      answer: "All books available on our platform are digital. You'll receive a download link in your email and access instructions immediately after purchase, allowing you to read them on your preferred device."
     },
     {
       question: "What if I have issues with my purchase?",
-      answer: "Our dedicated support team is here to help! If you encounter any issues with your premium account or e-book purchase, please contact us at support@yourbookstore.com or through our contact form. We strive to resolve all inquiries promptly."
+      answer: "Our dedicated support team is here to help! If you encounter any issues with your premium account or e-book purchase, please contact us at solaromegastoreinc@gmail.com or through our contact form. We strive to resolve all inquiries promptly."
     },
-    {
-      question: "Do you offer refunds?",
-      answer: "Due to the nature of digital goods and premium accounts, our refund policy varies by product. Please review the specific product description or our comprehensive Refund Policy page for detailed information before making a purchase. Your satisfaction is important to us, and we'll always work to find a fair resolution."
-    }
+
   ];
 
   return (
@@ -146,7 +143,7 @@ const AboutUsAndFAQ = ({}) => {
           {faqData.map((item, index) => (
             <FAQItem key={index} question={item.question} answer={item.answer} />
           ))}
-           <h2 className="mt-5 text-md text-center font-semibold text-blue-600">Still have questions? We're here to help!</h2>
+           <h2 className="mt-5 text-md text-center font-semibold text-blue-600" onclick>Still have questions? Contact us!</h2>
         </div>
 
       </div>

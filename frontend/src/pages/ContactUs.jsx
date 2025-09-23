@@ -184,18 +184,7 @@ const ContactFormComponent = () => { // Renamed to avoid confusion with the page
               rows={6}
             />
 
-            <p className="text-xs text-gray-500 leading-relaxed">
-              By submitting this form you agree to our{" "}
-              <a href="#" className="font-medium text-blue-600 hover:underline">
-                terms and conditions
-              </a>{" "}
-              and our{" "}
-              <a href="#" className="font-medium text-blue-600 hover:underline">
-                privacy policy
-              </a>{" "}
-              which explains how we may collect, use and disclose your personal information including to third parties.
-            </p>
-
+        
             <button
               type="submit"
               className="flex items-center justify-center rounded-lg bg-blue-700 px-5 py-3 text-center text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300"
@@ -224,7 +213,7 @@ const ContactFormComponent = () => { // Renamed to avoid confusion with the page
                 </div>
                 <h3 className="mb-2 text-xl font-bold text-gray-900">Email us:</h3>
                 <p className="mb-3 font-light text-gray-500">Email us for general queries, including marketing and partnership opportunities.</p>
-                <a href="mailto:guru@gmail.com" className="font-medium text-blue-600 hover:underline">guru@gmail.com</a>
+                <a href="mailto:solaromegastoreinc@gmail.com" className="font-medium text-blue-600 hover:underline">solaromegastoreinc@gmail.com</a>
             </div>
 
             {/* Phone Contact */}
@@ -248,10 +237,10 @@ const ContactFormComponent = () => { // Renamed to avoid confusion with the page
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18v-3m0-3h.01M6 12h.01M18 12h.01M6 18h.01"></path>
                     </svg>
                 </div>
-                <h3 className="mb-2 text-xl font-bold text-gray-900">Social Media:</h3>
-                <p className="mb-3 font-light text-gray-500">Connect with us on our social media platforms for updates and engagement.</p>
-                <a href="/social-media" className="font-medium text-blue-600 hover:underline inline-flex items-center">
-                    Visit our Profiles
+                <h3 className="mb-2 text-xl font-bold text-gray-900">About Us</h3>
+                <p className="mb-3 font-light text-gray-500">Find out who we are at out About Us page. And stay for further updates.</p>
+                <a href="/AboutUs" className="font-medium text-blue-600 hover:underline inline-flex items-center">
+                    About Us
                     {/* Arrow Icon */}
                     <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
                 </a>

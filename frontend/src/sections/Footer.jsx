@@ -14,21 +14,20 @@ const gotoAboutUs = () => {
 // Directly define the content for each section based on the image
 const footerContent = {
   books: {
-    title: "Books",
+    title: "Elanganzilla",
     description: "Books Delivered. Imagination Unlimited.",
   },
   quickLinks: {
     title: "Quick Links",
     links: [{ name: "Home", path: "/" },
+    { name: "All Books", path: "/AllBooks" },
     { name: "About Us", path: "/aboutus" },
     { name: "Contact", path: "/contactus" },],
   },
   contact: {
     title: "Contact",
     details: [
-      "Email: mssonukri@gmail.com",
-      "Phone: +91 7061543815",
-      "MMEC, Mullana - 133207",
+      "Email: solaromegastoreinc@gmail.com",
     ],
   },
   weAccept: {

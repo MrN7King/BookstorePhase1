@@ -62,22 +62,7 @@ const PremiumProductDetails = () => {
 
   // You can remove or adapt the renderStars function if premium products don't have ratings.
   // For now, I'll comment it out in the return JSX below.
-  const renderStars = (rating) => {
-    const stars = [];
-    const safeRating = typeof rating === 'number' ? rating : 0;
-    const roundedRating = Math.round(safeRating * 2) / 2;
 
-    for (let i = 1; i <= 5; i++) {
-      if (i <= roundedRating) {
-        stars.push(<span key={i} className="material-icons text-yellow-500 text-lg sm:text-xl md:text-2xl">star</span>);
-      } else if (i - 0.5 === roundedRating) {
-        stars.push(<span key={i} className="material-icons text-yellow-500 text-lg sm:text-xl md:text-2xl">star_half</span>);
-      } else {
-        stars.push(<span key={i} className="material-icons text-gray-300 text-lg sm:text-xl md:text-2xl">star_border</span>);
-      }
-    }
-    return stars;
-  };
 
   // Dynamic content for different tabs, tailored for premium products
   const content = {
@@ -85,9 +70,6 @@ const PremiumProductDetails = () => {
       <>
         <p className="text-sm sm:text-base mb-4">{product?.description || "No description available."}</p>
       </>
-    ),
-    reviews: (
-      <p className="text-sm sm:text-base text-gray-700">No reviews yet for "{product?.name}". Be the first to review!</p>
     ),
     productDetails: (
       <ul className="list-disc pl-5 text-gray-700 text-sm sm:text-base">
@@ -182,10 +164,7 @@ const PremiumProductDetails = () => {
             <span className="material-icons mr-2">shopping_cart</span>
             Add To Cart
           </button>
-          <button className="flex items-center justify-center bg-blue-600 text-white border border-gray-300 rounded-md py-2 sm:py-3 px-4 sm:px-6 text-sm sm:text-base cursor-pointer mt-3 w-full max-w-[250px] hover:bg-blue-700 transition-colors duration-200">
-            <span className="material-icons mr-2 text-lg sm:text-xl">favorite_border</span>
-            Add to Favourites
-          </button>
+         
         </div>
 
         {/* Right Column (Product Details and Description Tabs) */}
@@ -207,15 +186,7 @@ const PremiumProductDetails = () => {
             >
               DESCRIPTION
             </button>
-            <button
-              className={`flex-1 text-center py-2 px-1 text-xs sm:text-sm md:text-base cursor-pointer outline-none border-b-2 transition-all duration-300 ${activeTab === 'reviews'
-                ? 'text-gray-900 border-gray-900 font-semibold'
-                : 'text-gray-600 border-transparent hover:text-blue-600 hover:border-blue-600'
-                }`}
-              onClick={() => setActiveTab('reviews')}
-            >
-              REVIEWS (0)
-            </button>
+            
             <button
               className={`flex-1 text-center py-2 px-1 text-xs sm:text-sm md:text-base cursor-pointer outline-none border-b-2 transition-all duration-300 ${activeTab === 'productDetails'
                 ? 'text-gray-900 border-gray-900 font-semibold'

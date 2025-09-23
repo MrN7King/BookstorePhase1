@@ -475,10 +475,7 @@ const AccountManagementSection = ({ handleDeactivateAccount, notificationSetting
       )}
     </div>
 
-    <NotificationSettingsSection
-      notificationSettings={notificationSettings}
-      handleNotificationChange={handleNotificationChange}
-    />
+    
   </div>
 );
 

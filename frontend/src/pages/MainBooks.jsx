@@ -4,7 +4,6 @@ import HeroTwo from '@/sections/HeroTwo';
 import Navigation from '@/sections/Navigation';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
-import Newsletter from '../components/Newsletter';
 import { FooterWithSitemap } from '../sections/Footer';
 
 const MainBooks = () => {
@@ -36,8 +35,7 @@ const MainBooks = () => {
       <GenreSlides genres={genres} />
       <BestSellerSlider headingText="Best Sellers" fetchType="random" />
       <BestSellerSlider headingText="Newest Books" fetchType="newest" />
-      <BestSellerSlider headingText="Popular Books" fetchType="random" />
-      <div className="pt-20"><Newsletter /></div>
+      <BestSellerSlider headingText="Popular Books" fetchType="random"/>
       <FooterWithSitemap />
     </>
   );

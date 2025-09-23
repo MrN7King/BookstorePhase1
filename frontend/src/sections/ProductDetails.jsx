@@ -3,7 +3,7 @@
 import { Spinner } from "@material-tailwind/react";
 import axios from 'axios';
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import useCart from '../hooks/useCart';
 
 // Define your API base URL here (from .env file)
@@ -69,22 +69,8 @@ const ProductDetails = ({ bookId, bookSlug }) => {
     }
   }, [book, bookId, bookSlug, navigate]);
 
-  const renderStars = (rating) => {
-    const stars = [];
-    const safeRating = typeof rating === 'number' ? rating : 0;
-    const roundedRating = Math.round(safeRating * 2) / 2;
-
-    for (let i = 1; i <= 5; i++) {
-      if (i <= roundedRating) {
-        stars.push(<span key={i} className="material-icons text-yellow-500 text-lg sm:text-xl md:text-2xl">star</span>);
-      } else if (i - 0.5 === roundedRating) {
-        stars.push(<span key={i} className="material-icons text-yellow-500 text-lg sm:text-xl md:text-2xl">star_half</span>);
-      } else {
-        stars.push(<span key={i} className="material-icons text-gray-300 text-lg sm:text-xl md:text-2xl">star_border</span>);
-      }
-    }
-    return stars;
-  };
+  
+  
 
   // Dynamic content for different tabs (Description, Reviews, Product Details)
   const content = {
@@ -93,9 +79,7 @@ const ProductDetails = ({ bookId, bookSlug }) => {
         <p className="text-sm sm:text-base mb-4">{book?.description || "No description available."}</p>
       </>
     ),
-    reviews: (
-      <p className="text-sm sm:text-base text-gray-700">No reviews yet for "{book?.name}". Be the first to review!</p>
-    ),
+ 
     productDetails: (
       <ul className="list-disc pl-5 text-gray-700 text-sm sm:text-base">
         <li className="mb-2"><strong>Product Type:</strong> {book?.type || 'N/A'}</li>
@@ -179,10 +163,7 @@ const ProductDetails = ({ bookId, bookSlug }) => {
             alt={book.name || "Product Image"}
             className="w-full max-w-[250px] sm:max-w-[300px] h-auto rounded-lg shadow-md object-cover mb-4"
           />
-          <div className="flex items-center my-2 sm:my-4">
-            {renderStars(book.rating)}
-            <span className="text-xs sm:text-sm text-gray-600 ml-2">({(book.rating || 0).toFixed(1)}/5 Stars)</span>
-          </div>
+         
           <button
             onClick={handleAddToCart}
             className="flex items-center justify-center bg-gray-900 text-white rounded-md py-2  sm:py-3 px-4 sm:px-6 text-sm sm:text-base cursor-pointer mt-3 w-full max-w-[250px] hover:bg-gray-700 transition-colors duration-200"
@@ -191,10 +172,7 @@ const ProductDetails = ({ bookId, bookSlug }) => {
             Add To Cart
           </button>
 
-          <button className="flex items-center justify-center bg-blue-600 text-white border border-gray-300 rounded-md py-2 sm:py-3 px-4 sm:px-6 text-sm sm:text-base cursor-pointer mt-3 w-full max-w-[250px] hover:bg-blue-700 transition-colors duration-200">
-            <span className="material-icons mr-2 text-lg sm:text-xl">favorite_border</span>
-            Add to Favourites
-          </button>
+       
         </div>
 
         {/* Right Column (Product Details and Description Tabs) */}
@@ -216,15 +194,7 @@ const ProductDetails = ({ bookId, bookSlug }) => {
             >
               DESCRIPTION
             </button>
-            <button
-              className={`flex-1 text-center py-2 px-1 text-xs sm:text-sm md:text-base cursor-pointer outline-none border-b-2 transition-all duration-300 ${activeTab === 'reviews'
-                ? 'text-gray-900 border-gray-900 font-semibold'
-                : 'text-gray-600 border-transparent hover:text-blue-600 hover:border-blue-600'
-                }`}
-              onClick={() => setActiveTab('reviews')}
-            >
-              REVIEWS (0)
-            </button>
+           
             <button
               className={`flex-1 text-center py-2 px-1 text-xs sm:text-sm md:text-base cursor-pointer outline-none border-b-2 transition-all duration-300 ${activeTab === 'productDetails'
                 ? 'text-gray-900 border-gray-900 font-semibold'

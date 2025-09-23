@@ -10,7 +10,7 @@ import useCart from '../hooks/useCart';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-const BestSellerSlider = ({ headingText = "Best Sellers" }) => {
+const BestSellerSlider = ({ headingText = "Premium Accounts" }) => {
   const sliderRef = useRef(null);
   const [activeCardIndex, setActiveCardIndex] = useState(0);
   const [products, setProducts] = useState([]);
